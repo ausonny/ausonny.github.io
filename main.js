@@ -27,7 +27,7 @@ const RESEARCH_PROFICIENCY_BASE_RATE = 1.25
 
 const METAL_PROFIECIENCY_METAL_COST = 1000
 const METAL_PROFIECIENCY_METAL_GROWTH_FACTOR = 1.3
-const METAL_PROFIECIENCY_POLYMER_COST = 0
+const METAL_PROFIECIENCY_POLYMER_COST = 0.0
 const METAL_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.3
 const METAL_PROFIECIENCY_RP_COST = 100
 const METAL_PROFIECIENCY_RP_GROWTH_FACTOR = 1.3
@@ -112,6 +112,7 @@ var textToDisplay = [];
 
 function saveGame(){
   localStorage.setItem("save",JSON.stringify(gameData));
+  ga('send', 'event', 'My Game', 'Save');
 };
 
 function load(){
