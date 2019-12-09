@@ -112,7 +112,7 @@ var textToDisplay = [];
 
 function saveGame(){
   localStorage.setItem("save",JSON.stringify(gameData));
-  ga('send', 'event', 'My Game', 'Save');
+  gtag('send', 'event', 'My Game', 'Save');
 };
 
 function load(){
