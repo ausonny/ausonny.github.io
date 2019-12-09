@@ -112,7 +112,7 @@ var textToDisplay = [];
 
 function saveGame(){
   localStorage.setItem("save",JSON.stringify(gameData));
-  gtag('send', 'event', 'My Game', 'Save');
+  ga('send', 'event', 'My Game', 'Save');
 };
 
 function load(){
@@ -473,6 +473,7 @@ function buyMine(){
     gameData.buildings.mines += 1;
 	  gameData.resources.metal -= nextCost;
   };
+  ga('send', 'event', 'My Game', 'buyMine');
 }; 
 
 function buyFactory(){
@@ -489,6 +490,7 @@ function buyAutoFight(){
     gameData.resources.metal -= AUTOFIGHT_METAL_COST;
     gameData.resources.polymers -= AUTOFIGHT_POLYMERS_COST;
     gameData.resources.researchPoints -= AUTOFIGHT_RP_COST;
+  ga('send', 'event', 'My Game', 'buyAutoFight');
   };
 }; 
 
@@ -517,6 +519,7 @@ function buyShipyard(){
     gameData.shipyard += 1;
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.researchPoints -= nextRPCost;
+  ga('send', 'event', 'My Game', 'buyShipyard');
   };
 };
 
