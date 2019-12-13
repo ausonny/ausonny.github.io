@@ -72,6 +72,9 @@
 				      			<button class="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyPolymerProficiency()">Send Ships</button>
 				      			<button class="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyResearchProficiency()">Send Ships</button>
 				      			<button class="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyShipyard()">Buy Shipyard</button>
+				      			<button class="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyRailgunPrestige()">RP</button>
+				      			<button class="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyLaserPrestige()">LP</button>
+				      			<button class="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyArmorPrestige()">AP</button>
 				      		</div>
 				    	</div>
 					</div>
@@ -80,6 +83,7 @@
 				      		<div class="col text-light text-center bg-secondary">
 				      			<button class="button" id ="btnRailgunUpgrade" onclick="buyRailgunUpgrade()">Upgrade Railgun</button>
 				      			<button class="button" id ="btnArmorUpgrade" onclick="buyArmorUpgrade()">Upgrade Hull Plating</button>
+				      			<button class="button" id ="btnLaserUpgrade" onclick="buyLaserUpgrade()">Upgrade Laser</button>
 				      		</div>
 				    	</div>
 					</div>
@@ -90,15 +94,15 @@
 		  	<h4 class="text-light text-center">My Ship</h4>
 	   		<div class="row">
 	      		<div class="col text-light text-center bg-secondary">Hull Points: <span id="shipHitPoints">0</span></div>
-	      		<div class="col text-light text-center bg-dark">Railgun Min Damage: <span id="shipRailgunMinDamage">0</span></div>
-	      		<div class="col text-light text-center bg-secondary">Railgun Max Damage: <span id="shipRailgunMaxDamage">0</span></div>
+	      		<div class="col text-light text-center bg-dark">Railgun Damage: <span id="shipRailgunMinDamage">0</span>-<span id="shipRailgunMaxDamage">0</div>
+	      		<div class="col text-light text-center bg-secondary">Laser Damage: <span id="shipLaserMinDamage">0</span>-<span id="shipLaserMaxDamage">0</div>
 	      		<div class="col text-light text-center bg-dark">Defense: <span id="shipDefense">0</span></div>
 	    	</div>
 		  	<h4 class="text-light text-center">Enemy</h4>
 	   		<div class="row">
 	      		<div class="col text-light text-center bg-secondary">Hull Points: <span id="enemyHitPoints">0</span></div>
-	      		<div class="col text-light text-center bg-dark">Railgun Min Damage: <span id="enemyRailgunMinDamage">0</span></div>
-	      		<div class="col text-light text-center bg-secondary">Railgun Max Damage: <span id="enemyRailgunMaxDamage">0</span></div>
+	      		<div class="col text-light text-center bg-dark">Railgun Damage: <span id="enemyRailgunMinDamage">0</span>-<span id="enemyRailgunMaxDamage">0</div>
+	      		<div class="col text-light text-center bg-secondary">Laser Damage: <span id="enemyLaserMinDamage">0</span>-<span id="enemyLaserMaxDamage">0</div>
 	      		<div class="col text-light text-center bg-dark">Defense: <span id="enemyDefense">0</span></div>
 	    	</div>
 	  	</div>
