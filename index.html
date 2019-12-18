@@ -21,7 +21,7 @@
 
 	    <title>Gamey Game!</title>
 	</head>
-  	<body>
+	<body>
  		<div class="container">
 		  	<h4 class="text-light text-center">Story</h4>
 		    <div class="row">
@@ -41,8 +41,8 @@
 		    	<div class="col text-light text-center bg-secondary">Metal: <span id="metal">0</span><br />Mines: <span id="mines">1</span></div>
 		    	<div class="col text-light text-center bg-dark">Power: <span id="power">9</span><br />Generators: <span id="generators">1</span></div>
 		    	<div class="col text-light text-center bg-secondary">Polymers: <span id="polymers">0</span><br />Factories: <span id="factories">0</span></div>
-		    	<div class="col text-light text-center bg-dark">Ship Size: <span id="shipSize">0</span><br />Shipyard Level: <span id="shipyard">0</span></div>
-		    	<div class="col text-light text-center bg-secondary">Research Points: <span id="researchPoints">0</span><br />Labs: <span id="labs">1</span></div>
+		    	<div class="col text-light text-center bg-dark">Research Points: <span id="researchPoints">0</span><br />Labs: <span id="labs">1</span></div>
+		    	<div class="col text-light text-center bg-secondary">Ship Size: <span id="shipSize">0</span><br />Shipyard Level: <span id="shipyard">0</span></div>
 		    </div>
 	<div class="container">
 		<div class="row">
@@ -61,6 +61,7 @@
 				      		<div class="col text-light text-center bg-dark"><button class="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyGenerator()">Buy Generator</button></div>
 				      		<div class="col text-light text-center bg-secondary"><button class="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyFactory()">Buy Factory</button></div>
 				      		<div class="col text-light text-center bg-dark"><button class="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyLab()">Buy Lab</button></div>
+			      			<div class="col text-light text-center bg-secondary"><button class="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyShipyard()">Buy Shipyard</button></div>
 				    	</div>
 					</div>
 					<div class="tab-pane fade" id="nav-research" role="tabpanel" aria-labelledby="nav-research-tab">
@@ -71,9 +72,9 @@
 				      			<button class="button" id="btnPowerTech" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyPowerProficiency()">Send Ships</button>
 				      			<button class="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyPolymerProficiency()">Send Ships</button>
 				      			<button class="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyResearchProficiency()">Send Ships</button>
-				      			<button class="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyShipyard()">Buy Shipyard</button>
 				      			<button class="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyRailgunPrestige()">RP</button>
 				      			<button class="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyLaserPrestige()">LP</button>
+				      			<button class="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyMissilePrestige()">RP</button>
 				      			<button class="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom" onclick="buyArmorPrestige()">AP</button>
 				      		</div>
 				    	</div>
@@ -82,8 +83,9 @@
 				   		<div class="row">
 				      		<div class="col text-light text-center bg-secondary">
 				      			<button class="button" id ="btnRailgunUpgrade" onclick="buyRailgunUpgrade()">Upgrade Railgun</button>
-				      			<button class="button" id ="btnArmorUpgrade" onclick="buyArmorUpgrade()">Upgrade Hull Plating</button>
 				      			<button class="button" id ="btnLaserUpgrade" onclick="buyLaserUpgrade()">Upgrade Laser</button>
+				      			<button class="button" id ="btnMissileUpgrade" onclick="buyMissileUpgrade()">Upgrade Missile</button>
+				      			<button class="button" id ="btnArmorUpgrade" onclick="buyArmorUpgrade()">Upgrade Hull Plating</button>
 				      		</div>
 				    	</div>
 					</div>
@@ -94,16 +96,14 @@
 		  	<h4 class="text-light text-center">My Ship</h4>
 	   		<div class="row">
 	      		<div class="col text-light text-center bg-secondary">Hull Points: <span id="shipHitPoints">0</span></div>
-	      		<div class="col text-light text-center bg-dark">Railgun Damage: <span id="shipRailgunMinDamage">0</span>-<span id="shipRailgunMaxDamage">0</div>
-	      		<div class="col text-light text-center bg-secondary">Laser Damage: <span id="shipLaserMinDamage">0</span>-<span id="shipLaserMaxDamage">0</div>
-	      		<div class="col text-light text-center bg-dark">Defense: <span id="shipDefense">0</span></div>
+	      		<div class="col text-light text-center bg-dark">Damage: <span id="shipMinDamage">0</span>-<span id="shipMaxDamage">0</div>
+	      		<div class="col text-light text-center bg-secondary">Defense: <span id="shipDefense">0</span></div>
 	    	</div>
 		  	<h4 class="text-light text-center">Enemy</h4>
 	   		<div class="row">
 	      		<div class="col text-light text-center bg-secondary">Hull Points: <span id="enemyHitPoints">0</span></div>
-	      		<div class="col text-light text-center bg-dark">Railgun Damage: <span id="enemyRailgunMinDamage">0</span>-<span id="enemyRailgunMaxDamage">0</div>
-	      		<div class="col text-light text-center bg-secondary">Laser Damage: <span id="enemyLaserMinDamage">0</span>-<span id="enemyLaserMaxDamage">0</div>
-	      		<div class="col text-light text-center bg-dark">Defense: <span id="enemyDefense">0</span></div>
+	      		<div class="col text-light text-center bg-dark">Damage: <span id="enemyMinDamage">0</span>-<span id="enemyMaxDamage">0</div>
+	      		<div class="col text-light text-center bg-secondary">Defense: <span id="enemyDefense">0</span></div>
 	    	</div>
 	  	</div>
 		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
@@ -111,6 +111,7 @@
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 		<script type="text/javascript" src='decimal.js'></script>
+		<script type="text/javascript" src='constants.js'></script>
 		<script type="text/javascript" src="main.js"></script>
 	</body>
 </html>
