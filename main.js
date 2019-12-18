@@ -74,9 +74,9 @@ var textToDisplay = [];
 function saveGame(){
   localStorage.setItem("save",JSON.stringify(gameData));
   gtag('event', "save game", {
-    'event_category': <"click">,
-    'event_label': <"label">,
-    'value': <"value">
+    'event_category': "click",
+    'event_label': "label",
+    'value': "value"
   });
 };
 
@@ -726,9 +726,9 @@ function buyMine(){
   };
   $('#btnBuyMine').attr('title', 'Metal Cost:' + prettify(MINE_BASE_COST * Math.pow(MINE_GROWTH_FACTOR, gameData.buildings.mines)) + '\nPower Cost:' + MINE_POWER_USAGE);
     gtag('event', "buy mine", {
-      'event_category': <"click">,
-      'event_label': <"label">,
-      'value': <"value">
+      'event_category': "click",
+      'event_label': "label",
+      'value': "value"
     });
 }; 
 
@@ -748,9 +748,9 @@ function buyAutoFight(){
     gameData.resources.polymers -= AUTOFIGHT_POLYMERS_COST;
     gameData.resources.researchPoints -= AUTOFIGHT_RP_COST;
     gtag('event', "buy autofight", {
-      'event_category': <"click">,
-      'event_label': <"label">,
-      'value': <"value">
+      'event_category': "click",
+      'event_label': "label",
+      'value': "value"
     });
   };
 }; 
@@ -785,9 +785,9 @@ function buyShipyard(){
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.researchPoints -= nextRPCost;
     gtag('event', "buy shipyard", {
-      'event_category': <"click">,
-      'event_label': <"label">,
-      'value': <"value">
+      'event_category': "click",
+      'event_label': "label",
+      'value': "value"
     });
     $('#btnBuyShipyard').attr('title', 'Metal Cost:' + prettify(SHIPYARD_METAL_BASE_COST * Math.pow(SHIPYARD_METAL_GROWTH_FACTOR, gameData.buildings.shipyard)) + 
       '\nPower Cost:' + SHIPYARD_POWER_USAGE + 
