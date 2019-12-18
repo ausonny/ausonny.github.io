@@ -747,7 +747,7 @@ function buyAutoFight(){
     gameData.resources.metal -= AUTOFIGHT_METAL_COST;
     gameData.resources.polymers -= AUTOFIGHT_POLYMERS_COST;
     gameData.resources.researchPoints -= AUTOFIGHT_RP_COST;
-    gtag('event', "buy autofight", {
+    gtag('event', "buy autofight2", {
       'event_category': "click",
       'event_label': "label",
       'value': "value"
