@@ -1,1 +1,1 @@
-
+CONST EMPTYYYY = ''
