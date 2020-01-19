@@ -27,8 +27,9 @@ JavaScript:
   indent_size: 2
   max_preserve_newlines: 1
   quotes: single
-  space_after_anon_function: true
+  space_after_anon_function: false
   pragma_insert: true
+  brace_style: collapse-preserve-inline
 Sass:
   beautifiers:
     - Pretty Diff

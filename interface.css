@@ -4,117 +4,79 @@ body {
   background-image: url('images/background.jpeg');
   background-size: cover;
   background-position: center;
-  position: relative;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
-/*--- navigation bar ---*/
-.navbar {
-  background:#6ab446;
+/.header {
 }
-.nav-link,
-.navbar-brand {
-  color: #fff;
-  cursor: pointer;
-}
-.nav-link {
-  margin-right: 1em !important;
-}
-.nav-link:hover {
-  color: #000;
-}
-.navbar-collapse {
-  justify-content: flex-end;
-}
-.header {
-  background-image: url('images/background.jpeg');
-  background-size: cover;
-  background-position: center;
-  position: relative;
-}
-.overlay {
+/* .overlay {
   position: absolute;
   min-height: 100%;
   min-width: 100%;
   left: 0;
   top: 0;
   background: rgba(0, 0, 0, 0.6);
+} */
+
+.fixedHeight {
+  height: 150px;
+}
+
+.scroll {
+    position: absolute;
+    overflow-y: scroll;
 }
 
 .noresize {
-  resize: none; 
+  resize: none;
 }
 
 .vresize {
-  resize: vertical; 
-}
-  
-.hresize {
-  resize: horizontal;  
+  resize: vertical;
 }
 
-// Class
-.visible {
-  visibility: visible;
+.hresize {
+  resize: horizontal;
 }
-.invisible {
+
+.text-small {
+  font-size: 75%;
+}
+
+.text-largejbb {
+  font-size: 150%;
+}
+
+.hidden{
   visibility: hidden;
 }
 
-// Usage as a mixin
-.element {
-  @include invisible(visible);
-}
-.element {
-  @include invisible(hidden);
+button {
+  width: 158px;
+  margin: 1px;
 }
 
-.button {
-  background-color: #4CAF50; /* Green */
+.lined .nav-link {
   border: none;
-  color: white;
-  padding: 5px 10px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 13px;
-  width: 160px;
+  border-bottom: 3px solid transparent;
+  color: #f8f9fa;
+  background-color: #343a40;
 }
 
-.buttonInvalid {
-  background-color: #FF0000; /* Red */
+.lined .nav-link:hover {
   border: none;
-  color: white;
-  padding: 5px 10px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 13px;
-  width: 160px;
+  border-bottom: 3px solid transparent;
+  border-color: #6c757d;
 }
 
-.nopadding {
-  padding: 0px 0px 0px 0px;
+.lined .nav-link.active {
+  background: none;
+  color: #fff;
+  border-color: #6c757d;
+  background-color: #6c757d;
 }
 
-#tabs{
-	background: #007b5e;
-    color: #eee;
-}
-#tabs h6.section-title{
-    color: #eee;
-}
-
-#tabs .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
-    color: #f3f3f3;
-    background-color: transparent;
-    border-color: transparent transparent #f3f3f3;
-    border-bottom: 4px solid !important;
-    font-size: 20px;
-    font-weight: bold;
-}
-#tabs .nav-tabs .nav-link {
-    border: 1px solid transparent;
-    border-top-left-radius: .25rem;
-    border-top-right-radius: .25rem;
-    color: #eee;
-    font-size: 20px;
+.row {
+  padding: 5px 5px 5px 5px;
+  border: 1px solid #ffffff;
 }

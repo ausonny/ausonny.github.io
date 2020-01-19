@@ -1,117 +1,188 @@
 <!doctype html>
 <html lang="en">
-   <head>
-      <!-- Global site tag (gtag.js) - Google Analytics -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-65637002-2"></script>
-      <script>
-         window.dataLayer = window.dataLayer || [];
-         function gtag(){dataLayer.push(arguments);}
-         gtag('js', new Date());
 
-         gtag('config', 'UA-65637002-2');
-      </script>
-      <!-- Required meta tags -->
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <!-- Bootstrap CSS -->
-      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-      <link rel="stylesheet" type="text/css" href="interface.css" />
-      <title>Gamey Game!</title>
-   </head>
-   <body>
-      <div class="container">
-         <h4 class="text-light text-center">Story M</h4>
-         <div class="row">
-            <div class="col-xs-2 text-light bg-secondary">
-               <button class="button" id="btnAutoFightOn" onclick="switchAutoFight()">autofight</button>
-               <button class="button" id="btnFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="sendShip()">Fight</button><br />
-               Region: <span id="region">0</span> Zone: <span id="zone">0</span><br />
-               <button class="button" onclick="saveGame()">Save</button>
-               <button class="button" onclick="load()">Load</button>
-            </div>
-            <div class="col">
-               <textarea class="form-control noresize nopadding" readonly id="textToDisplay" rows="5"></textarea>
-            </div>
-         </div>
-         <h4 class="text-light text-center">Resources</h4>
-         <div class="row">
-            <div class="col text-light text-center bg-secondary">Metal: <span id="metal">0</span><br />Mines: <span id="mines">1</span></div>
-            <div class="col text-light text-center bg-dark">Power: <span id="power">9</span><br />Generators: <span id="generators">1</span></div>
-            <div class="col text-light text-center bg-secondary">Polymers: <span id="polymers">0</span><br />Factories: <span id="factories">0</span></div>
-            <div class="col text-light text-center bg-dark">Research Points: <span id="researchPoints">0</span><br />Labs: <span id="labs">1</span></div>
-            <div class="col text-light text-center bg-secondary">Ship Size: <span id="shipSize">0</span><br />Shipyard Level: <span id="shipyard">0</span></div>
-         </div>
-         <div class="container">
-            <div class="row">
-               <div class="col">
-                  <nav>
-                     <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                        <a class="nav-item nav-link active" id="nav-build-tab" data-toggle="tab" href="#nav-build" role="tab" aria-controls="nav-build" aria-selected="true">Build</a>
-                        <a class="nav-item nav-link" id="nav-research-tab" data-toggle="tab" href="#nav-research" role="tab" aria-controls="nav-research" aria-selected="false">Research</a>
-                        <a class="nav-item nav-link" id="nav-upgrade-tab" data-toggle="tab" href="#nav-upgrade" role="tab" aria-controls="nav-upgrade" aria-selected="false">Upgrade</a>
-                     </div>
-                  </nav>
-                  <div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
-                     <div class="tab-pane fade show active" id="nav-build" role="tabpanel" aria-labelledby="nav-build-tab">
-                        <div class="row">
-                           <div class="col text-light text-center bg-secondary"><button class="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMine()">Buy Mine</button></div>
-                           <div class="col text-light text-center bg-dark"><button class="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyGenerator()">Buy Generator</button></div>
-                           <div class="col text-light text-center bg-secondary"><button class="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyFactory()">Buy Factory</button></div>
-                           <div class="col text-light text-center bg-dark"><button class="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyLab()">Buy Lab</button></div>
-                           <div class="col text-light text-center bg-secondary"><button class="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyShipyard()">Buy Shipyard</button></div>
-                        </div>
-                     </div>
-                     <div class="tab-pane fade" id="nav-research" role="tabpanel" aria-labelledby="nav-research-tab">
-                        <div class="row">
-                           <div class="col text-light text-center bg-secondary">
-                              <button class="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
-                              <button class="button" id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
-                              <button class="button" id="btnPowerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPowerProficiency()">Send Ships</button>
-                              <button class="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
-                              <button class="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
-                              <button class="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyRailgunPrestige()">RP</button>
-                              <button class="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyLaserPrestige()">LP</button>
-                              <button class="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMissilePrestige()">RP</button>
-                              <button class="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyArmorPrestige()">AP</button>
-                              <button class="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyShieldPrestige()">AP</button>
-                              <button class="button" id="btnKineticBarrierPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyKineticBarrierPrestige()">AP</button>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="tab-pane fade" id="nav-upgrade" role="tabpanel" aria-labelledby="nav-upgrade-tab">
-                        <div class="row">
-                           <div class="col text-light text-center bg-secondary">
-                              <button class="button" id ="btnRailgunUpgrade" onclick="buyRailgunUpgrade()">Upgrade Railgun</button>
-                              <button class="button" id ="btnLaserUpgrade" onclick="buyLaserUpgrade()">Upgrade Laser</button>
-                              <button class="button" id ="btnMissileUpgrade" onclick="buyMissileUpgrade()">Upgrade Missile</button>
-                              <button class="button" id ="btnArmorUpgrade" onclick="buyArmorUpgrade()">Upgrade Hull Plating</button>
-                              <button class="button" id ="btnShieldUpgrade" onclick="buyShieldUpgrade()">Upgrade Shieldd</button>
-                              <button class="button" id ="btnKineticBarrierUpgrade" onclick="buyKineticBarrierUpgrade()">Upgrade Kinetic Barrier</button>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-         <h4 class="text-light text-center">My Ship</h4>
-         <div class="row">
-            <div class="col text-light text-center bg-secondary">Hull Points: <span id="shipHitPoints">0</span></div>
-            <div class="col text-light text-center bg-dark">Damage: <span id="shipMinDamage">0</span>-<span id="shipMaxDamage">0</div>
-            <div class="col text-light text-center bg-secondary">Defense: <span id="shipDefense">0</span>/<span id="shipDefenseMax">0</span></div>
-         </div>
-         <h4 class="text-light text-center">Enemy</h4>
-         <div class="row">
-            <div class="col text-light text-center bg-secondary">Hull Points: <span id="enemyHitPoints">0</span></div>
-            <div class="col text-light text-center bg-dark">Damage: <span id="enemyMinDamage">0</span>-<span id="enemyMaxDamage">0</div>
-            <div class="col text-light text-center bg-secondary">Defense: <span id="enemyDefense">0</span>/<span id="enemyDefenseMax">0</span></div>
-         </div>
+<head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-65637002-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-65637002-2');
+  </script>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="interface.css" />
+  <title>Gamey Game!</title>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 text-light bg-dark">
+        <div class="container text-small overflow-auto" style="height:200px;" id="textToDisplay">
+        </div>
       </div>
-      <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-      <script type="text/javascript" src='decimal.js'></script>
-      <script type="text/javascript" src='constants.js'></script>
-      <script type="text/javascript" src="main.js"></script>
-   </body>
+      <div id='menucontrols' class="col-lg-2 text-light bg-secondary text-center">
+        <span id="timeElapsed">9</span><br />
+        <button class="btn btn-sm btn-primary" type="button" onclick="saveGame()">Save</button><br />
+        <button class="btn btn-sm btn-primary" type="button" onclick="init()">Load</button><br />
+        <button class="btn btn-sm btn-primary" type="button" onclick="resetGame()">Reset</button><br />
+        <button class="btn btn-sm btn-primary" type="button" onclick="exportsave()">Export</button><br />
+        <button class="btn btn-sm btn-primary hidden" id="btnGateway" type="button" onclick="gatewayClick()">Gateway</button><br />
+        <button class="btn btn-sm btn-primary" type="button" data-toggle="modal" data-target="#settingsModal">Settings</button>
+      </div>
+      <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <button class="btn btn-sm btn-primary" id="btnNotation" type="button" onclick="changeNotation()">Export</button><br />
+
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 bg-dark rounded shadow hidden"  id="upgradesContainer">
+        <ul id="myTab" role="tablist" class="nav nav-tabs nav-pills with-arrow lined flex-column flex-sm-row text-center">
+          <li class="nav-item flex-sm-fill">
+            <a id="research-tab" data-toggle="tab" href="#research" role="tab" aria-controls="research" aria-selected="true" class="nav-link text-uppercase font-weight-bold mr-sm-3 rounded-0 active">Research</a>
+          </li>
+          <li class="nav-item flex-sm-fill">
+            <a id="upgrade-tab" data-toggle="tab" href="#upgrade" role="tab" aria-controls="upgrade" aria-selected="false" class="hidden nav-link text-uppercase font-weight-bold mr-sm-3 rounded-0">Upgrade</a>
+          </li>
+          <li class="nav-item flex-sm-fill">
+            <a id="missions-tab" data-toggle="tab" href="#missions" role="tab" aria-controls="missions" aria-selected="false" class="hidden nav-link text-uppercase font-weight-bold rounded-0">Missions</a>
+          </li>
+        </ul>
+        <div id="myTabContent" class="fixedHeight tab-content bg-secondary overflow-auto">
+          <div id="research" role="tabpanel" aria-labelledby="home-tab" class="tab-pane fade px-1 py-1 show active">
+            <div class="btn-group-sm btn-group" role="group" aria-label="Horizontal button group">
+              <div id="techvisible" class="col-lg-12 text-light text-center">
+                <button class="btn btn-sm btn-success" type="button" data-sort='01' id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='02' id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='03' id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='04' id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='05' id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">RP</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='06' id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyPrestige()">AP</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='07' id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">LP</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='08' id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">AP</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='09' id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">RP</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='10' id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">AP</button>
+                <button class="btn btn-sm btn-success" type="button" data-sort='11' id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
+              </div>
+            </div>
+          </div>
+          <div id="upgrade" role="tabpanel" aria-labelledby="profile-tab" class="tab-pane fade px-1 py-1">
+            <div id="upgradevisible" class="col-lg-12 text-light text-center">
+              <button class="btn btn-sm btn-success" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
+              <button class="btn btn-sm btn-success" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
+              <button class="btn btn-sm btn-success" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
+              <button class="btn btn-sm btn-success" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
+              <button class="btn btn-sm btn-success" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
+              <button class="btn btn-sm btn-success" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
+            </div>
+          </div>
+          <div id="missions" role="tabpanel" aria-labelledby="contact-tab" class="tab-pane fade px-1 py-1">
+            <div id="missionvisible" class="col-lg-12 text-light text-left">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" id="ResourceContainer">
+      <div class="col-lg-2 text-light bg-secondary text-center" id="metalcontainer">
+        Resources:<br /> <span id="metal">0</span>(<span id="metalpersec">0</span>)<br />
+        <button class="btn btn-sm btn-success" type="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy()">Buy Mine</button><br />
+        <div class="hidden" id="polymercontainer">
+          Components:<br /> <span id="polymers">0</span>(<span id="polymerspersec">0</span>)<br />
+          <button class="btn btn-sm btn-success" type="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.factory.buy()">Buy Factory</button>
+        </div>
+      </div>
+      <div class="col-lg-2 text-light bg-dark text-center" id="powercontainer">
+        Power: <span id="power">9</span><br />
+        <button class="btn btn-sm btn-success" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy()">Buy Panel</button><br />
+        <button class="btn btn-sm btn-success hidden" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Buy Plant</button>
+        <button class="btn btn-sm btn-success hidden" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
+        <button class="btn btn-sm btn-success hidden" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
+      </div>
+      <div class="col-lg-2 text-light bg-secondary text-center hidden" id="labscontainer">
+        Research:<br /> <span id="researchPoints">0</span>(<span id="researchpersec">0</span>)<br />
+        <button class="btn btn-sm btn-success" type="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
+      </div>
+      <div class="col-lg-2 text-light bg-dark text-center hidden" id="aethercontainer">
+        Aether:<span id="aether">0</span><br />
+        <div class="hidden" id="chronotonfragments">
+          Chronoton Fragments:<span id="chronotonfragmentscontainer">0</span><br />
+        </div>
+        <div class="hidden" id="chronotoncontainer">
+          Chronoton:<span id="chronoton">0</span><br />
+        </div>
+      </div>
+      <div class="col-lg-2 text-light bg-dark text-center hidden" id="future2">
+        Fut2: <span id="fut2">0</span><br />
+        <button class="btn btn-sm btn-success" type="button" id="btnBuyLab2" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
+      </div>
+      <div class="col-lg-2 text-light bg-dark text-center hidden" id="future3">
+        Fut3: <span id="fut3">0</span><br />
+        <button class="btn btn-sm btn-success" type="button" id="btnBuyLab3" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
+      </div>
+    </div>
+    <div class="row hidden" id="fightcontainer">
+      <div class="col-lg-2 text-light bg-dark text-center hidden" id="fightcontrols">
+        <span id="MissionName">0</span><br /> Zone: <span id="zone">0</span><br />
+        <button class="btn btn-sm btn-success hidden" type="button" id="btnFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="sendShip()">Fight</button><br />
+        <button class="btn btn-sm btn-warning hidden" type="button" id="btnSuicide" onclick="suicideShip()">Suicide</button><br />
+        <button class="btn btn-sm btn-primary hidden" type="button" id="btnAutoFightOn" onclick="switchAutoFight()">autofight</button><br />
+      </div>
+      <div class="col-lg-10 bg-secondary text-light">
+        Drone (<span id="shipSize">0</span>)
+        Damage: <span id="shipMinDamage">0</span>-<span id="shipMaxDamage">0</span>
+        <div class="progress center-block" style="height: 25px;">
+          <div id="PlayerHullShieldBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="PlayerShieldText"></div>
+        </div>
+        <div class="progress center-block" style="height: 25px;">
+          <div id="PlayerHullHealthBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="PlayerHealthText"></div>
+        </div>
+        <span id="enemyName">0</span> (<span id="enemyShipSize">0</span>)
+        Damage: <span id="enemyMinDamage">0</span>-<span id="enemyMaxDamage">0</span>
+        <div class="progress" style="height: 25px;">
+          <div id="EnemyHullShieldBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="EnemyShieldText"></div>
+        </div>
+        <div class="progress" style="height: 25px;">
+          <div id="EnemyHullHealthBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="EnemyHealthText"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row" id="debugContainer">
+      <div class="col text-light text-left bg-dark">
+        <textarea class="form-control noresize nopadding" readonly id="textToDisplay2" rows="5"></textarea>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="main.js"></script>
+</body>
+
 </html>
