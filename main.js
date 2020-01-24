@@ -2356,7 +2356,7 @@ function addAchievement(name, bonus) {
       bonus: bonus
     };
     gameData.achievements.push(newAchievement);
-    addToDisplay(newAchievement.name, 'story');
+    addToDisplay('New Achievement - ' + newAchievement.name, 'story');
   }
 
 }
