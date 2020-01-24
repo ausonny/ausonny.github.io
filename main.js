@@ -210,6 +210,12 @@ class Ship {
       if (this.size >= 100) {
         addAchievement('Ship Size 100!', 5);
       }
+      gtag('event', 'Send Ship', {
+        event_category: 'event',
+        event_label: 'label',
+        value: 'value'
+      });
+
     }
   }
 }
@@ -267,6 +273,11 @@ function giveMissionReward(mission) {
 function giveChronotonFragments(amt) {
   gameData.resources.chronotonfragments += amt;
   addToDisplay('We were able to salvage ' + prettify(amt) + ' Chronoton Fragments', 'loot');
+  gtag('event', 'fragment recieved', {
+    event_category: 'event',
+    event_label: 'label',
+    value: 'value'
+  });
 }
 
 function chronotonAvailable() {
@@ -284,6 +295,11 @@ function addLooting() { // eslint-disable-line no-unused-vars
     gameData.perks.looter++;
     $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')');
     $('#btnLooter').attr('title', 'Each level bought will add 10% to looting additively\n\nChronoton Cost:' + gamePerks.looter.chronotonforBuy());
+    gtag('event', 'buy looter', {
+      event_category: 'click',
+      event_label: 'label',
+      value: 'value'
+    });
   }
 }
 
@@ -292,6 +308,11 @@ function addProducer() { // eslint-disable-line no-unused-vars
     gameData.perks.producer++;
     $('#btnProducer').text('Producer(' + (gameData.perks.producer) + ')');
     $('#btnProducer').attr('title', 'Each level bought will add 10% to metal and polymer production additively\n\nChronoton Cost:' + gamePerks.producer.chronotonforBuy());
+    gtag('event', 'buy producer', {
+      event_category: 'click',
+      event_label: 'label',
+      value: 'value'
+    });
   }
 }
 
@@ -300,6 +321,11 @@ function addDamager() { // eslint-disable-line no-unused-vars
     gameData.perks.damager++;
     $('#btnDamager').text('Damager(' + (gameData.perks.damager) + ')');
     $('#btnDamager').attr('title', 'Each level bought will add 10% to damage additively\n\nChronoton Cost:' + gamePerks.damager.chronotonforBuy());
+    gtag('event', 'buy damager', {
+      event_category: 'click',
+      event_label: 'label',
+      value: 'value'
+    });
   }
 }
 
@@ -308,6 +334,11 @@ function addThickSkin() { // eslint-disable-line no-unused-vars
     gameData.perks.thickskin++;
     $('#btnThickSkin').text('ThickSkin(' + (gameData.perks.thickskin) + ')');
     $('#btnThickSkin').attr('title', 'Each level bought will add 10% to defenses additively\n\nChronoton Cost:' + gamePerks.thickskin.chronotonforBuy());
+    gtag('event', 'buy thickskin', {
+      event_category: 'click',
+      event_label: 'label',
+      value: 'value'
+    });
   }
 }
 
@@ -319,6 +350,11 @@ function addSpeed() { // eslint-disable-line no-unused-vars
     gameData.perks.speed++;
     $('#btnSpeed').text('Speed(' + (gameData.perks.speed) + ')');
     $('#btnSpeed').attr('title', 'Each level bought will shorten the wait time between attacks by 50ms\n\nChronoton Cost:' + gamePerks.speed.chronotonforBuy());
+    gtag('event', 'buy speed', {
+      event_category: 'click',
+      event_label: 'label',
+      value: 'value'
+    });
   }
 }
 
@@ -579,6 +615,11 @@ function gatewayClick() { // eslint-disable-line no-unused-vars
   gameData.resources.chronotonfragments = 0;
   resetData();
   $('#GatewayModal').modal('hide');
+  gtag('event', 'gateway', {
+    event_category: 'event',
+    event_label: 'label',
+    value: 'value'
+  });
   gameData.world.paused = false;
 }
 
@@ -650,6 +691,11 @@ var gameBuildings = {
         gameData.buildings.panels++;
         $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')');
         $('#btnBuyPanel').attr('title', this.tooltipForBuy());
+        gtag('event', 'buy panel', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
       }
     }
   },
@@ -667,6 +713,11 @@ var gameBuildings = {
         gameData.buildings.generators++;
         $('#btnBuyGenerator').text('Generator(' + (gameData.buildings.generators) + ')');
         $('#btnBuyGenerator').attr('title', this.tooltipForBuy());
+        gtag('event', 'buy generator', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
       }
     }
   },
@@ -684,6 +735,11 @@ var gameBuildings = {
         gameData.buildings.plants++;
         $('#btnBuyPlant').text('Plant(' + (gameData.buildings.plants) + ')');
         $('#btnBuyPlant').attr('title', this.tooltipForBuy());
+        gtag('event', 'buy plant', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
       }
     }
   },
@@ -703,6 +759,11 @@ var gameBuildings = {
         gameData.buildings.aetherPlants++;
         $('#btnBuyAetherPlant').text('Aether Plant(' + (gameData.buildings.aetherPlants) + ')');
         $('#btnBuyAetherPlant').attr('title', this.tooltipForBuy());
+        gtag('event', 'buy aether plant', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
       }
     }
   },
@@ -767,6 +828,11 @@ var gameBuildings = {
         if (gameData.buildings.labs >= 25) {
           addAchievement('25 Labs!', 1);
         }
+        gtag('event', 'buy lab', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
       }
     }
   },
@@ -796,6 +862,11 @@ var gameBuildings = {
         }
         if (gameData.buildings.factories >= 100) {
           addAchievement('100 Factories!', 1);
+          gtag('event', 'buy factory', {
+            event_category: 'click',
+            event_label: 'label',
+            value: 'value'
+          });
         }
       }
     }
@@ -829,6 +900,11 @@ var gameBuildings = {
         if (gameData.buildings.refineries >= 100) {
           addAchievement('100 Refineries!', 1);
         }
+        gtag('event', 'buy refinery', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
       }
     }
   },
@@ -849,6 +925,11 @@ var gameBuildings = {
         sortResearch();
         $('#btnBuyShipyard').text('Shipyard(' + (gameData.buildings.shipyard) + ')');
         $('#btnBuyShipyard').attr('title', this.tooltipForBuy());
+        gtag('event', 'buy shipyard', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
       }
     }
   }
@@ -882,6 +963,11 @@ var gameEquipment = {
         gameData.technologies.railgunUpgrade++;
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        gtag('event', 'buy railgun upgrade', {
+          event_category: 'click',
+          event_label: 'label',
+          value: gameData.technologies.railgunUpgrade
+        });
       }
     },
     buyPrestige: function () {
@@ -925,6 +1011,11 @@ var gameEquipment = {
         gameData.technologies.laserUpgrade++;
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        gtag('event', 'buy laser upgrade', {
+          event_category: 'click',
+          event_label: 'label',
+          value: gameData.technologies.laserUpgrade
+        });
       }
     },
     buyPrestige: function () {
@@ -968,6 +1059,11 @@ var gameEquipment = {
         gameData.technologies.missileUpgrade++;
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        gtag('event', 'buy missile upgrade', {
+          event_category: 'click',
+          event_label: 'label',
+          value: gameData.technologies.missileUpgrade
+        });
       }
     },
     buyPrestige: function () {
@@ -1011,6 +1107,11 @@ var gameEquipment = {
         gameData.technologies.armorUpgrade++;
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        gtag('event', 'buy armor upgrade', {
+          event_category: 'click',
+          event_label: 'label',
+          value: gameData.technologies.armorUpgrade
+        });
       }
     },
     buyPrestige: function () {
@@ -1055,6 +1156,11 @@ var gameEquipment = {
         sortResearch();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        gtag('event', 'buy shield upgrade', {
+          event_category: 'click',
+          event_label: 'label',
+          value: gameData.technologies.shieldUpgrade
+        });
       }
     },
     buyPrestige: function () {
@@ -1098,6 +1204,11 @@ var gameEquipment = {
         gameData.technologies.flakUpgrade++;
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        gtag('event', 'buy flak upgrade', {
+          event_category: 'click',
+          event_label: 'label',
+          value: gameData.technologies.flakUpgrade
+        });
       }
     },
     buyPrestige: function () {
@@ -1753,6 +1864,11 @@ function resetAbilities() { // eslint-disable-line no-unused-vars
   gameData.perks.producer = 0;
   gameData.perks.thickskin = 0;
   gameData.perks.speed = 0;
+  gtag('event', 'resetAbilities()', {
+    event_category: 'click',
+    event_label: 'label',
+    value: 'value'
+  });
 }
 
 function sortResearch() {
@@ -1930,6 +2046,11 @@ function switchAutoFight() { // eslint-disable-line no-unused-vars
   } else {
     gameData.technologies.autofightOn = 1;
   }
+  gtag('event', 'switch autofight', {
+    event_category: 'click',
+    event_label: 'label',
+    value: 'value'
+  });
 }
 
 function sendShip() {
@@ -2414,6 +2535,11 @@ window.setInterval(function () {
       checkForUnlocks();
       gameData.missions[gameData.world.currentMission].zone++;
       if (gameData.missions[gameData.world.currentMission].zone > gameData.missions[gameData.world.currentMission].enemies.length - 1) {
+        gtag('event', 'completed region', {
+          event_category: 'event',
+          event_label: 'label',
+          value: gameData.missions[gameData.world.currentMission].name
+        });
         var newGalaxy = gameData.missions[0].galaxy + 1;
         gameData.world.lastGalaxy = gameData.missions[0].galaxy;
         giveMissionReward((gameData.missions[gameData.world.currentMission]));
