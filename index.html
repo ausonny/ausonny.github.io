@@ -20,13 +20,22 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="interface.css" />
-  <title>Chasing the Past</title>
+  <title>Chasing the Past v0.5</title>
+  <meta name="description" content="Chasing the Past">
+  <meta name="author" content="ausonny">
 </head>
 
 <body onload="putEmail();">
+  <noscript>
+    <div id="checkJavascript" style="position: absolute; height: 100%; width: 100%; font-size: 2vw; padding: 10%; color: white; background-color: black; z-index: 1000000;">
+      For some reason, your browser is having trouble loading this game. This game runs on javascript, and if you have an addon such as noscript, you may need to tell it to allow scripts from http://trimps.github.io, which is where this game is
+      hosted.<br /><br />
+      If you are not using any addons that might interfere with javascript, try using the latest versions of Chrome or Firefox.
+    </div>
+  </noscript>
   <div class="container">
     <div class="row">
-      <div id='menucontrols' class="col-lg-2 text-light bg-secondary text-center">
+      <div id='menucontrols' class="col-md-2 text-light bg-secondary text-center">
         <span id="timeElapsed">9</span><br />
         <button class="btn btn-sm btn-primary" type="button" onclick="saveGame()">Save</button><br />
         <button class="btn btn-sm btn-primary" type="button" onclick="init()">Load</button><br />
@@ -52,31 +61,31 @@
           </div>
         </div>
         <button class="btn btn-sm btn-primary" type="button" data-toggle="modal" data-target="#settingsModal">Settings</button>
-      </div>
-      <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <button class="btn btn-sm btn-primary" id="btnNotation" type="button" onclick="changeNotation()">Notation</button><br />
-              <button class="btn btn-sm btn-primary" type="button" onclick="resetGame()">Reset</button><br />
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <button class="btn btn-sm btn-primary" id="btnNotation" type="button" onclick="changeNotation()">Notation</button><br />
+                <button class="btn btn-sm btn-primary" type="button" onclick="resetGame()">Reset</button><br />
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-lg-4 text-light bg-dark">
+      <div class="col-md-4 text-light bg-dark">
         <div class="container text-small overflow-auto" style="height:200px;" id="textToDisplay">
         </div>
       </div>
-      <div class="col-lg-6 bg-secondary rounded shadow hidden" id="upgradesContainer">
+      <div class="col-md-6 bg-secondary rounded shadow hidden" id="upgradesContainer">
         <ul id="myTab" role="tablist" class="nav nav-tabs nav-pills with-arrow lined flex-column flex-sm-row text-center">
           <li class="nav-item flex-sm-fill">
             <a id="research-tab" data-toggle="tab" href="#research" role="tab" aria-controls="research" aria-selected="true" class="nav-link text-uppercase font-weight-bold mr-sm-3 rounded-0 active">Research</a>
@@ -91,7 +100,7 @@
         <div id="myTabContent" class="fixedHeight tab-content bg-secondary overflow-auto">
           <div id="research" role="tabpanel" aria-labelledby="home-tab" class="tab-pane fade px-1 py-1 show active">
             <div class="btn-group-sm btn-group" role="group" aria-label="Horizontal button group">
-              <div id="techvisible" class="col-lg-12 text-light text-center">
+              <div id="techvisible" class="col-md-12 text-light text-center">
                 <button class="btn btn-sm btn-success" type="button" data-sort='01' id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
                 <button class="btn btn-sm btn-success" type="button" data-sort='02' id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
                 <button class="btn btn-sm btn-success" type="button" data-sort='03' id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
@@ -107,7 +116,7 @@
             </div>
           </div>
           <div id="upgrade" role="tabpanel" aria-labelledby="profile-tab" class="tab-pane fade px-1 py-1">
-            <div id="upgradevisible" class="col-lg-12 text-light text-center">
+            <div id="upgradevisible" class="col-md-12 text-light text-center">
               <button class="btn btn-sm btn-success" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
               <button class="btn btn-sm btn-success" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
               <button class="btn btn-sm btn-success" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
@@ -117,14 +126,14 @@
             </div>
           </div>
           <div id="missions" role="tabpanel" aria-labelledby="contact-tab" class="tab-pane fade px-1 py-1">
-            <div id="missionvisible" class="col-lg-12 text-light text-left">
+            <div id="missionvisible" class="col-md-12 text-light text-left">
             </div>
           </div>
         </div>
       </div>
     </div>
     <div class="row" id="ResourceContainer">
-      <div class="col-lg-2 text-light bg-secondary text-center" id="metalcontainer">
+      <div class="col-md-2 text-light bg-secondary text-center" id="metalcontainer">
         Metal:<br /><span id="metal">0</span>(<span id="metalpersec">0</span>)<br />
         <button class="btn btn-sm btn-success" type="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy()">Buy Mine</button><br />
         <div class="hidden" id="polymercontainer">
@@ -136,18 +145,18 @@
           <button class="btn btn-sm btn-success hidden" type="button" id="btnBuyRefinery" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.refinery.buy()">Buy Refinery</button>
         </div>
       </div>
-      <div class="col-lg-2 text-light bg-dark text-center" id="powercontainer">
+      <div class="col-md-2 text-light bg-dark text-center" id="powercontainer">
         Power: <span id="power">9</span><br />
         <button class="btn btn-sm btn-success" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy()">Buy Panel</button><br />
         <button class="btn btn-sm btn-success hidden" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Buy Plant</button>
         <button class="btn btn-sm btn-success hidden" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
         <button class="btn btn-sm btn-success hidden" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
       </div>
-      <div class="col-lg-2 text-light bg-secondary text-center hidden" id="labscontainer">
+      <div class="col-md-2 text-light bg-secondary text-center hidden" id="labscontainer">
         Research:<br /> <span id="researchPoints">0</span>(<span id="researchpersec">0</span>)<br />
         <button class="btn btn-sm btn-success" type="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
       </div>
-      <div class="col-lg-2 text-light bg-dark text-center hidden" id="chronotoncombinedcontainer">
+      <div class="col-md-2 text-light bg-dark text-center hidden" id="chronotoncombinedcontainer">
         <div class="hidden" id="chronotonfragmentscontainer">
           Chronoton Fragments:<span id="chronotonfragments">0</span><br />
         </div>
@@ -182,23 +191,23 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-2 text-light bg-dark text-center hidden" id="future2">
+      <div class="col-md-2 text-light bg-dark text-center hidden" id="future2">
         Fut2: <span id="fut2">0</span><br />
         <button class="btn btn-sm btn-success" type="button" id="btnBuyLab2" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
       </div>
-      <div class="col-lg-2 text-light bg-dark text-center hidden" id="future3">
+      <div class="col-md-2 text-light bg-dark text-center hidden" id="future3">
         Fut3: <span id="fut3">0</span><br />
         <button class="btn btn-sm btn-success" type="button" id="btnBuyLab3" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
       </div>
     </div>
     <div class="row hidden" id="fightcontainer">
-      <div class="col-lg-2 text-light bg-dark text-center hidden" id="fightcontrols">
+      <div class="col-md-2 text-light bg-dark text-center hidden" id="fightcontrols">
         <span id="MissionName">0</span><br />Zone: <span id="zone">0</span>/<span id="zonemax">0</span><br />
         <button class="btn btn-sm btn-success hidden" type="button" id="btnFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="sendShip()">Fight</button><br />
         <button class="btn btn-sm btn-warning hidden" type="button" id="btnSuicide" onclick="suicideShip()">Self Destruct</button><br />
         <button class="btn btn-sm btn-primary hidden" type="button" id="btnAutoFightOn" onclick="switchAutoFight()">autofight</button><br />
       </div>
-      <div class="col-lg-10 bg-secondary text-light">
+      <div class="col-md-10 bg-secondary text-light">
         Drone (<span id="shipSize">0</span>)
         Damage: <span id="shipMinDamage">0</span>-<span id="shipMaxDamage">0</span>
         <div class="progress center-block" style="height: 25px;">

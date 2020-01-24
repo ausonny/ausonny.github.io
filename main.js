@@ -1519,25 +1519,25 @@ function updateGUI() {
     width = 100 * gameData.playership.hitPoints / gameData.playership.hitPointsMax;
   }
   $('#PlayerHullHealthBar').css('width', prettify(width) + '%');
-  $('#PlayerHealthText').text(prettify(gameData.playership.hitPoints) + '/' + prettify(gameData.playership.hitPointsMax));
+  $('#PlayerHealthText').text('Health:' + prettify(gameData.playership.hitPoints) + '/' + prettify(gameData.playership.hitPointsMax));
   width = 0;
   if (gameData.enemyship.hitPointsMax > 0) {
     width = 100 * gameData.enemyship.hitPoints / gameData.enemyship.hitPointsMax;
   }
   $('#EnemyHullHealthBar').css('width', prettify(width) + '%');
-  $('#EnemyHealthText').text(prettify(gameData.enemyship.hitPoints) + '/' + prettify(gameData.enemyship.hitPointsMax));
+  $('#EnemyHealthText').text('Health:' + prettify(gameData.enemyship.hitPoints) + '/' + prettify(gameData.enemyship.hitPointsMax));
   width = 0;
   if (gameData.playership.shieldMax > 0) {
     width = 100 * gameData.playership.shield / gameData.playership.shieldMax;
   }
   $('#PlayerHullShieldBar').css('width', prettify(width) + '%');
-  $('#PlayerShieldText').text(prettify(gameData.playership.shield) + '/' + prettify(gameData.playership.shieldMax));
+  $('#PlayerShieldText').text('Shield:' + prettify(gameData.playership.shield) + '/' + prettify(gameData.playership.shieldMax));
   width = 0;
   if (gameData.enemyship.shieldMax > 0) {
     width = 100 * gameData.enemyship.shield / gameData.enemyship.shieldMax;
   }
   $('#EnemyHullShieldBar').css('width', prettify(width) + '%');
-  $('#EnemyShieldText').text(prettify(gameData.enemyship.shield) + '/' + prettify(gameData.enemyship.shieldMax));
+  $('#EnemyShieldText').text('Shield:' + prettify(gameData.enemyship.shield) + '/' + prettify(gameData.enemyship.shieldMax));
 
   document.getElementById('enemyMinDamage').innerHTML = prettify(gameData.enemyship.minDamage);
   document.getElementById('enemyMaxDamage').innerHTML = prettify(gameData.enemyship.maxDamage);
