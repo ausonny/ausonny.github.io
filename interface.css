@@ -19,24 +19,11 @@ body {
 } */
 
 .fixedHeight {
-  height: 150px;
-}
-
-.scroll {
-    position: absolute;
-    overflow-y: scroll;
+  height: 250px;
 }
 
 .noresize {
   resize: none;
-}
-
-.vresize {
-  resize: vertical;
-}
-
-.hresize {
-  resize: horizontal;
 }
 
 .text-small {
@@ -78,5 +65,5 @@ button {
 
 .row {
   padding: 5px 5px 5px 5px;
-  border: 1px solid #ffffff;
+  border: 1px solid #808080;
 }

@@ -25,7 +25,7 @@ const AETHER_PLANT_METAL_GROWTH_FACTOR = 1.3;
 const AETHER_PLANT_POLYMER_BASE_COST = 500;
 const AETHER_PLANT_POLYMER_GROWTH_FACTOR = 1.3;
 const AETHER_PLANT_AETHER_BASE_COST = 100;
-const AETHER_PLANT_AETHER_GROWTH_FACTOR = 1.5;
+const AETHER_PLANT_AETHER_GROWTH_FACTOR = 1.3;
 
 const MINE_BASE_COST = 10;
 const MINE_GROWTH_FACTOR = 1.1;
@@ -60,36 +60,36 @@ const SHIPYARD_METAL_GROWTH_FACTOR = 1.3;
 const SHIPYARD_POLYMER_BASE_COST = 500;
 const SHIPYARD_POLYMER_GROWTH_FACTOR = 1.3;
 const SHIPYARD_POWER_USAGE = 10;
-const SHIPYARD_POWER_GROWTH_USAGE = 1.4;
+const SHIPYARD_POWER_GROWTH_USAGE = 1.3;
 const SHIPYARD_RP_BASE_COST = 100;
-const SHIPYARD_RP_GROWTH_FACTOR = 1.5;
+const SHIPYARD_RP_GROWTH_FACTOR = 1.3;
 
 const PRESTIGE_COST_MULTIPLIER = 8.5;
 const PRESTIGE_BASE_MULTIPLIER = 8;
 
 const METAL_PROFIECIENCY_METAL_COST = 1000;
-const METAL_PROFIECIENCY_METAL_GROWTH_FACTOR = 1.6;
+const METAL_PROFIECIENCY_METAL_GROWTH_FACTOR = 1.3;
 const METAL_PROFIECIENCY_POLYMER_COST = 0.0;
-const METAL_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.6;
+const METAL_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.3;
 const METAL_PROFIECIENCY_RP_COST = 500;
-const METAL_PROFIECIENCY_RP_GROWTH_FACTOR = 1.6;
+const METAL_PROFIECIENCY_RP_GROWTH_FACTOR = 1.3;
 const METAL_PROFICIENCY_BASE_RATE = 1.5;
 
 const POLYMER_PROFIECIENCY_METAL_COST = 0;
-const POLYMER_PROFIECIENCY_METAL_GROWTH_FACTOR = 1.6;
+const POLYMER_PROFIECIENCY_METAL_GROWTH_FACTOR = 1.3;
 const POLYMER_PROFIECIENCY_POLYMER_COST = 500;
-const POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.6;
+const POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.3;
 const POLYMER_PROFIECIENCY_RP_COST = 500;
-const POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR = 1.6;
+const POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR = 1.3;
 const POLYMER_PROFICIENCY_BASE_RATE = 1.5;
 
 const RESEARCH_PROFIECIENCY_METAL_COST = 1000;
-const RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR = 1.6;
+const RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR = 1.3;
 const RESEARCH_PROFIECIENCY_POLYMER_COST = 500;
-const RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.6;
+const RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.3;
 const RESEARCH_PROFIECIENCY_RP_COST = 500;
-const RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR = 1.6;
-const RESEARCH_PROFICIENCY_BASE_RATE = 1.4;
+const RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR = 1.3;
+const RESEARCH_PROFICIENCY_BASE_RATE = 1.5;
 
 const RAILGUN_UPGRADE_METAL_BASE_COST = 100;
 const RAILGUN_UPGRADE_POLYMER_BASE_COST = 0;
@@ -100,13 +100,13 @@ const RAILGUN_UPGRADE_AETHER_BASE_COST = 90;
 const LASER_UPGRADE_METAL_BASE_COST = 50;
 const LASER_UPGRADE_POLYMER_BASE_COST = 50;
 const LASER_UPGRADE_RP_BASE_COST = 40;
-const LASER_UPGRADE_BASE_IMPROVEMENT = 7;
+const LASER_UPGRADE_BASE_IMPROVEMENT = 10;
 const LASER_UPGRADE_AETHER_BASE_COST = 120;
 
 const MISSILE_UPGRADE_METAL_BASE_COST = 100;
 const MISSILE_UPGRADE_POLYMER_BASE_COST = 100;
 const MISSILE_UPGRADE_RP_BASE_COST = 50;
-const MISSILE_UPGRADE_BASE_IMPROVEMENT = 9;
+const MISSILE_UPGRADE_BASE_IMPROVEMENT = 20;
 const MISSILE_UPGRADE_AETHER_BASE_COST = 150;
 
 const ARMOR_UPGRADE_METAL_BASE_COST = 100;
@@ -124,7 +124,7 @@ const SHIELD_UPGRADE_AETHER_BASE_COST = 120;
 const FLAK_UPGRADE_METAL_BASE_COST = 100;
 const FLAK_UPGRADE_POLYMER_BASE_COST = 100;
 const FLAK_UPGRADE_RP_BASE_COST = 50;
-const FLAK_UPGRADE_BASE_IMPROVEMENT = 40;
+const FLAK_UPGRADE_BASE_IMPROVEMENT = 100;
 const FLAK_UPGRADE_AETHER_BASE_COST = 150;
 
 var notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
@@ -263,11 +263,9 @@ function giveMissionReward(mission) {
     addToDisplay('This location contains a large, prestigious, circular structure.  I can easily travel there and step through it, but what will I find?  I have also discovered some chronoton fragments.  I don\'t see a use for them but they may come in handy later', 'story');
     giveChronotonFragments(40);
   } else if (mission.missiontype === 'Aether') {
-    var lt = Math.pow(140, 1 + (mission.level / 10));
-    gameData.resources.aether += lt;
-    addToDisplay('We\'ve found a giant store of ' + prettify(lt) + ' aether', 'story');
+    var lt = Math.pow(140, 1 + (mission.level / 0));
+    giveChronotonFragments(lt * (1 + gameData.perks.looter * 0.1));
   }
-  sortResearch();
 }
 
 function giveChronotonFragments(amt) {
@@ -479,23 +477,30 @@ function resetData() {
   textStory = [];
   textMissions = [];
 
-  $('#research').tab('show');
+  $('#building').tab('show');
   $('#polymercontainer').addClass('hidden');
+  $('#btnBuyFactory').addClass('hidden');
   $('#labscontainer').addClass('hidden');
+  $('#btnBuyLab').addClass('hidden');
   $('#btnBuyGenerator').addClass('hidden');
   $('#btnBuyPlant').addClass('hidden');
   $('#btnBuyRefinery').addClass('hidden');
   $('#btnBuyAetherPlant').addClass('hidden');
   $('#fightcontrols').addClass('hidden');
-  $('#upgradesContainer').addClass('hidden');
+  $('#fightdisplay').addClass('hidden');
+  $('#missionvisible').addClass('hidden');
+  $('#upgradevisible').addClass('hidden');
+  $('#techvisible').addClass('hidden');
   $('#chronotonfragmentscontainer').addClass('hidden');
   $('#chronotoncontainer').addClass('hidden');
   $('#aethercontainer').addClass('hidden');
   $('#upgrade-tab').addClass('hidden');
   $('#missions-tab').addClass('hidden');
   $('#btnFight').addClass('hidden');
+  $('#btnAutoFight').addClass('hidden');
+  $('#btnGateway').addClass('hidden');
   $('#btnSuicide').addClass('hidden');
-  $('#fightcontainer').addClass('hidden');
+  // $('#fightcontainer').addClass('hidden');
 
   $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
   $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
@@ -605,7 +610,6 @@ function resetData() {
     gameData.playership.createPlayerShip();
   }
   updateMissionButtons();
-  sortResearch();
   gameData.world.paused = false;
 }
 
@@ -810,7 +814,7 @@ var gameBuildings = {
       var increase = gameData.buildings.labs * Math.pow(RESEARCH_PROFICIENCY_BASE_RATE, gameData.technologies.researchProficiencyBought);
       increase *= Math.pow(2, gameData.technologies.goldMine);
       increase *= (1 + gameData.perks.producer * 0.1);
-      return increase / 4;
+      return increase / 1;
     },
     buy: function () {
       if (this.canAffordBuy()) {
@@ -922,7 +926,6 @@ var gameBuildings = {
         gameData.resources.polymer -= this.polymerForBuy();
         gameData.resources.researchPoints -= this.rpForBuy();
         gameData.buildings.shipyard++;
-        sortResearch();
         $('#btnBuyShipyard').text('Shipyard(' + (gameData.buildings.shipyard) + ')');
         $('#btnBuyShipyard').attr('title', this.tooltipForBuy());
         gtag('event', 'buy shipyard', {
@@ -949,7 +952,7 @@ var gameEquipment = {
     rpForPrestige: function () { return (RAILGUN_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought + 1)); },
     tooltipForUpgrade: function () { return ('Metal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
     tooltipForPrestige: function () { return ('This will improve our Railguns, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function () { $('#btnRailgunUpgrade').text('Railgun(' + convertToRoman(gameData.technologies.railgunPrestigeLevelBought) + ')(' + (gameData.technologies.railgunUpgrade) + ')'); },
+    updateUpgradeText: function () { $('#btnRailgunUpgrade').text('Railgun ' + convertToRoman(gameData.technologies.railgunPrestigeLevelBought) + ' (' + (gameData.technologies.railgunUpgrade) + ')'); },
     updateUpgradeTooltip: function () { $('#btnRailgunUpgrade').attr('title', this.tooltipForUpgrade()); },
     updatePrestigeText: function () { $('#btnRailgunPrestige').text('Infuse Railgun ' + (gameData.technologies.railgunPrestigeLevelBought + 1)); },
     updatePrestigeTooltip: function () { $('#btnRailgunPrestige').attr('title', this.tooltipForPrestige()); },
@@ -978,7 +981,6 @@ var gameEquipment = {
         gameData.resources.aether -= this.aetherForPrestige();
         gameData.technologies.railgunPrestigeLevelBought++;
         gameData.technologies.railgunUpgrade = 1;
-        sortResearch();
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
@@ -997,7 +999,7 @@ var gameEquipment = {
     rpForPrestige: function () { return (LASER_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought + 1)); },
     tooltipForUpgrade: function () { return ('Metal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
     tooltipForPrestige: function () { return ('This will improve our Lasers, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function () { $('#btnLaserUpgrade').text('Laser(' + convertToRoman(gameData.technologies.laserPrestigeLevelBought) + ')(' + (gameData.technologies.laserUpgrade) + ')'); },
+    updateUpgradeText: function () { $('#btnLaserUpgrade').text('Laser ' + convertToRoman(gameData.technologies.laserPrestigeLevelBought) + ' (' + (gameData.technologies.laserUpgrade) + ')'); },
     updateUpgradeTooltip: function () { $('#btnLaserUpgrade').attr('title', this.tooltipForUpgrade()); },
     updatePrestigeText: function () { $('#btnLaserPrestige').text('Infuse Laser ' + (gameData.technologies.laserPrestigeLevelBought + 1)); },
     updatePrestigeTooltip: function () { $('#btnLaserPrestige').attr('title', this.tooltipForPrestige()); },
@@ -1026,7 +1028,6 @@ var gameEquipment = {
         gameData.resources.aether -= this.aetherForPrestige();
         gameData.technologies.laserPrestigeLevelBought++;
         gameData.technologies.laserUpgrade = 1;
-        sortResearch();
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
@@ -1045,7 +1046,7 @@ var gameEquipment = {
     rpForPrestige: function () { return (MISSILE_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought + 1)); },
     tooltipForUpgrade: function () { return ('Metal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
     tooltipForPrestige: function () { return ('This will improve our Missiles, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function () { $('#btnMissileUpgrade').text('Missile(' + convertToRoman(gameData.technologies.missilePrestigeLevelBought) + ')(' + (gameData.technologies.missileUpgrade) + ')'); },
+    updateUpgradeText: function () { $('#btnMissileUpgrade').text('Missile ' + convertToRoman(gameData.technologies.missilePrestigeLevelBought) + ' (' + (gameData.technologies.missileUpgrade) + ')'); },
     updateUpgradeTooltip: function () { $('#btnMissileUpgrade').attr('title', this.tooltipForUpgrade()); },
     updatePrestigeText: function () { $('#btnMissilePrestige').text('Infuse Misile ' + (gameData.technologies.missilePrestigeLevelBought + 1)); },
     updatePrestigeTooltip: function () { $('#btnMissilePrestige').attr('title', this.tooltipForPrestige()); },
@@ -1074,7 +1075,6 @@ var gameEquipment = {
         gameData.resources.aether -= this.aetherForPrestige();
         gameData.technologies.missilePrestigeLevelBought++;
         gameData.technologies.missileUpgrade = 1;
-        sortResearch();
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
@@ -1093,7 +1093,7 @@ var gameEquipment = {
     rpForPrestige: function () { return (ARMOR_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought + 1)); },
     tooltipForUpgrade: function () { return ('Metal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
     tooltipForPrestige: function () { return ('This will improve our Armor, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function () { $('#btnArmorUpgrade').text('Armor(' + convertToRoman(gameData.technologies.armorPrestigeLevelBought) + ')(' + (gameData.technologies.armorUpgrade) + ')'); },
+    updateUpgradeText: function () { $('#btnArmorUpgrade').text('Armor ' + convertToRoman(gameData.technologies.armorPrestigeLevelBought) + ' (' + (gameData.technologies.armorUpgrade) + ')'); },
     updateUpgradeTooltip: function () { $('#btnArmorUpgrade').attr('title', this.tooltipForUpgrade()); },
     updatePrestigeText: function () { $('#btnArmorPrestige').text('Infuse Armor ' + (gameData.technologies.armorPrestigeLevelBought + 1)); },
     updatePrestigeTooltip: function () { $('#btnArmorPrestige').attr('title', this.tooltipForPrestige()); },
@@ -1122,7 +1122,6 @@ var gameEquipment = {
         gameData.resources.aether -= this.aetherForPrestige();
         gameData.technologies.armorPrestigeLevelBought++;
         gameData.technologies.armorUpgrade = 1;
-        sortResearch();
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
@@ -1141,7 +1140,7 @@ var gameEquipment = {
     rpForPrestige: function () { return (SHIELD_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought + 1)); },
     tooltipForUpgrade: function () { return ('Metal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
     tooltipForPrestige: function () { return ('This will improve our Shields, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function () { $('#btnShieldUpgrade').text('Shield(' + convertToRoman(gameData.technologies.shieldPrestigeLevelBought) + ')(' + (gameData.technologies.shieldUpgrade) + ')'); },
+    updateUpgradeText: function () { $('#btnShieldUpgrade').text('Shield ' + convertToRoman(gameData.technologies.shieldPrestigeLevelBought) + ' (' + (gameData.technologies.shieldUpgrade) + ')'); },
     updateUpgradeTooltip: function () { $('#btnShieldUpgrade').attr('title', this.tooltipForUpgrade()); },
     updatePrestigeText: function () { $('#btnShieldPrestige').text('Infuse Shield ' + (gameData.technologies.shieldPrestigeLevelBought + 1)); },
     updatePrestigeTooltip: function () { $('#btnShieldPrestige').attr('title', this.tooltipForPrestige()); },
@@ -1153,7 +1152,6 @@ var gameEquipment = {
         gameData.resources.polymer -= this.polymerForUpgrade();
         gameData.resources.researchPoints -= this.rpForUpgrade();
         gameData.technologies.shieldUpgrade++;
-        sortResearch();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
         gtag('event', 'buy shield upgrade', {
@@ -1171,7 +1169,6 @@ var gameEquipment = {
         gameData.resources.aether -= this.aetherForPrestige();
         gameData.technologies.shieldPrestigeLevelBought++;
         gameData.technologies.shieldUpgrade = 1;
-        sortResearch();
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
@@ -1190,7 +1187,7 @@ var gameEquipment = {
     rpForPrestige: function () { return (FLAK_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought + 1)); },
     tooltipForUpgrade: function () { return ('Metal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
     tooltipForPrestige: function () { return ('This will improve our Flak, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function () { $('#btnFlakUpgrade').text('Flak(' + convertToRoman(gameData.technologies.flakPrestigeLevelBought) + ')(' + (gameData.technologies.flakUpgrade) + ')'); },
+    updateUpgradeText: function () { $('#btnFlakUpgrade').text('Flak ' + convertToRoman(gameData.technologies.flakPrestigeLevelBought) + ' (' + (gameData.technologies.flakUpgrade) + ')'); },
     updateUpgradeTooltip: function () { $('#btnFlakUpgrade').attr('title', this.tooltipForUpgrade()); },
     updatePrestigeText: function () { $('#btnFlakPrestige').text('Infuse Flak ' + (gameData.technologies.flakPrestigeLevelBought + 1)); },
     updatePrestigeTooltip: function () { $('#btnFlakPrestige').attr('title', this.tooltipForPrestige()); },
@@ -1219,7 +1216,6 @@ var gameEquipment = {
         gameData.resources.aether -= this.aetherForPrestige();
         gameData.technologies.flakPrestigeLevelBought++;
         gameData.technologies.flakUpgrade = 1;
-        sortResearch();
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
@@ -1473,21 +1469,19 @@ function init() {
   $('#btnBuyAetherPlant').text('Aether Plant(' + (gameData.buildings.aetherPlants) + ')');
   $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')');
   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
-  sortResearch();
   updateMissionButtons();
-  debugText = 'Known issues and other ramblings:\n1. If the tab loses focus or is closed, when you return you will notice the game runs faster than expected until time catches up.  Enjoy this for now, eventually there will be an ability that will allow/limit this time\n';
+  debugText = '0.5.5 has a new GUI that I think is a step better but still not where I want it.  There was also some rebalancing.  In general things are cheaper.\n';
+  debugText += 'Known issues and other ramblings:\n1. If the tab loses focus or is closed, when you return you will notice the game runs faster than expected until time catches up.  Enjoy this for now, eventually there will be an ability that will allow/limit this time\n';
   debugText += '2. TODO I need an achievement screen that shows all achievements completed and still to do, along with the current bonus gained from achievements\n';
   debugText += '3. There is currently no confirmation dialog on clicking the reset button under settings.  Be careful.\n';
   debugText += '4. Tooltips for most research projects don\'t show benefits gained.\n';
   debugText += '5. The flavor text is basically in rough draft form.  There are issues with person and tense.  Plus.  You know.  It needs other help.\n';
   debugText += '6. Balance is an ongoing chore and any thoughts are appreciated.\n';
   debugText += '7. Autosave is hardcoded for every five minutes.  This needs to be adjustable in settings.  And Playfab integration is coming.  One day.\n';
-  debugText += '8. The initial flavor text shows every page load.\n';
-  debugText += '9. I\'d like to notify the player when a new version is released.\n';
-  debugText += '10. Current achieveemnts are limited.\n';
-  debugText += '11. I\'d like to redo the entire GUI.  It feels a little derivative of Trimps\n';
-  debugText += '12. There is a stray salvage message after the first battle on reload\n';
-  debugText += '13. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.\n';
+  debugText += '8. I\'d like to notify the player when a new version is released.\n';
+  debugText += '9. Current achieveemnts are limited.\n';
+  debugText += '10. I\'d like to redo the entire GUI.  It feels a little derivative of Trimps\n';
+  debugText += '11. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.\n';
 }
 
 function getAchievementBonus() {
@@ -1528,29 +1522,31 @@ function updateGUI() {
   document.getElementById('enemyName').innerHTML = gameData.enemyship.name;
   document.getElementById('enemyShipSize').innerHTML = gameData.enemyship.size;
   var width = 0;
-  if (gameData.playership.hitPointsMax > 0) {
-    width = 100 * gameData.playership.hitPoints / gameData.playership.hitPointsMax;
+  if (!$('#fightdisplay').hasClass('hidden')) {
+    if (gameData.playership.hitPointsMax > 0) {
+      width = 100 * gameData.playership.hitPoints / gameData.playership.hitPointsMax;
+    }
+    $('#PlayerHullHealthBar').css('width', prettify(width) + '%');
+    $('#PlayerHealthText').text('Health:' + prettify(gameData.playership.hitPoints) + '/' + prettify(gameData.playership.hitPointsMax));
+    width = 0;
+    if (gameData.enemyship.hitPointsMax > 0) {
+      width = 100 * gameData.enemyship.hitPoints / gameData.enemyship.hitPointsMax;
+    }
+    $('#EnemyHullHealthBar').css('width', prettify(width) + '%');
+    $('#EnemyHealthText').text('Health:' + prettify(gameData.enemyship.hitPoints) + '/' + prettify(gameData.enemyship.hitPointsMax));
+    width = 0;
+    if (gameData.playership.shieldMax > 0) {
+      width = 100 * gameData.playership.shield / gameData.playership.shieldMax;
+    }
+    $('#PlayerHullShieldBar').css('width', prettify(width) + '%');
+    $('#PlayerShieldText').text('Shield:' + prettify(gameData.playership.shield) + '/' + prettify(gameData.playership.shieldMax));
+    width = 0;
+    if (gameData.enemyship.shieldMax > 0) {
+      width = 100 * gameData.enemyship.shield / gameData.enemyship.shieldMax;
+    }
+    $('#EnemyHullShieldBar').css('width', prettify(width) + '%');
+    $('#EnemyShieldText').text('Shield:' + prettify(gameData.enemyship.shield) + '/' + prettify(gameData.enemyship.shieldMax));
   }
-  $('#PlayerHullHealthBar').css('width', prettify(width) + '%');
-  $('#PlayerHealthText').text('Health:' + prettify(gameData.playership.hitPoints) + '/' + prettify(gameData.playership.hitPointsMax));
-  width = 0;
-  if (gameData.enemyship.hitPointsMax > 0) {
-    width = 100 * gameData.enemyship.hitPoints / gameData.enemyship.hitPointsMax;
-  }
-  $('#EnemyHullHealthBar').css('width', prettify(width) + '%');
-  $('#EnemyHealthText').text('Health:' + prettify(gameData.enemyship.hitPoints) + '/' + prettify(gameData.enemyship.hitPointsMax));
-  width = 0;
-  if (gameData.playership.shieldMax > 0) {
-    width = 100 * gameData.playership.shield / gameData.playership.shieldMax;
-  }
-  $('#PlayerHullShieldBar').css('width', prettify(width) + '%');
-  $('#PlayerShieldText').text('Shield:' + prettify(gameData.playership.shield) + '/' + prettify(gameData.playership.shieldMax));
-  width = 0;
-  if (gameData.enemyship.shieldMax > 0) {
-    width = 100 * gameData.enemyship.shield / gameData.enemyship.shieldMax;
-  }
-  $('#EnemyHullShieldBar').css('width', prettify(width) + '%');
-  $('#EnemyShieldText').text('Shield:' + prettify(gameData.enemyship.shield) + '/' + prettify(gameData.enemyship.shieldMax));
 
   document.getElementById('enemyMinDamage').innerHTML = prettify(gameData.enemyship.minDamage);
   document.getElementById('enemyMaxDamage').innerHTML = prettify(gameData.enemyship.maxDamage);
@@ -1568,6 +1564,7 @@ function updateGUI() {
 
   if (gameData.buildings.mines >= 5) {
     $('#polymercontainer').removeClass('hidden');
+    $('#btnBuyFactory').removeClass('hidden');
     if (!gameData.story.factoryunlocked) {
       addToDisplay('I should be able to start bringing factories online.  The polymers will get us closer to creating drones.  I need answers. Why did they attack? Am I really alone?', 'story');
       gameData.story.factoryunlocked = true;
@@ -1576,28 +1573,25 @@ function updateGUI() {
 
   if (gameData.buildings.factories >= 5) {
     $('#labscontainer').removeClass('hidden');
+    $('#btnBuyLab').removeClass('hidden');
     if (!gameData.story.labunlocked) {
       addToDisplay('Labs are available.  They should help to rediscover some technologies.  How did they manage to pull off an attack of that scale secretly?', 'story');
       gameData.story.labunlocked = true;
     }
   }
 
-  if (gameData.missions[0].galaxy >= 2) {
+  if (gameData.missions[0].galaxy >= 3) {
     $('#btnBuyGenerator').removeClass('hidden');
   }
-  if (gameData.missions[0].galaxy >= 4) {
+  if (gameData.missions[0].galaxy >= 6) {
     $('#btnBuyPlant').removeClass('hidden');
   }
-  if (gameData.missions[0].galaxy >= 8) {
+  if (gameData.missions[0].galaxy >= 10) {
     $('#btnBuyAetherPlant').removeClass('hidden');
   }
 
   if (gameData.missions[0].galaxy >= 15) {
     $('#btnBuyRefinery').removeClass('hidden');
-  }
-
-  if (gameData.buildings.labs >= 1) {
-    $('#fightcontrols').removeClass('hidden');
   }
 
   if (gameData.missions[0].galaxy > 1) {
@@ -1611,12 +1605,21 @@ function updateGUI() {
   }
 
   if (gameData.buildings.labs >= 2) {
-    $('#upgradesContainer').removeClass('hidden');
+    $('#techvisible').removeClass('hidden');
     if (!gameData.story.shipyardUnlocked) {
       addToDisplay('Drones!  A shipyard will allow me to send out drones and begin the quest for information.  I can sense a path of ships, almost like a breadcrumb trail.  They aren\'t responding to our attempts at communication.', 'story');
       gameData.story.shipyardUnlocked = true;
     }
   }
+
+  if (gameData.resources.metal >= 500) {
+    $('#upgradevisible').removeClass('hidden');
+    // if (!gameData.story.shipyardUnlocked) {
+    // addToDisplay('Drones!  A shipyard will allow me to send out drones and begin the quest for information.  I can sense a path of ships, almost like a breadcrumb trail.  They aren\'t responding to our attempts at communication.', 'story');
+    // gameData.story.shipyardUnlocked = true;
+    // }
+  }
+
 
   if (gameData.resources.chronotonfragments > 0) {
     $('#chronotonfragmentscontainer').removeClass('hidden');
@@ -1637,12 +1640,15 @@ function updateGUI() {
 
   if (gameData.missions[0].galaxy >= 4) {
     $('#missions-tab').removeClass('hidden');
+    $('#missionvisible').removeClass('hidden');
   }
 
   if (gameData.buildings.shipyard >= 1) {
+    $('#fightcontrols').removeClass('hidden');
+    $('#fightdisplay').removeClass('hidden');
     $('#btnFight').removeClass('hidden');
     $('#btnSuicide').removeClass('hidden');
-    $('#fightcontainer').removeClass('hidden');
+    // $('#fightcontainer').removeClass('hidden');
   }
 
   $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')\n');
@@ -1759,6 +1765,10 @@ function updateGUI() {
   }
 
   $('#btnRailgunUpgrade').removeClass('btn-success').addClass('btn-danger');
+  $('#btnRailgunUpgrade').addClass('hidden');
+  if (gameData.technologies.railgunPrestigeLevelBought > 0) {
+    $('#btnRailgunUpgrade').removeClass('hidden');
+  }
   if (gameEquipment.railgun.canAffordUpgrade()) {
     $('#btnRailgunUpgrade').removeClass('btn-danger').addClass('btn-success');
   }
@@ -1782,6 +1792,10 @@ function updateGUI() {
   }
 
   $('#btnArmorUpgrade').removeClass('btn-success').addClass('btn-danger');
+  $('#btnArmorUpgrade').addClass('hidden');
+  if (gameData.technologies.armorPrestigeLevelBought > 0) {
+    $('#btnArmorUpgrade').removeClass('hidden');
+  }
   if (gameEquipment.armor.canAffordUpgrade()) {
     $('#btnArmorUpgrade').removeClass('btn-danger').addClass('btn-success');
   }
@@ -1884,10 +1898,9 @@ function resetAbilities() { // eslint-disable-line no-unused-vars
   });
 }
 
-function sortResearch() {
-  updateGUI();
-  var ul = $('#techvisible');
-  var li = ul.children('button');
+function sortBuildings(parent) {
+  var ul = parent;
+  var li = ul.children('*');
 
   li.detach().sort(function (a, b) {
     if (hasClass(a, 'hidden') && !hasClass(b, 'hidden')) {
@@ -1903,7 +1916,6 @@ function sortResearch() {
   });
 
   ul.append(li);
-
 }
 
 function hasClass(element, className) {
@@ -1995,7 +2007,6 @@ function buyAutoFight() { // eslint-disable-line no-unused-vars
     gameData.resources.metal -= AUTOFIGHT_METAL_COST;
     gameData.resources.polymer -= AUTOFIGHT_POLYMER_COST;
     gameData.resources.researchPoints -= AUTOFIGHT_RP_COST;
-    sortResearch();
     gtag('event', 'buy autofight2', {
       event_category: 'click',
       event_label: 'label',
@@ -2013,7 +2024,6 @@ function buyMetalProficiency() { // eslint-disable-line no-unused-vars
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.polymer -= nextPolymerCost;
     gameData.resources.researchPoints -= nextRPCost;
-    sortResearch();
     $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
       '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
     $('#btnBuyMine').attr('title', gameBuildings.mine.tooltipForBuy());
@@ -2029,7 +2039,6 @@ function buyPolymerProficiency() { // eslint-disable-line no-unused-vars
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.polymer -= nextPolymerCost;
     gameData.resources.researchPoints -= nextRPCost;
-    sortResearch();
     $('#btnPolymerTech').attr('title', 'Polymer Cost:' + prettify(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)) +
       '\nResearch Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)));
     $('#btnBuyFactory').attr('title', gameBuildings.factory.tooltipForBuy());
@@ -2045,7 +2054,6 @@ function buyResearchProficiency() { // eslint-disable-line no-unused-vars
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.polymer -= nextPolymerCost;
     gameData.resources.researchPoints -= nextRPCost;
-    sortResearch();
     $('#btnResearchTech').attr('title', 'Metal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
       '\nPolymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
       '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
@@ -2240,7 +2248,7 @@ function checkForCreateLoot(mission, zone) {
       rtn.lootAmount /= 4;
     } else if (l <= 35) {
       rtn.lootType = 'Aether';
-      rtn.lootAmount /= 50;
+      rtn.lootAmount /= 100;
     }
   }
   return rtn;
@@ -2264,7 +2272,6 @@ function checkForUnlocks() {
   if (gameData.missions[0].zone === 99) {
     gameData.technologies.shipyardTechUnlock = gameData.missions[0].galaxy + 1;
     addToDisplay('An upgrade to the shipyard would allow for bigger drones', 'mission');
-    sortResearch();
     if (gameData.missions[0].galaxy === 1) {
       addAchievement('First Galaxy Completed!', 1);
     }
@@ -2348,22 +2355,18 @@ function checkForUnlocks() {
   if ((gameData.technologies.metalProficiencyUnlocked < Math.floor((lvlsCleared - 10) / 100))) {
     gameData.technologies.metalProficiencyUnlocked = gameData.missions[0].galaxy;
     addToDisplay('I\'m gonna need a bigger pickaxe.', 'mission');
-    sortResearch();
   }
   if ((gameData.technologies.polymerProficiencyUnlocked < Math.floor((lvlsCleared - 20) / 100))) {
     gameData.technologies.polymerProficiencyUnlocked = gameData.missions[0].galaxy;
     addToDisplay('Plastics are my life.', 'mission');
-    sortResearch();
   }
-  if ((gameData.technologies.researchProficiency < Math.floor(((lvlsCleared) - 30) / 100))) {
-    gameData.technologies.researchProficiency = Math.floor(((lvlsCleared) - 30) / 100);
+  if (gameData.technologies.researchProficiency < Math.floor((lvlsCleared - 30) / 200)) {
+    gameData.technologies.researchProficiency = Math.floor((lvlsCleared - 30) / 200);
     addToDisplay('Smarter I can become', 'mission');
-    sortResearch();
   }
   if ((gameData.missions[0].galaxy >= 1) && (gameData.missions[0].zone >= 5) && (gameData.technologies.autofightUnlock < 1)) {
     gameData.technologies.autofightUnlock = 1;
     addToDisplay('Your boffins have figured out how to send a ship when it is ready', 'mission');
-    sortResearch();
   }
   if (gameData.missions[0].galaxy > 15 && gameData.missions[0].zone === 99) {
     giveChronotonFragments((gameData.missions[0].galaxy - 6) * Math.pow(1.01, (gameData.missions[0].galaxy - 16)));
@@ -2521,6 +2524,8 @@ window.setInterval(function () {
     }
 
     if (gameData.nextProcessTime > gameData.lastRailgunCombatProcessTime && !gameData.world.paused) {
+      sortBuildings($('#buildingvisible'));
+      sortBuildings($('#techvisible'));
       gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() + MILLISECONDS_PER_ATTACK_BASE - (gameData.perks.speed * 50));
       // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick
       if (gameData.playership.hitPoints > 0) {
@@ -2585,5 +2590,10 @@ window.setInterval(function () {
   var msRunTime = Date.dateDiff('ms', currentTime, endTime);
   if (msRunTime > 50) {
     addToDisplay(msRunTime, 'story');
+    gtag('event', 'Interval exceeded', {
+      event_category: 'error',
+      event_label: 'interval',
+      value: msRunTime
+    });
   }
 }, 10);
