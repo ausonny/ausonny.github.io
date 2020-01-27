@@ -1232,7 +1232,7 @@ var gameEquipment = {
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
     determineShowUpgradeButton: function () {
-      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+      if (gameData.technologies.armorPrestigeLevelBought > 0) {
         $('#btnArmorUpgrade').removeClass('hidden');
       } else {
         $('#btnArmorUpgrade').addClass('hidden');
