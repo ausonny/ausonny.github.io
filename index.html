@@ -74,12 +74,12 @@
                 Chronoton:<span id="chronoton2">0</span>
                 Chronoton Spent:<span id="chronotonspent">0</span><br />
                 <button class="btn btn-sm btn-danger" id="btnResetAbilities" type="button" data-toggle="tooltip" data-placement="bottom" title="Resets all abilities to 0" onclick="resetAbilities()">Reset Abilities</button>
-                <button class="btn btn-sm btn-primary" id="btnLooter" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to looting additively" onclick="addLooting()">Looter 1</button>
-                <button class="btn btn-sm btn-primary" id="btnProducer" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to metal and polymer production additively" onclick="addProducer()">Producer
+                <button class="btn btn-sm btn-primary" id="btnLooter" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to looting additively" onclick="gamePerks.looter.add()">Looter 1</button>
+                <button class="btn btn-sm btn-primary" id="btnProducer" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to metal and polymer production additively" onclick="gamePerks.producer.add()">Producer
                   1</button>
-                <button class="btn btn-sm btn-primary" id="btnDamager" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to damage additively" onclick="addDamager()">Damager 1</button>
-                <button class="btn btn-sm btn-primary" id="btnThickSkin" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to defenses additively" onclick="addThickSkin()">Thick Skin 1</button>
-                <button class="btn btn-sm btn-primary" id="btnSpeed" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten the wait time between attacks by 50ms" onclick="addSpeed()">Speed 1</button>
+                <button class="btn btn-sm btn-primary" id="btnDamager" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to damage additively" onclick="gamePerks.damager.add()">Damager 1</button>
+                <button class="btn btn-sm btn-primary" id="btnThickSkin" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to defenses additively" onclick="gamePerks.thickskin.add()">Thick Skin 1</button>
+                <button class="btn btn-sm btn-primary" id="btnSpeed" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten the wait time between attacks by 50ms" onclick="gamePerks.speed.add()">Speed 1</button>
               </div>
               <div class="modal-footer bg-dark">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
