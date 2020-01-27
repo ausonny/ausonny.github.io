@@ -263,7 +263,7 @@ function giveMissionReward(mission) {
     addToDisplay('This location contains a large, prestigious, circular structure.  I can easily travel there and step through it, but what will I find?  I have also discovered some chronoton fragments.  I don\'t see a use for them but they may come in handy later', 'story');
     giveChronotonFragments(40);
   } else if (mission.missiontype === 'Aether') {
-    var lt = Math.pow(140, 1 + (mission.level / 0));
+    var lt = Math.pow(140, 1 + (mission.level / 10));
     gameData.resources.aether += lt;
     addToDisplay('We have found ' + prettify(lt) + ' aether');
   }
