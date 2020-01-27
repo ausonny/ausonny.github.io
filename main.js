@@ -160,9 +160,9 @@ class Ship {
     this.lootType = lootType;
     this.lootAmount = lootAmount;
     this.size = size;
-    this.hitPoints = difficulty * hpMod * size * 25 * Math.pow(2.2, galaxy - 1) * Math.pow(1.007, zone - 1);
+    this.hitPoints = difficulty * hpMod * size * 30 * Math.pow(2.2, galaxy - 1) * Math.pow(1.007, zone - 1);
     this.hitPointsMax = this.hitPoints;
-    var baseEnemyAttack = difficulty * attackMod * 10 * Math.pow(2.2, galaxy - 1) * Math.pow(1.007, zone - 1);
+    var baseEnemyAttack = difficulty * attackMod * 15 * Math.pow(2.2, galaxy - 1) * Math.pow(1.007, zone - 1);
     this.minDamage = size * baseEnemyAttack * 2 / 3;
     this.maxDamage = size * baseEnemyAttack * 1.5;
     this.shieldMax = this.hitPoints * shmod;
@@ -264,7 +264,8 @@ function giveMissionReward(mission) {
     giveChronotonFragments(40);
   } else if (mission.missiontype === 'Aether') {
     var lt = Math.pow(140, 1 + (mission.level / 0));
-    giveChronotonFragments(lt * (1 + gameData.perks.looter * 0.1));
+    gameData.resources.aether += lt;
+    addToDisplay('We have found ' + prettify(lt) + ' aether');
   }
 }
 
@@ -388,7 +389,11 @@ function resetData() {
       initial: false,
       factoryunlocked: false,
       labunlocked: false,
-      firstfight: false
+      firstfight: false,
+      generatorunlocked: false,
+      plantunlocked: false,
+      aetherplantunlocked: false,
+      refineryunlocked: false
     },
     perks: {
       looter: looter,
@@ -1416,6 +1421,10 @@ function init() {
   if (typeof savegame.story.gatewayUnlocked !== 'undefined') gameData.story.gatewayUnlocked = savegame.story.gatewayUnlocked;
   if (typeof savegame.story.factoryunlocked !== 'undefined') gameData.story.factoryunlocked = savegame.story.factoryunlocked;
   if (typeof savegame.story.labunlocked !== 'undefined') gameData.story.labunlocked = savegame.story.labunlocked;
+  if (typeof savegame.story.generatorunlocked !== 'undefined') gameData.story.generatorunlocked = savegame.story.generatorunlocked;
+  if (typeof savegame.story.plantunlocked !== 'undefined') gameData.story.plantunlocked = savegame.story.plantunlocked;
+  if (typeof savegame.story.aetherplantunlocked !== 'undefined') gameData.story.aetherplantunlocked = savegame.story.aetherplantunlocked;
+  if (typeof savegame.story.refineryunlocked !== 'undefined') gameData.story.refineryunlocked = savegame.story.refineryunlocked;
   if (typeof savegame.story.initial !== 'undefined') gameData.story.initial = savegame.story.initial;
   if (typeof savegame.story.firstfight !== 'undefined') gameData.story.firstfight = savegame.story.firstfight;
 
@@ -1566,6 +1575,7 @@ function updateGUI() {
     $('#polymercontainer').removeClass('hidden');
     $('#btnBuyFactory').removeClass('hidden');
     if (!gameData.story.factoryunlocked) {
+      sortBuildings($('#buildingvisible'));
       addToDisplay('I should be able to start bringing factories online.  The polymers will get us closer to creating drones.  I need answers. Why did they attack? Am I really alone?', 'story');
       gameData.story.factoryunlocked = true;
     }
@@ -1575,6 +1585,7 @@ function updateGUI() {
     $('#labscontainer').removeClass('hidden');
     $('#btnBuyLab').removeClass('hidden');
     if (!gameData.story.labunlocked) {
+      sortBuildings($('#buildingvisible'));
       addToDisplay('Labs are available.  They should help to rediscover some technologies.  How did they manage to pull off an attack of that scale secretly?', 'story');
       gameData.story.labunlocked = true;
     }
@@ -1582,25 +1593,43 @@ function updateGUI() {
 
   if (gameData.missions[0].galaxy >= 3) {
     $('#btnBuyGenerator').removeClass('hidden');
+    if (!gameData.story.generatorunlocked) {
+      sortBuildings($('#buildingvisible'));
+      addToDisplay('Placeholder', 'story');
+      gameData.story.generatorunlocked = true;
+    }
   }
   if (gameData.missions[0].galaxy >= 6) {
     $('#btnBuyPlant').removeClass('hidden');
+    if (!gameData.story.plantunlocked) {
+      sortBuildings($('#buildingvisible'));
+      addToDisplay('Placeholder', 'story');
+      gameData.story.plantunlocked = true;
+    }
   }
   if (gameData.missions[0].galaxy >= 10) {
     $('#btnBuyAetherPlant').removeClass('hidden');
+    if (!gameData.story.aetherplantunlocked) {
+      sortBuildings($('#buildingvisible'));
+      addToDisplay('Placeholder', 'story');
+      gameData.story.aetherplantunlocked = true;
+    }
   }
-
   if (gameData.missions[0].galaxy >= 15) {
     $('#btnBuyRefinery').removeClass('hidden');
+    if (!gameData.story.refineryunlocked) {
+      sortBuildings($('#buildingvisible'));
+      addToDisplay('Placeholder', 'story');
+      gameData.story.refineryunlocked = true;
+    }
   }
-
   if (gameData.missions[0].galaxy > 1) {
     $('#btnResetAbilities').addClass('hidden');
   } else {
     $('#btnResetAbilities').removeClass('hidden');
   }
 
-  if (gameData.story.gatewayUnlocked || gameData.resources.chronotonfragments > 0) {
+  if (gameData.story.gatewayUnlocked) {
     $('#btnGateway').removeClass('hidden');
   }
 
@@ -2524,7 +2553,6 @@ window.setInterval(function () {
     }
 
     if (gameData.nextProcessTime > gameData.lastRailgunCombatProcessTime && !gameData.world.paused) {
-      sortBuildings($('#buildingvisible'));
       sortBuildings($('#techvisible'));
       gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() + MILLISECONDS_PER_ATTACK_BASE - (gameData.perks.speed * 50));
       // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick
