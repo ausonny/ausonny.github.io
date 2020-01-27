@@ -1156,7 +1156,7 @@ var gameEquipment = {
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
     determineShowUpgradeButton: function () {
-      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+      if (gameData.technologies.missilePrestigeLevelBought > 0) {
         $('#btnMissileUpgrade').removeClass('hidden');
       } else {
         $('#btnMissileUpgrade').addClass('hidden');
@@ -1308,7 +1308,7 @@ var gameEquipment = {
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
     determineShowUpgradeButton: function () {
-      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+      if (gameData.technologies.shieldPrestigeLevelBought > 0) {
         $('#btnShieldUpgrade').removeClass('hidden');
       } else {
         $('#btnShieldUpgrade').addClass('hidden');
@@ -1384,7 +1384,7 @@ var gameEquipment = {
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
     determineShowUpgradeButton: function () {
-      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+      if (gameData.technologies.flakPrestigeLevelBought > 0) {
         $('#btnFlakUpgrade').removeClass('hidden');
       } else {
         $('#btnFlakUpgrade').addClass('hidden');
