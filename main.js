@@ -1057,6 +1057,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        this.updatePrestigeText();
         sortBuildings($('#techvisible'));
       }
     }
@@ -1209,6 +1210,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        this.updatePrestigeText();
         sortBuildings($('#techvisible'));
       }
     }
@@ -1285,6 +1287,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        this.updatePrestigeText();
         sortBuildings($('#techvisible'));
       }
     }
@@ -1361,6 +1364,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        this.updatePrestigeText();
         sortBuildings($('#techvisible'));
       }
     }
@@ -1437,6 +1441,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        this.updatePrestigeText();
         sortBuildings($('#techvisible'));
       }
     }
