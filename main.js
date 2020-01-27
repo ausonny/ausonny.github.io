@@ -1791,7 +1791,6 @@ function updateGUI() {
     $('#polymercontainer').removeClass('hidden');
     gameBuildings.factory.showBuyButton();
     if (!gameData.story.factoryunlocked) {
-      sortBuildings($('#buildingvisible'));
       addToDisplay('I should be able to start bringing factories online.  The polymers will get us closer to creating drones.  I need answers. Why did they attack? Am I really alone?', 'story');
       gameData.story.factoryunlocked = true;
     }
@@ -1801,7 +1800,6 @@ function updateGUI() {
     $('#labscontainer').removeClass('hidden');
     gameBuildings.lab.showBuyButton();
     if (!gameData.story.labunlocked) {
-      sortBuildings($('#buildingvisible'));
       addToDisplay('Labs are available.  They should help to rediscover some technologies.  How did they manage to pull off an attack of that scale secretly?', 'story');
       gameData.story.labunlocked = true;
     }
@@ -1810,7 +1808,6 @@ function updateGUI() {
   if (gameData.missions[0].galaxy >= 3) {
     gameBuildings.generator.showBuyButton();
     if (!gameData.story.generatorunlocked) {
-      sortBuildings($('#buildingvisible'));
       addToDisplay('Placeholder', 'story');
       gameData.story.generatorunlocked = true;
     }
@@ -1818,7 +1815,6 @@ function updateGUI() {
   if (gameData.missions[0].galaxy >= 6) {
     gameBuildings.plant.showBuyButton();
     if (!gameData.story.plantunlocked) {
-      sortBuildings($('#buildingvisible'));
       addToDisplay('Placeholder', 'story');
       gameData.story.plantunlocked = true;
     }
@@ -1826,7 +1822,6 @@ function updateGUI() {
   if (gameData.missions[0].galaxy >= 10) {
     gameBuildings.aetherPlant.showBuyButton();
     if (!gameData.story.aetherplantunlocked) {
-      sortBuildings($('#buildingvisible'));
       addToDisplay('Placeholder', 'story');
       gameData.story.aetherplantunlocked = true;
     }
@@ -1834,7 +1829,6 @@ function updateGUI() {
   if (gameData.missions[0].galaxy >= 15) {
     gameBuildings.refinery.showBuyButton();
     if (!gameData.story.refineryunlocked) {
-      sortBuildings($('#buildingvisible'));
       addToDisplay('Placeholder', 'story');
       gameData.story.refineryunlocked = true;
     }
