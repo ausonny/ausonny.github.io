@@ -94,37 +94,37 @@ const RESEARCH_PROFICIENCY_BASE_RATE = 1.5;
 const RAILGUN_UPGRADE_METAL_BASE_COST = 100;
 const RAILGUN_UPGRADE_POLYMER_BASE_COST = 0;
 const RAILGUN_UPGRADE_RP_BASE_COST = 30;
-const RAILGUN_UPGRADE_BASE_IMPROVEMENT = 5;
+const RAILGUN_UPGRADE_BASE_IMPROVEMENT = 4;
 const RAILGUN_UPGRADE_AETHER_BASE_COST = 90;
 
 const LASER_UPGRADE_METAL_BASE_COST = 50;
 const LASER_UPGRADE_POLYMER_BASE_COST = 50;
 const LASER_UPGRADE_RP_BASE_COST = 40;
-const LASER_UPGRADE_BASE_IMPROVEMENT = 10;
+const LASER_UPGRADE_BASE_IMPROVEMENT = 8;
 const LASER_UPGRADE_AETHER_BASE_COST = 120;
 
 const MISSILE_UPGRADE_METAL_BASE_COST = 100;
 const MISSILE_UPGRADE_POLYMER_BASE_COST = 100;
 const MISSILE_UPGRADE_RP_BASE_COST = 50;
-const MISSILE_UPGRADE_BASE_IMPROVEMENT = 20;
+const MISSILE_UPGRADE_BASE_IMPROVEMENT = 16;
 const MISSILE_UPGRADE_AETHER_BASE_COST = 150;
 
 const ARMOR_UPGRADE_METAL_BASE_COST = 100;
 const ARMOR_UPGRADE_POLYMER_BASE_COST = 0;
 const ARMOR_UPGRADE_RP_BASE_COST = 30;
-const ARMOR_UPGRADE_BASE_IMPROVEMENT = 25;
+const ARMOR_UPGRADE_BASE_IMPROVEMENT = 20;
 const ARMOR_UPGRADE_AETHER_BASE_COST = 90;
 
 const SHIELD_UPGRADE_METAL_BASE_COST = 0;
 const SHIELD_UPGRADE_POLYMER_BASE_COST = 100;
 const SHIELD_UPGRADE_RP_BASE_COST = 40;
-const SHIELD_UPGRADE_BASE_IMPROVEMENT = 25;
+const SHIELD_UPGRADE_BASE_IMPROVEMENT = 40;
 const SHIELD_UPGRADE_AETHER_BASE_COST = 120;
 
 const FLAK_UPGRADE_METAL_BASE_COST = 100;
 const FLAK_UPGRADE_POLYMER_BASE_COST = 100;
 const FLAK_UPGRADE_RP_BASE_COST = 50;
-const FLAK_UPGRADE_BASE_IMPROVEMENT = 100;
+const FLAK_UPGRADE_BASE_IMPROVEMENT = 60;
 const FLAK_UPGRADE_AETHER_BASE_COST = 150;
 
 var notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
@@ -289,74 +289,6 @@ function chronotonAvailable() {
   return rtn;
 }
 
-function addLooting() { // eslint-disable-line no-unused-vars
-  if (gamePerks.looter.canAfford()) {
-    gameData.perks.looter++;
-    $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')');
-    $('#btnLooter').attr('title', 'Each level bought will add 10% to looting additively\n\nChronoton Cost:' + gamePerks.looter.chronotonforBuy());
-    gtag('event', 'buy looter', {
-      event_category: 'click',
-      event_label: 'label',
-      value: 'value'
-    });
-  }
-}
-
-function addProducer() { // eslint-disable-line no-unused-vars
-  if (gamePerks.producer.canAfford()) {
-    gameData.perks.producer++;
-    $('#btnProducer').text('Producer(' + (gameData.perks.producer) + ')');
-    $('#btnProducer').attr('title', 'Each level bought will add 10% to metal and polymer production additively\n\nChronoton Cost:' + gamePerks.producer.chronotonforBuy());
-    gtag('event', 'buy producer', {
-      event_category: 'click',
-      event_label: 'label',
-      value: 'value'
-    });
-  }
-}
-
-function addDamager() { // eslint-disable-line no-unused-vars
-  if (gamePerks.damager.canAfford()) {
-    gameData.perks.damager++;
-    $('#btnDamager').text('Damager(' + (gameData.perks.damager) + ')');
-    $('#btnDamager').attr('title', 'Each level bought will add 10% to damage additively\n\nChronoton Cost:' + gamePerks.damager.chronotonforBuy());
-    gtag('event', 'buy damager', {
-      event_category: 'click',
-      event_label: 'label',
-      value: 'value'
-    });
-  }
-}
-
-function addThickSkin() { // eslint-disable-line no-unused-vars
-  if (gamePerks.thickskin.canAfford()) {
-    gameData.perks.thickskin++;
-    $('#btnThickSkin').text('ThickSkin(' + (gameData.perks.thickskin) + ')');
-    $('#btnThickSkin').attr('title', 'Each level bought will add 10% to defenses additively\n\nChronoton Cost:' + gamePerks.thickskin.chronotonforBuy());
-    gtag('event', 'buy thickskin', {
-      event_category: 'click',
-      event_label: 'label',
-      value: 'value'
-    });
-  }
-}
-
-function addSpeed() { // eslint-disable-line no-unused-vars
-  if (gameData.perks.speed >= 10) {
-    return;
-  }
-  if (gamePerks.speed.canAfford()) {
-    gameData.perks.speed++;
-    $('#btnSpeed').text('Speed(' + (gameData.perks.speed) + ')');
-    $('#btnSpeed').attr('title', 'Each level bought will shorten the wait time between attacks by 50ms\n\nChronoton Cost:' + gamePerks.speed.chronotonforBuy());
-    gtag('event', 'buy speed', {
-      event_category: 'click',
-      event_label: 'label',
-      value: 'value'
-    });
-  }
-}
-
 function resetData() {
   var savedchronoton = 0;
   var savedAchievements = [];
@@ -505,7 +437,6 @@ function resetData() {
   $('#btnAutoFight').addClass('hidden');
   $('#btnGateway').addClass('hidden');
   $('#btnSuicide').addClass('hidden');
-  // $('#fightcontainer').addClass('hidden');
 
   $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
   $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
@@ -558,16 +489,16 @@ function resetData() {
   $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')');
   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
 
-  $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')');
-  $('#btnLooter').attr('title', 'Each level bought will add 10% to looting additively\n\nChronoton Cost:' + gamePerks.looter.chronotonforBuy());
-  $('#btnProducer').text('Producer(' + (gameData.perks.producer) + ')');
-  $('#btnProducer').attr('title', 'Each level bought will add 10% to metal and polymer production additively\n\nChronoton Cost:' + gamePerks.producer.chronotonforBuy());
-  $('#btnDamager').text('Damager(' + (gameData.perks.damager) + ')');
-  $('#btnDamager').attr('title', 'Each level bought will add 10% to damage additively\n\nChronoton Cost:' + gamePerks.damager.chronotonforBuy());
-  $('#btnThickSkin').text('ThickSkin(' + (gameData.perks.thickskin) + ')');
-  $('#btnThickSkin').attr('title', 'Each level bought will add 10% to defenses additively\n\nChronoton Cost:' + gamePerks.thickskin.chronotonforBuy());
-  $('#btnSpeed').text('Speed(' + (gameData.perks.speed) + ')');
-  $('#btnSpeed').attr('title', 'Each level bought will shorten the wait time between attacks by 50ms\n\nChronoton Cost:' + gamePerks.speed.chronotonforBuy());
+  gamePerks.looter.updateBuyButtonText();
+  gamePerks.looter.updateBuyButtonTooltip();
+  gamePerks.producer.updateBuyButtonText();
+  gamePerks.producer.updateBuyButtonTooltip();
+  gamePerks.damager.updateBuyButtonText();
+  gamePerks.damager.updateBuyButtonTooltip();
+  gamePerks.thickskin.updateBuyButtonText();
+  gamePerks.thickskin.updateBuyButtonTooltip();
+  gamePerks.speed.updateBuyButtonText();
+  gamePerks.speed.updateBuyButtonTooltip();
 
   var Raider = {
     name: 'Raider',
@@ -615,6 +546,8 @@ function resetData() {
     gameData.playership.createPlayerShip();
   }
   updateMissionButtons();
+  sortBuildings($('#techvisible'));
+  sortBuildings($('#buildingvisible'));
   gameData.world.paused = false;
 }
 
@@ -663,27 +596,100 @@ var gamePerks = {
   looter: {
     chronotonforBuy: function () { return 1 * Math.pow(gameData.perks.looter, 1.3); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.looter, 1, 1.3); },
-    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); }
+    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
+    updateBuyButtonText: function () { $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')\n'); },
+    updateBuyButtonTooltip: function () { $('#btnLooter').attr('title', 'Each level bought will add 10% to looting additively\n\nChronoton Cost:' + prettify(this.chronotonforBuy())); },
+    add: function () { // eslint-disable-line no-unused-vars
+      if (this.canAfford()) {
+        gameData.perks.looter++;
+        $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')');
+        $('#btnLooter').attr('title', 'Each level bought will add 10% to looting additively\n\nChronoton Cost:' + gamePerks.looter.chronotonforBuy());
+        gtag('event', 'buy looter', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
+      }
+    }
   },
   producer: {
     chronotonforBuy: function () { return 1 * Math.pow(gameData.perks.producer, 1.3); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.producer, 1, 1.3); },
-    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); }
+    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
+    updateBuyButtonText: function () { $('#btnProducer').text('Producer(' + (gameData.perks.producer) + ')\n'); },
+    updateBuyButtonTooltip: function () { $('#btnProducer').attr('title', 'Each level bought will add 10% to Production additively\n\nChronoton Cost:' + prettify(this.chronotonforBuy())); },
+    add: function () { // eslint-disable-line no-unused-vars
+      if (this.canAfford()) {
+        gameData.perks.producer++;
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
+        gtag('event', 'buy producer', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
+      }
+    }
   },
   damager: {
     chronotonforBuy: function () { return 1 * Math.pow(gameData.perks.damager, 1.3); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.damager, 1, 1.3); },
-    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); }
+    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
+    updateBuyButtonText: function () { $('#btnDamager').text('Damager(' + (gameData.perks.damager) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnDamager').attr('title', 'Each level bought will add 10% to damage additively\n\nChronoton Cost:' + prettify(gamePerks.damager.chronotonforBuy())); },
+    add: function () { // eslint-disable-line no-unused-vars
+      if (this.canAfford()) {
+        gameData.perks.damager++;
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
+        gtag('event', 'buy damager', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
+      }
+    }
   },
   thickskin: {
     chronotonforBuy: function () { return 1 * Math.pow(gameData.perks.thickskin, 1.3); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.thickskin, 1, 1.3); },
-    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); }
+    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
+    updateBuyButtonText: function () { $('#btnThickSkin').text('ThickSkin(' + (gameData.perks.thickskin) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnThickSkin').attr('title', 'Each level bought will add 10% to defenses additively\n\nChronoton Cost:' + prettify(gamePerks.thickskin.chronotonforBuy())); },
+    add: function () { // eslint-disable-line no-unused-vars
+      if (this.canAfford()) {
+        gameData.perks.thickskin++;
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
+        gtag('event', 'buy thickskin', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
+      }
+    }
   },
   speed: {
     chronotonforBuy: function () { return 4 * Math.pow(gameData.perks.speed, 1.3); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.speed, 4, 1.3); },
-    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); }
+    canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
+    updateBuyButtonText: function () { $('#btnSpeed').text('Speed(' + (gameData.perks.speed) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnSpeed').attr('title', 'Each level bought will shorten the wait time between attacks by 50ms\n\nChronoton Cost:' + prettify(gamePerks.speed.chronotonforBuy())); },
+    add: function () { // eslint-disable-line no-unused-vars
+      if (gameData.perks.speed >= 10) {
+        return;
+      }
+      if (this.canAfford()) {
+        gameData.perks.speed++;
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
+        gtag('event', 'buy speed', {
+          event_category: 'click',
+          event_label: 'label',
+          value: 'value'
+        });
+      }
+    }
   }
 };
 
@@ -694,12 +700,14 @@ var gameBuildings = {
     canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy()); },
     totalPowerCreated: function () { return (gameData.buildings.panels * this.powerPer()); },
     powerPer: function () { return (POWER_PER_PANEL); },
+    updateBuyButtonText: function () { $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyPanel').attr('title', this.tooltipForBuy()); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.buildings.panels++;
-        $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')');
-        $('#btnBuyPanel').attr('title', this.tooltipForBuy());
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         gtag('event', 'buy panel', {
           event_category: 'click',
           event_label: 'label',
@@ -715,13 +723,17 @@ var gameBuildings = {
     canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy()); },
     totalPowerCreated: function () { return (gameData.buildings.generators * this.powerPer()); },
     powerPer: function () { return (POWER_PER_GENERATOR); },
+    updateBuyButtonText: function () { $('#btnBuyGenerator').text('Generator(' + (gameData.buildings.generators) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyGenerator').attr('title', this.tooltipForBuy()); },
+    hideBuyButton: function () { $('#btnBuyGenerator').addClass('hidden'); },
+    showBuyButton: function () { $('#btnBuyGenerator').removeClass('hidden'); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.resources.polymer -= this.polymerForBuy();
         gameData.buildings.generators++;
-        $('#btnBuyGenerator').text('Generator(' + (gameData.buildings.generators) + ')');
-        $('#btnBuyGenerator').attr('title', this.tooltipForBuy());
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         gtag('event', 'buy generator', {
           event_category: 'click',
           event_label: 'label',
@@ -737,13 +749,17 @@ var gameBuildings = {
     canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy()); },
     totalPowerCreated: function () { return (gameData.buildings.plants * this.powerPer()); },
     powerPer: function () { return (POWER_PER_PLANT); },
+    updateBuyButtonText: function () { $('#btnBuyPlant').text('Plant(' + (gameData.buildings.plants) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyPlant').attr('title', this.tooltipForBuy()); },
+    hideBuyButton: function () { $('#btnBuyPlant').addClass('hidden'); },
+    showBuyButton: function () { $('#btnBuyPlant').removeClass('hidden'); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.resources.polymer -= this.polymerForBuy();
         gameData.buildings.plants++;
-        $('#btnBuyPlant').text('Plant(' + (gameData.buildings.plants) + ')');
-        $('#btnBuyPlant').attr('title', this.tooltipForBuy());
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         gtag('event', 'buy plant', {
           event_category: 'click',
           event_label: 'label',
@@ -760,14 +776,18 @@ var gameBuildings = {
     canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy() && gameData.resources.aether >= this.aetherForBuy()); },
     totalPowerCreated: function () { return (gameData.buildings.aetherPlants * this.powerPer()); },
     powerPer: function () { return (POWER_PER_AETHER_PLANT); },
+    updateBuyButtonText: function () { $('#btnBuyAetherPlant').text('Aether Plant(' + (gameData.buildings.aetherPlants) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyAetherPlant').attr('title', this.tooltipForBuy()); },
+    hideBuyButton: function () { $('#btnBuyAetherPlant').addClass('hidden'); },
+    showBuyButton: function () { $('#btnBuyAetherPlant').removeClass('hidden'); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.resources.polymer -= this.polymerForBuy();
         gameData.resources.aether -= this.aetherForBuy();
         gameData.buildings.aetherPlants++;
-        $('#btnBuyAetherPlant').text('Aether Plant(' + (gameData.buildings.aetherPlants) + ')');
-        $('#btnBuyAetherPlant').attr('title', this.tooltipForBuy());
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         gtag('event', 'buy aether plant', {
           event_category: 'click',
           event_label: 'label',
@@ -788,12 +808,14 @@ var gameBuildings = {
       increase *= (1 + gameData.perks.producer * 0.1);
       return increase;
     },
+    updateBuyButtonText: function () { $('#btnBuyMine').text('Mine(' + (gameData.buildings.mines) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyMine').attr('title', this.tooltipForBuy()); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.buildings.mines++;
-        $('#btnBuyMine').attr('title', this.tooltipForBuy());
-        $('#btnBuyMine').text('Mine(' + (gameData.buildings.mines) + ')');
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         gtag('event', 'buy mine', {
           event_category: 'click',
           event_label: 'label',
@@ -821,13 +843,17 @@ var gameBuildings = {
       increase *= (1 + gameData.perks.producer * 0.1);
       return increase / 1;
     },
+    updateBuyButtonText: function () { $('#btnBuyLab').text('Lab(' + (gameData.buildings.labs) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyLab').attr('title', this.tooltipForBuy()); },
+    hideBuyButton: function () { $('#btnBuyLab').addClass('hidden'); },
+    showBuyButton: function () { $('#btnBuyLab').removeClass('hidden'); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.resources.polymer -= this.polymerForBuy();
         gameData.buildings.labs++;
-        $('#btnBuyLab').text('Lab(' + (gameData.buildings.labs) + ')');
-        $('#btnBuyLab').attr('title', this.tooltipForBuy());
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         if (gameData.buildings.labs >= 1) {
           addAchievement('1 Lab!', 1);
         }
@@ -857,12 +883,16 @@ var gameBuildings = {
       increase *= (1 + gameData.perks.producer * 0.1);
       return increase;
     },
+    updateBuyButtonText: function () { $('#btnBuyFactory').text('Factory(' + (gameData.buildings.factories) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyFactory').attr('title', this.tooltipForBuy()); },
+    hideBuyButton: function () { $('#btnBuyFactory').addClass('hidden'); },
+    showBuyButton: function () { $('#btnBuyFactory').removeClass('hidden'); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.buildings.factories++;
-        $('#btnBuyFactory').text('Factory(' + (gameData.buildings.factories) + ')');
-        $('#btnBuyFactory').attr('title', this.tooltipForBuy());
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         if (gameData.buildings.factories >= 1) {
           addAchievement('1 Factory!', 1);
         }
@@ -893,13 +923,17 @@ var gameBuildings = {
       increase *= (1 + gameData.perks.producer * 0.1);
       return increase;
     },
+    updateBuyButtonText: function () { $('#btnBuyRefinery').text('Refinery(' + (gameData.buildings.refineries) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyRefinery').attr('title', this.tooltipForBuy()); },
+    hideBuyButton: function () { $('#btnBuyRefinery').addClass('hidden'); },
+    showBuyButton: function () { $('#btnBuyRefinery').removeClass('hidden'); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.resources.polymer -= this.polymerForBuy();
         gameData.buildings.refineries++;
-        $('#btnBuyRefinery').text('Refinery(' + (gameData.buildings.refineries) + ')');
-        $('#btnBuyRefinery').attr('title', this.tooltipForBuy());
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         if (gameData.buildings.refineries >= 1) {
           addAchievement('1 Refinery!', 1);
         }
@@ -925,19 +959,24 @@ var gameBuildings = {
     powerSpent: function () { return sumOfExponents(gameData.buildings.shipyard, SHIPYARD_POWER_USAGE, SHIPYARD_POWER_GROWTH_USAGE); },
     tooltipForBuy: function () { return ('Increases ship size by 25%\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy()) + '\nResearch Points Cost:' + prettify(this.rpForBuy()) + '\nPower Cost: ' + prettify(this.powerForBuy())); },
     canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy() && gameData.resources.researchPoints >= this.rpForBuy() && CheckPower(this.powerForBuy())); },
+    updateBuyButtonText: function () { $('#btnBuyShipyard').text('Shipyard(' + (gameData.buildings.shipyard) + ')'); },
+    updateBuyButtonTooltip: function () { $('#btnBuyShipyard').attr('title', this.tooltipForBuy()); },
+    hideBuyButton: function () { $('#btnBuyShipyard').addClass('hidden'); },
+    showBuyButton: function () { $('#btnBuyShipyard').removeClass('hidden'); },
     buy: function () {
       if (this.canAffordBuy()) {
         gameData.resources.metal -= this.metalForBuy();
         gameData.resources.polymer -= this.polymerForBuy();
         gameData.resources.researchPoints -= this.rpForBuy();
         gameData.buildings.shipyard++;
-        $('#btnBuyShipyard').text('Shipyard(' + (gameData.buildings.shipyard) + ')');
-        $('#btnBuyShipyard').attr('title', this.tooltipForBuy());
+        this.updateBuyButtonText();
+        this.updateBuyButtonTooltip();
         gtag('event', 'buy shipyard', {
           event_category: 'click',
           event_label: 'label',
           value: 'value'
         });
+        sortBuildings($('#techvisible'));
       }
     }
   }
@@ -963,6 +1002,34 @@ var gameEquipment = {
     updatePrestigeTooltip: function () { $('#btnRailgunPrestige').attr('title', this.tooltipForPrestige()); },
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
+    determineShowUpgradeButton: function () {
+      if (gameData.technologies.railgunPrestigeLevelBought > 0) {
+        $('#btnRailgunUpgrade').removeClass('hidden');
+      } else {
+        $('#btnRailgunUpgrade').addClass('hidden');
+      }
+    },
+    determineShowPrestigeButton: function () {
+      if (gameData.technologies.railgunPrestigeLevelUnlocked > gameData.technologies.railgunPrestigeLevelBought) {
+        $('#btnRailgunPrestige').removeClass('hidden');
+      } else {
+        $('#btnRailgunPrestige').addClass('hidden');
+      }
+    },
+    determineShowAffordUpgrade: function () {
+      if (this.canAffordUpgrade()) {
+        $('#btnRailgunUpgrade').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnRailgunUpgrade').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
+    determineShowAffordPrestige: function () {
+      if (this.canAffordPrestige()) {
+        $('#btnRailgunPrestige').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnRailgunPrestige').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
     buyUpgrade: function () {
       if (this.canAffordUpgrade()) {
         gameData.resources.metal -= this.metalForUpgrade();
@@ -989,6 +1056,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        sortBuildings($('#techvisible'));
       }
     }
   },
@@ -1010,6 +1078,34 @@ var gameEquipment = {
     updatePrestigeTooltip: function () { $('#btnLaserPrestige').attr('title', this.tooltipForPrestige()); },
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
+    determineShowUpgradeButton: function () {
+      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+        $('#btnLaserUpgrade').removeClass('hidden');
+      } else {
+        $('#btnLaserUpgrade').addClass('hidden');
+      }
+    },
+    determineShowPrestigeButton: function () {
+      if (gameData.technologies.laserPrestigeLevelUnlocked > gameData.technologies.laserPrestigeLevelBought) {
+        $('#btnLaserPrestige').removeClass('hidden');
+      } else {
+        $('#btnLaserPrestige').addClass('hidden');
+      }
+    },
+    determineShowAffordUpgrade: function () {
+      if (this.canAffordUpgrade()) {
+        $('#btnLaserUpgrade').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnLaserUpgrade').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
+    determineShowAffordPrestige: function () {
+      if (this.canAffordPrestige()) {
+        $('#btnLaserPrestige').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnLaserPrestige').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
     buyUpgrade: function () {
       if (this.canAffordUpgrade()) {
         gameData.resources.metal -= this.metalForUpgrade();
@@ -1036,6 +1132,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        sortBuildings($('#techvisible'));
       }
     }
   },
@@ -1057,6 +1154,34 @@ var gameEquipment = {
     updatePrestigeTooltip: function () { $('#btnMissilePrestige').attr('title', this.tooltipForPrestige()); },
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
+    determineShowUpgradeButton: function () {
+      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+        $('#btnMissileUpgrade').removeClass('hidden');
+      } else {
+        $('#btnMissileUpgrade').addClass('hidden');
+      }
+    },
+    determineShowPrestigeButton: function () {
+      if (gameData.technologies.missilePrestigeLevelUnlocked > gameData.technologies.missilePrestigeLevelBought) {
+        $('#btnMissilePrestige').removeClass('hidden');
+      } else {
+        $('#btnMissilePrestige').addClass('hidden');
+      }
+    },
+    determineShowAffordUpgrade: function () {
+      if (this.canAffordUpgrade()) {
+        $('#btnMissileUpgrade').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnMissileUpgrade').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
+    determineShowAffordPrestige: function () {
+      if (this.canAffordPrestige()) {
+        $('#btnMissilePrestige').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnMissilePrestige').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
     buyUpgrade: function () {
       if (this.canAffordUpgrade()) {
         gameData.resources.metal -= this.metalForUpgrade();
@@ -1083,6 +1208,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        sortBuildings($('#techvisible'));
       }
     }
   },
@@ -1104,6 +1230,34 @@ var gameEquipment = {
     updatePrestigeTooltip: function () { $('#btnArmorPrestige').attr('title', this.tooltipForPrestige()); },
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
+    determineShowUpgradeButton: function () {
+      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+        $('#btnArmorUpgrade').removeClass('hidden');
+      } else {
+        $('#btnArmorUpgrade').addClass('hidden');
+      }
+    },
+    determineShowPrestigeButton: function () {
+      if (gameData.technologies.armorPrestigeLevelUnlocked > gameData.technologies.armorPrestigeLevelBought) {
+        $('#btnArmorPrestige').removeClass('hidden');
+      } else {
+        $('#btnArmorPrestige').addClass('hidden');
+      }
+    },
+    determineShowAffordUpgrade: function () {
+      if (this.canAffordUpgrade()) {
+        $('#btnArmorUpgrade').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnArmorUpgrade').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
+    determineShowAffordPrestige: function () {
+      if (this.canAffordPrestige()) {
+        $('#btnArmorPrestige').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnArmorPrestige').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
     buyUpgrade: function () {
       if (this.canAffordUpgrade()) {
         gameData.resources.metal -= this.metalForUpgrade();
@@ -1130,6 +1284,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        sortBuildings($('#techvisible'));
       }
     }
   },
@@ -1151,6 +1306,34 @@ var gameEquipment = {
     updatePrestigeTooltip: function () { $('#btnShieldPrestige').attr('title', this.tooltipForPrestige()); },
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
+    determineShowUpgradeButton: function () {
+      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+        $('#btnShieldUpgrade').removeClass('hidden');
+      } else {
+        $('#btnShieldUpgrade').addClass('hidden');
+      }
+    },
+    determineShowPrestigeButton: function () {
+      if (gameData.technologies.shieldPrestigeLevelUnlocked > gameData.technologies.shieldPrestigeLevelBought) {
+        $('#btnShieldPrestige').removeClass('hidden');
+      } else {
+        $('#btnShieldPrestige').addClass('hidden');
+      }
+    },
+    determineShowAffordUpgrade: function () {
+      if (this.canAffordUpgrade()) {
+        $('#btnShieldUpgrade').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnShieldUpgrade').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
+    determineShowAffordPrestige: function () {
+      if (this.canAffordPrestige()) {
+        $('#btnShieldPrestige').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnShieldPrestige').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
     buyUpgrade: function () {
       if (this.canAffordUpgrade()) {
         gameData.resources.metal -= this.metalForUpgrade();
@@ -1177,6 +1360,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        sortBuildings($('#techvisible'));
       }
     }
   },
@@ -1198,6 +1382,34 @@ var gameEquipment = {
     updatePrestigeTooltip: function () { $('#btnFlakPrestige').attr('title', this.tooltipForPrestige()); },
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
+    determineShowUpgradeButton: function () {
+      if (gameData.technologies.laserPrestigeLevelBought > 0) {
+        $('#btnFlakUpgrade').removeClass('hidden');
+      } else {
+        $('#btnFlakUpgrade').addClass('hidden');
+      }
+    },
+    determineShowPrestigeButton: function () {
+      if (gameData.technologies.flakPrestigeLevelUnlocked > gameData.technologies.flakPrestigeLevelBought) {
+        $('#btnFlakPrestige').removeClass('hidden');
+      } else {
+        $('#btnFlakPrestige').addClass('hidden');
+      }
+    },
+    determineShowAffordUpgrade: function () {
+      if (this.canAffordUpgrade()) {
+        $('#btnFlakUpgrade').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnFlakUpgrade').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
+    determineShowAffordPrestige: function () {
+      if (this.canAffordPrestige()) {
+        $('#btnFlakPrestige').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#btnFlakPrestige').removeClass('btn-success').addClass('btn-danger');
+      }
+    },
     buyUpgrade: function () {
       if (this.canAffordUpgrade()) {
         gameData.resources.metal -= this.metalForUpgrade();
@@ -1224,6 +1436,7 @@ var gameEquipment = {
         this.updatePrestigeTooltip();
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
+        sortBuildings($('#techvisible'));
       }
     }
   }
@@ -1332,6 +1545,18 @@ function exportsave() { // eslint-disable-line no-unused-vars
 }
 
 function init() {
+  debugText = '0.5.5 has a new GUI that I think is a step better but still not where I want it.  There was also some rebalancing.  In general things are cheaper.\n';
+  debugText += 'Known issues and other ramblings:\n1. If the tab loses focus or is closed, when you return you will notice the game runs faster than expected until time catches up.  Enjoy this for now, eventually there will be an ability that will allow/limit this time\n';
+  debugText += '2. TODO I need an achievement screen that shows all achievements completed and still to do, along with the current bonus gained from achievements\n';
+  debugText += '3. There is currently no confirmation dialog on clicking the reset button under settings.  Be careful.\n';
+  debugText += '4. Tooltips for most research projects don\'t show benefits gained.\n';
+  debugText += '5. The flavor text is basically in rough draft form.  There are issues with person and tense.  Plus.  You know.  It needs other help.\n';
+  debugText += '6. Balance is an ongoing chore and any thoughts are appreciated.\n';
+  debugText += '7. Autosave is hardcoded for every five minutes.  This needs to be adjustable in settings.  And Playfab integration is coming.  One day.\n';
+  debugText += '8. I\'d like to notify the player when a new version is released.\n';
+  debugText += '9. Current achieveemnts are limited.\n';
+  debugText += '10. I\'d like to redo the entire GUI.  It feels a little derivative of Trimps\n';
+  debugText += '11. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.\n';
   resetData();
   var savegame = JSON.parse(localStorage.getItem('save'));
   initted = true;
@@ -1436,15 +1661,24 @@ function init() {
   $('#btnResearchTech').attr('title', 'Metal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
     '\nPolymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
     '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
-  $('#btnBuyShipyard').attr('title', gameBuildings.shipyard.tooltipForBuy());
-  $('#btnBuyMine').attr('title', gameBuildings.mine.tooltipForBuy());
-  $('#btnBuyLab').attr('title', gameBuildings.lab.tooltipForBuy());
-  $('#btnBuyPanel').attr('title', gameBuildings.panel.tooltipForBuy());
-  $('#btnBuyGenerator').attr('title', gameBuildings.generator.tooltipForBuy());
-  $('#btnBuyPlant').attr('title', gameBuildings.plant.tooltipForBuy());
-  $('#btnBuyAetherPlant').attr('title', gameBuildings.aetherPlant.tooltipForBuy());
-  $('#btnBuyFactory').attr('title', gameBuildings.factory.tooltipForBuy());
-  $('#btnBuyRefinery').attr('title', gameBuildings.refinery.tooltipForBuy());
+  gameBuildings.mine.updateBuyButtonText();
+  gameBuildings.mine.updateBuyButtonTooltip();
+  gameBuildings.factory.updateBuyButtonText();
+  gameBuildings.factory.updateBuyButtonTooltip();
+  gameBuildings.refinery.updateBuyButtonText();
+  gameBuildings.refinery.updateBuyButtonTooltip();
+  gameBuildings.shipyard.updateBuyButtonText();
+  gameBuildings.shipyard.updateBuyButtonTooltip();
+  gameBuildings.lab.updateBuyButtonText();
+  gameBuildings.lab.updateBuyButtonTooltip();
+  gameBuildings.panel.updateBuyButtonText();
+  gameBuildings.panel.updateBuyButtonTooltip();
+  gameBuildings.generator.updateBuyButtonText();
+  gameBuildings.generator.updateBuyButtonTooltip();
+  gameBuildings.plant.updateBuyButtonText();
+  gameBuildings.plant.updateBuyButtonTooltip();
+  gameBuildings.aetherPlant.updateBuyButtonText();
+  gameBuildings.aetherPlant.updateBuyButtonTooltip();
   gameEquipment.railgun.updateUpgradeText();
   gameEquipment.railgun.updatePrestigeText();
   gameEquipment.railgun.updateUpgradeTooltip();
@@ -1469,28 +1703,10 @@ function init() {
   gameEquipment.flak.updatePrestigeText();
   gameEquipment.flak.updateUpgradeTooltip();
   gameEquipment.flak.updatePrestigeTooltip();
-  $('#btnBuyMine').text('Mine(' + (gameData.buildings.mines) + ')');
-  $('#btnBuyLab').text('Lab(' + (gameData.buildings.labs) + ')');
-  $('#btnBuyFactory').text('Factory(' + (gameData.buildings.factories) + ')');
-  $('#btnBuyRefinery').text('Refinery(' + (gameData.buildings.refineries) + ')');
-  $('#btnBuyGenerator').text('Generator(' + (gameData.buildings.generators) + ')');
-  $('#btnBuyPlant').text('Plant(' + (gameData.buildings.plants) + ')');
-  $('#btnBuyAetherPlant').text('Aether Plant(' + (gameData.buildings.aetherPlants) + ')');
-  $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')');
   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
   updateMissionButtons();
-  debugText = '0.5.5 has a new GUI that I think is a step better but still not where I want it.  There was also some rebalancing.  In general things are cheaper.\n';
-  debugText += 'Known issues and other ramblings:\n1. If the tab loses focus or is closed, when you return you will notice the game runs faster than expected until time catches up.  Enjoy this for now, eventually there will be an ability that will allow/limit this time\n';
-  debugText += '2. TODO I need an achievement screen that shows all achievements completed and still to do, along with the current bonus gained from achievements\n';
-  debugText += '3. There is currently no confirmation dialog on clicking the reset button under settings.  Be careful.\n';
-  debugText += '4. Tooltips for most research projects don\'t show benefits gained.\n';
-  debugText += '5. The flavor text is basically in rough draft form.  There are issues with person and tense.  Plus.  You know.  It needs other help.\n';
-  debugText += '6. Balance is an ongoing chore and any thoughts are appreciated.\n';
-  debugText += '7. Autosave is hardcoded for every five minutes.  This needs to be adjustable in settings.  And Playfab integration is coming.  One day.\n';
-  debugText += '8. I\'d like to notify the player when a new version is released.\n';
-  debugText += '9. Current achieveemnts are limited.\n';
-  debugText += '10. I\'d like to redo the entire GUI.  It feels a little derivative of Trimps\n';
-  debugText += '11. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.\n';
+  sortBuildings($('#techvisible'));
+  sortBuildings($('#buildingvisible'));
 }
 
 function getAchievementBonus() {
@@ -1573,7 +1789,7 @@ function updateGUI() {
 
   if (gameData.buildings.mines >= 5) {
     $('#polymercontainer').removeClass('hidden');
-    $('#btnBuyFactory').removeClass('hidden');
+    gameBuildings.factory.showBuyButton();
     if (!gameData.story.factoryunlocked) {
       sortBuildings($('#buildingvisible'));
       addToDisplay('I should be able to start bringing factories online.  The polymers will get us closer to creating drones.  I need answers. Why did they attack? Am I really alone?', 'story');
@@ -1583,7 +1799,7 @@ function updateGUI() {
 
   if (gameData.buildings.factories >= 5) {
     $('#labscontainer').removeClass('hidden');
-    $('#btnBuyLab').removeClass('hidden');
+    gameBuildings.lab.showBuyButton();
     if (!gameData.story.labunlocked) {
       sortBuildings($('#buildingvisible'));
       addToDisplay('Labs are available.  They should help to rediscover some technologies.  How did they manage to pull off an attack of that scale secretly?', 'story');
@@ -1592,7 +1808,7 @@ function updateGUI() {
   }
 
   if (gameData.missions[0].galaxy >= 3) {
-    $('#btnBuyGenerator').removeClass('hidden');
+    gameBuildings.generator.showBuyButton();
     if (!gameData.story.generatorunlocked) {
       sortBuildings($('#buildingvisible'));
       addToDisplay('Placeholder', 'story');
@@ -1600,7 +1816,7 @@ function updateGUI() {
     }
   }
   if (gameData.missions[0].galaxy >= 6) {
-    $('#btnBuyPlant').removeClass('hidden');
+    gameBuildings.plant.showBuyButton();
     if (!gameData.story.plantunlocked) {
       sortBuildings($('#buildingvisible'));
       addToDisplay('Placeholder', 'story');
@@ -1608,7 +1824,7 @@ function updateGUI() {
     }
   }
   if (gameData.missions[0].galaxy >= 10) {
-    $('#btnBuyAetherPlant').removeClass('hidden');
+    gameBuildings.aetherPlant.showBuyButton();
     if (!gameData.story.aetherplantunlocked) {
       sortBuildings($('#buildingvisible'));
       addToDisplay('Placeholder', 'story');
@@ -1616,7 +1832,7 @@ function updateGUI() {
     }
   }
   if (gameData.missions[0].galaxy >= 15) {
-    $('#btnBuyRefinery').removeClass('hidden');
+    gameBuildings.refinery.showBuyButton();
     if (!gameData.story.refineryunlocked) {
       sortBuildings($('#buildingvisible'));
       addToDisplay('Placeholder', 'story');
@@ -1680,17 +1896,16 @@ function updateGUI() {
     // $('#fightcontainer').removeClass('hidden');
   }
 
-  $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')\n');
-  $('#btnLooter').attr('title', 'Each level bought will add 10% to looting additively\n\nChronoton Cost:' + prettify(gamePerks.looter.chronotonforBuy()));
-  $('#btnProducer').text('Producer(' + (gameData.perks.producer) + ')');
-  $('#btnProducer').attr('title', 'Each level bought will add 10% to metal and polymer production additively\n\nChronoton Cost:' + prettify(gamePerks.producer.chronotonforBuy()));
-  $('#btnDamager').text('Damager(' + (gameData.perks.damager) + ')');
-  $('#btnDamager').attr('title', 'Each level bought will add 10% to damage additively\n\nChronoton Cost:' + prettify(gamePerks.damager.chronotonforBuy()));
-  $('#btnThickSkin').text('ThickSkin(' + (gameData.perks.thickskin) + ')');
-  $('#btnThickSkin').attr('title', 'Each level bought will add 10% to defenses additively\n\nChronoton Cost:' + prettify(gamePerks.thickskin.chronotonforBuy()));
-  $('#btnSpeed').text('Speed(' + (gameData.perks.speed) + ')');
-  $('#btnSpeed').attr('title', 'Each level bought will shorten the wait time between attacks by 50ms\n\nChronoton Cost:' + prettify(gamePerks.speed.chronotonforBuy()));
-
+  gamePerks.looter.updateBuyButtonText();
+  gamePerks.looter.updateBuyButtonTooltip();
+  gamePerks.producer.updateBuyButtonText();
+  gamePerks.producer.updateBuyButtonTooltip();
+  gamePerks.damager.updateBuyButtonText();
+  gamePerks.damager.updateBuyButtonTooltip();
+  gamePerks.thickskin.updateBuyButtonText();
+  gamePerks.thickskin.updateBuyButtonTooltip();
+  gamePerks.speed.updateBuyButtonText();
+  gamePerks.speed.updateBuyButtonTooltip();
 
   $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
   $('#btnFight').removeClass('btn-success').addClass('btn-danger');
@@ -1793,119 +2008,30 @@ function updateGUI() {
     $('#btnBuyLab').removeClass('btn-danger').addClass('btn-success');
   }
 
-  $('#btnRailgunUpgrade').removeClass('btn-success').addClass('btn-danger');
-  $('#btnRailgunUpgrade').addClass('hidden');
-  if (gameData.technologies.railgunPrestigeLevelBought > 0) {
-    $('#btnRailgunUpgrade').removeClass('hidden');
-  }
-  if (gameEquipment.railgun.canAffordUpgrade()) {
-    $('#btnRailgunUpgrade').removeClass('btn-danger').addClass('btn-success');
-  }
-
-  $('#btnLaserUpgrade').removeClass('btn-success').addClass('btn-danger');
-  $('#btnLaserUpgrade').addClass('hidden');
-  if (gameData.technologies.laserPrestigeLevelBought > 0) {
-    $('#btnLaserUpgrade').removeClass('hidden');
-  }
-  if (gameEquipment.laser.canAffordUpgrade()) {
-    $('#btnLaserUpgrade').removeClass('btn-danger').addClass('btn-success');
-  }
-
-  $('#btnMissileUpgrade').removeClass('btn-success').addClass('btn-danger');
-  $('#btnMissileUpgrade').addClass('hidden');
-  if (gameData.technologies.missilePrestigeLevelBought > 0) {
-    $('#btnMissileUpgrade').removeClass('hidden');
-  }
-  if (gameEquipment.missile.canAffordUpgrade()) {
-    $('#btnMissileUpgrade').removeClass('btn-danger').addClass('btn-success');
-  }
-
-  $('#btnArmorUpgrade').removeClass('btn-success').addClass('btn-danger');
-  $('#btnArmorUpgrade').addClass('hidden');
-  if (gameData.technologies.armorPrestigeLevelBought > 0) {
-    $('#btnArmorUpgrade').removeClass('hidden');
-  }
-  if (gameEquipment.armor.canAffordUpgrade()) {
-    $('#btnArmorUpgrade').removeClass('btn-danger').addClass('btn-success');
-  }
-
-  $('#btnShieldUpgrade').removeClass('btn-success').addClass('btn-danger');
-  $('#btnShieldUpgrade').addClass('hidden');
-  if (gameData.technologies.shieldPrestigeLevelBought > 0) {
-    $('#btnShieldUpgrade').removeClass('hidden');
-  }
-  if (gameEquipment.shield.canAffordUpgrade()) {
-    $('#btnShieldUpgrade').removeClass('btn-danger').addClass('btn-success');
-  }
-
-  $('#btnFlakUpgrade').removeClass('btn-success').addClass('btn-danger');
-  $('#btnFlakUpgrade').addClass('hidden');
-  if (gameData.technologies.flakPrestigeLevelBought > 0) {
-    $('#btnFlakUpgrade').removeClass('hidden');
-  }
-  if (gameEquipment.flak.canAffordUpgrade()) {
-    $('#btnFlakUpgrade').removeClass('btn-danger').addClass('btn-success');
-  }
-
-  $('#btnRailgunPrestige').removeClass('btn-success').addClass('btn-danger');
-  $('#btnRailgunPrestige').addClass('hidden');
-  if (gameData.technologies.railgunPrestigeLevelUnlocked > gameData.technologies.railgunPrestigeLevelBought) {
-    $('#btnRailgunPrestige').removeClass('hidden');
-    gameEquipment.railgun.updatePrestigeText();
-    if (gameEquipment.railgun.canAffordPrestige()) {
-      $('#btnRailgunPrestige').removeClass('btn-danger').addClass('btn-success');
-    }
-  }
-
-  $('#btnLaserPrestige').removeClass('btn-success').addClass('btn-danger');
-  $('#btnLaserPrestige').addClass('hidden');
-  if (gameData.technologies.laserPrestigeLevelUnlocked > gameData.technologies.laserPrestigeLevelBought) {
-    $('#btnLaserPrestige').removeClass('hidden');
-    gameEquipment.laser.updatePrestigeText();
-    if (gameEquipment.laser.canAffordPrestige()) {
-      $('#btnLaserPrestige').removeClass('btn-danger').addClass('btn-success');
-    }
-  }
-
-  $('#btnMissilePrestige').removeClass('btn-success').addClass('btn-danger');
-  $('#btnMissilePrestige').addClass('hidden');
-  if (gameData.technologies.missilePrestigeLevelUnlocked > gameData.technologies.missilePrestigeLevelBought) {
-    $('#btnMissilePrestige').removeClass('hidden');
-    gameEquipment.missile.updatePrestigeText();
-    if (gameEquipment.missile.canAffordPrestige()) {
-      $('#btnMissilePrestige').removeClass('btn-danger').addClass('btn-success');
-    }
-  }
-
-  $('#btnArmorPrestige').removeClass('btn-success').addClass('btn-danger');
-  $('#btnArmorPrestige').addClass('hidden');
-  if (gameData.technologies.armorPrestigeLevelUnlocked > gameData.technologies.armorPrestigeLevelBought) {
-    $('#btnArmorPrestige').removeClass('hidden');
-    gameEquipment.armor.updatePrestigeText();
-    if (gameEquipment.armor.canAffordPrestige()) {
-      $('#btnArmorPrestige').removeClass('btn-danger').addClass('btn-success');
-    }
-  }
-
-  $('#btnShieldPrestige').removeClass('btn-success').addClass('btn-danger');
-  $('#btnShieldPrestige').addClass('hidden');
-  if (gameData.technologies.shieldPrestigeLevelUnlocked > gameData.technologies.shieldPrestigeLevelBought) {
-    $('#btnShieldPrestige').removeClass('hidden');
-    gameEquipment.shield.updatePrestigeText();
-    if (gameEquipment.shield.canAffordPrestige()) {
-      $('#btnShieldPrestige').removeClass('btn-danger').addClass('btn-success');
-    }
-  }
-
-  $('#btnFlakPrestige').removeClass('btn-success').addClass('btn-danger');
-  $('#btnFlakPrestige').addClass('hidden');
-  if (gameData.technologies.flakPrestigeLevelUnlocked > gameData.technologies.flakPrestigeLevelBought) {
-    $('#btnFlakPrestige').removeClass('hidden');
-    gameEquipment.flak.updatePrestigeText();
-    if (gameEquipment.flak.canAffordPrestige()) {
-      $('#btnFlakPrestige').removeClass('btn-danger').addClass('btn-success');
-    }
-  }
+  gameEquipment.railgun.determineShowPrestigeButton();
+  gameEquipment.railgun.determineShowUpgradeButton();
+  gameEquipment.railgun.determineShowAffordPrestige();
+  gameEquipment.railgun.determineShowAffordUpgrade();
+  gameEquipment.laser.determineShowPrestigeButton();
+  gameEquipment.laser.determineShowUpgradeButton();
+  gameEquipment.laser.determineShowAffordPrestige();
+  gameEquipment.laser.determineShowAffordUpgrade();
+  gameEquipment.missile.determineShowPrestigeButton();
+  gameEquipment.missile.determineShowUpgradeButton();
+  gameEquipment.missile.determineShowAffordPrestige();
+  gameEquipment.missile.determineShowAffordUpgrade();
+  gameEquipment.armor.determineShowPrestigeButton();
+  gameEquipment.armor.determineShowUpgradeButton();
+  gameEquipment.armor.determineShowAffordPrestige();
+  gameEquipment.armor.determineShowAffordUpgrade();
+  gameEquipment.shield.determineShowPrestigeButton();
+  gameEquipment.shield.determineShowUpgradeButton();
+  gameEquipment.shield.determineShowAffordPrestige();
+  gameEquipment.shield.determineShowAffordUpgrade();
+  gameEquipment.flak.determineShowPrestigeButton();
+  gameEquipment.flak.determineShowUpgradeButton();
+  gameEquipment.flak.determineShowAffordPrestige();
+  gameEquipment.flak.determineShowAffordUpgrade();
 
   if (debugText.length > 0) {
     $('#debugContainer').removeClass('hidden');
@@ -1928,6 +2054,7 @@ function resetAbilities() { // eslint-disable-line no-unused-vars
 }
 
 function sortBuildings(parent) {
+  updateGUI();
   var ul = parent;
   var li = ul.children('*');
 
@@ -2042,6 +2169,7 @@ function buyAutoFight() { // eslint-disable-line no-unused-vars
       value: 'value'
     });
   }
+  sortBuildings($('#techvisible'));
 }
 
 function buyMetalProficiency() { // eslint-disable-line no-unused-vars
@@ -2057,6 +2185,7 @@ function buyMetalProficiency() { // eslint-disable-line no-unused-vars
       '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
     $('#btnBuyMine').attr('title', gameBuildings.mine.tooltipForBuy());
   }
+  sortBuildings($('#techvisible'));
 }
 
 function buyPolymerProficiency() { // eslint-disable-line no-unused-vars
@@ -2072,6 +2201,7 @@ function buyPolymerProficiency() { // eslint-disable-line no-unused-vars
       '\nResearch Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)));
     $('#btnBuyFactory').attr('title', gameBuildings.factory.tooltipForBuy());
   }
+  sortBuildings($('#techvisible'));
 }
 
 function buyResearchProficiency() { // eslint-disable-line no-unused-vars
@@ -2088,6 +2218,7 @@ function buyResearchProficiency() { // eslint-disable-line no-unused-vars
       '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
     $('#btnBuyLab').attr('title', gameBuildings.lab.tooltipForBuy());
   }
+  sortBuildings($('#techvisible'));
 }
 
 function switchAutoFight() { // eslint-disable-line no-unused-vars
@@ -2400,6 +2531,7 @@ function checkForUnlocks() {
   if (gameData.missions[0].galaxy > 15 && gameData.missions[0].zone === 99) {
     giveChronotonFragments((gameData.missions[0].galaxy - 6) * Math.pow(1.01, (gameData.missions[0].galaxy - 16)));
   }
+  sortBuildings($('#techvisible'));
 }
 
 Date.dateDiff = function (datepart, fromdate, todate) {
@@ -2539,7 +2671,7 @@ window.setInterval(function () {
     saveGame();
   }
 
-  const RESOURCE_PRODUCTION_FRAME_RATE = 100;
+  const RESOURCE_PRODUCTION_FRAME_RATE = 50;
   const MILLISECONDS_PER_ATTACK_BASE = 1000;
 
   if (currentTime > gameData.nextProcessTime) {
@@ -2553,7 +2685,6 @@ window.setInterval(function () {
     }
 
     if (gameData.nextProcessTime > gameData.lastRailgunCombatProcessTime && !gameData.world.paused) {
-      sortBuildings($('#techvisible'));
       gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() + MILLISECONDS_PER_ATTACK_BASE - (gameData.perks.speed * 50));
       // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick
       if (gameData.playership.hitPoints > 0) {
