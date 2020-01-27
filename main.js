@@ -267,6 +267,7 @@ function giveMissionReward(mission) {
     gameData.resources.aether += lt;
     addToDisplay('We have found ' + prettify(lt) + ' aether');
   }
+  sortBuildings($('#techvisible'));
 }
 
 function giveChronotonFragments(amt) {
@@ -1771,16 +1772,15 @@ function updateGUI() {
     }
     $('#EnemyHullShieldBar').css('width', prettify(width) + '%');
     $('#EnemyShieldText').text('Shield:' + prettify(gameData.enemyship.shield) + '/' + prettify(gameData.enemyship.shieldMax));
+    document.getElementById('enemyMinDamage').innerHTML = prettify(gameData.enemyship.minDamage);
+    document.getElementById('enemyMaxDamage').innerHTML = prettify(gameData.enemyship.maxDamage);
+    document.getElementById('shipSize').innerHTML = prettify(gameData.playership.size);
+    document.getElementById('shipMinDamage').innerHTML = prettify(gameData.playership.minDamage);
+    document.getElementById('shipMaxDamage').innerHTML = prettify(gameData.playership.maxDamage);
+    document.getElementById('MissionName').innerHTML = gameData.missions[gameData.world.currentMission].name;
+    document.getElementById('zone').innerHTML = gameData.missions[gameData.world.currentMission].zone + 1;
+    document.getElementById('zonemax').innerHTML = gameData.missions[gameData.world.currentMission].enemies.length;
   }
-
-  document.getElementById('enemyMinDamage').innerHTML = prettify(gameData.enemyship.minDamage);
-  document.getElementById('enemyMaxDamage').innerHTML = prettify(gameData.enemyship.maxDamage);
-  document.getElementById('shipSize').innerHTML = prettify(gameData.playership.size);
-  document.getElementById('shipMinDamage').innerHTML = prettify(gameData.playership.minDamage);
-  document.getElementById('shipMaxDamage').innerHTML = prettify(gameData.playership.maxDamage);
-  document.getElementById('MissionName').innerHTML = gameData.missions[gameData.world.currentMission].name;
-  document.getElementById('zone').innerHTML = gameData.missions[gameData.world.currentMission].zone + 1;
-  document.getElementById('zonemax').innerHTML = gameData.missions[gameData.world.currentMission].enemies.length;
 
   if (!gameData.story.initial) {
     addToDisplay('I slowly become aware of my surroundings.  There is little left untouched by destruction and weapon fire.  I can sense no one else.  All the communications frequencies are devoid of any signal.  One of the mines is still online and a single solar panel field is operational.  I need answers.  And to find them I\'ll need materials.  I should bring more mines online.', 'story');
@@ -2671,7 +2671,7 @@ window.setInterval(function () {
     saveGame();
   }
 
-  const RESOURCE_PRODUCTION_FRAME_RATE = 50;
+  const RESOURCE_PRODUCTION_FRAME_RATE = 200;
   const MILLISECONDS_PER_ATTACK_BASE = 1000;
 
   if (currentTime > gameData.nextProcessTime) {
