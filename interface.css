@@ -19,7 +19,7 @@ body {
 } */
 
 .fixedHeight {
-  height: 250px;
+  height: 260px;
 }
 
 .noresize {
@@ -40,6 +40,10 @@ body {
 
 button {
   width: 158px;
+  margin: 1px;
+}
+.timer {
+  width: 1058px;
   margin: 1px;
 }
 

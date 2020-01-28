@@ -20,7 +20,7 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="interface.css" />
-  <title>Chasing the Past v0.5.8</title>
+  <title>Chasing the Past v0.6.0</title>
   <meta name="description" content="Chasing the Past">
   <meta name="author" content="ausonny">
 </head>
@@ -34,13 +34,13 @@
     </div>
   </noscript>
   <div class="container">
-    <div class="row p-1">
-      <div id='menucontrols' class="col-6 col-sm-2 text-light bg-secondary text-center">
-        <span id="timeElapsed">9</span><br />
-        <button class="btn btn-sm btn-primary" type="button" onclick="saveGame()">Save</button><br />
-        <button class="btn btn-sm btn-primary" type="button" onclick="init()">Load</button><br />
-        <button class="btn btn-sm btn-primary" type="button" onclick="exportsave()">Export</button><br />
-        <button class="btn btn-sm btn-primary hidden" id="btnGateway" type="button" data-toggle="modal" data-target="#GatewayModal">Gateway</button><br />
+    <div class="row p-1" id="menucontrols">
+      <div class="col-12 col-sm-12 text-light bg-secondary">
+        <span class="timer" id="timeElapsed">9</span>
+        <button class="btn btn-sm btn-primary" type="button" onclick="saveGame()">Save</button>
+        <button class="btn btn-sm btn-primary" type="button" onclick="init()">Load</button>
+        <button class="btn btn-sm btn-primary" type="button" onclick="exportsave()">Export</button>
+        <button class="btn btn-sm btn-primary hidden" id="btnGateway" type="button" data-toggle="modal" data-target="#GatewayModal">Gateway</button>
         <div class="modal fade" id="GatewayModal" tabindex="-1" role="dialog" aria-labelledby="gatewayModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -75,11 +75,14 @@
                 Chronoton Spent:<span id="chronotonspent">0</span><br />
                 <button class="btn btn-sm btn-danger" id="btnResetAbilities" type="button" data-toggle="tooltip" data-placement="bottom" title="Resets all abilities to 0" onclick="resetAbilities()">Reset Abilities</button>
                 <button class="btn btn-sm btn-primary" id="btnLooter" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to looting additively" onclick="gamePerks.looter.add()">Looter 1</button>
-                <button class="btn btn-sm btn-primary" id="btnProducer" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to metal and polymer production additively" onclick="gamePerks.producer.add()">Producer
+                <button class="btn btn-sm btn-primary" id="btnProducer" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to metal and polymer production additively"
+                  onclick="gamePerks.producer.add()">Producer
                   1</button>
                 <button class="btn btn-sm btn-primary" id="btnDamager" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to damage additively" onclick="gamePerks.damager.add()">Damager 1</button>
-                <button class="btn btn-sm btn-primary" id="btnThickSkin" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to defenses additively" onclick="gamePerks.thickskin.add()">Thick Skin 1</button>
-                <button class="btn btn-sm btn-primary" id="btnSpeed" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten the wait time between attacks by 50ms" onclick="gamePerks.speed.add()">Speed 1</button>
+                <button class="btn btn-sm btn-primary" id="btnThickSkin" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to defenses additively" onclick="gamePerks.thickskin.add()">Thick Skin
+                  1</button>
+                <button class="btn btn-sm btn-primary" id="btnSpeed" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten the wait time between attacks by 50ms" onclick="gamePerks.speed.add()">Speed
+                  1</button>
               </div>
               <div class="modal-footer bg-dark">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -108,7 +111,9 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-sm-4 text-light bg-dark">
+    </div>
+    <div class="row p-1">
+      <div class="col-6 col-sm-6 text-light bg-dark">
         <div class="container text-small overflow-auto" style="height:220px;" id="textToDisplay">
         </div>
       </div>
@@ -213,7 +218,7 @@
         </div>
         <div class="row" id="chronotonfragmentscontainer">
           <div class="col-6">
-            Chronoton Fragments
+            Fragments
           </div>
           <div class="col-6">
             <span id="chronotonfragments">0</span>
