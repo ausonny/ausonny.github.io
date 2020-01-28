@@ -604,7 +604,7 @@ var gamePerks = {
       if (this.canAfford()) {
         gameData.perks.looter++;
         $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')');
-        $('#btnLooter').attr('title', 'Each level bought will add 10% to looting additively\n\nChronoton Cost:' + gamePerks.looter.chronotonforBuy());
+        this.updateBuyButtonTooltip();
         gtag('event', 'buy looter', {
           event_category: 'click',
           event_label: 'label',
@@ -1982,17 +1982,6 @@ function updateGUI() {
     $('#btnSuicide').removeClass('hidden');
     // $('#fightcontainer').removeClass('hidden');
   }
-
-  gamePerks.looter.updateBuyButtonText();
-  gamePerks.looter.updateBuyButtonTooltip();
-  gamePerks.producer.updateBuyButtonText();
-  gamePerks.producer.updateBuyButtonTooltip();
-  gamePerks.damager.updateBuyButtonText();
-  gamePerks.damager.updateBuyButtonTooltip();
-  gamePerks.thickskin.updateBuyButtonText();
-  gamePerks.thickskin.updateBuyButtonTooltip();
-  gamePerks.speed.updateBuyButtonText();
-  gamePerks.speed.updateBuyButtonTooltip();
 
   $('#btnFight').removeClass('btn-success').addClass('btn-danger');
   if (canAffordFight()) {
