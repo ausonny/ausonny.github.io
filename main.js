@@ -1547,7 +1547,7 @@ function prettify(number) {
   var exponent = 0;
   var suffices = [];
   var suffix = '';
-  if (!isFinite(number)) return 'i';
+  if (!isFinite(number)) return '<span class=\'icomoon icon-infinity\'></span>';
   if (number >= 1000 && number < 10000) return Math.floor(number);
   if (number == 0) return prettifySub(0);
   if (number < 0) return '-' + prettify(-number);
@@ -2376,7 +2376,7 @@ function updateMissionButtons() {
   }
   var content = document.createTextNode('Choose a destination here.  Choosing the current galaxy will continue the chase.  Choosing another option will run a mission, normally with a reward, like a new weapon prestige, or a cache of materials.  Upon completion the next mission in order will be chosen.  When there are no more missions after the completed one the current galaxy will be chosen.');
   foo.appendChild(content);
-  var linebreak = document.createElement("br");
+  var linebreak = document.createElement('br');
   foo.appendChild(linebreak);
   for (let missionIndex = 0; missionIndex < gameData.missions.length; missionIndex++) {
     var element = document.createElement('button');
@@ -2695,7 +2695,7 @@ function showTimeElapsed() {
   minutes = ('0' + minutes).slice(-2);
   seconds = ('0' + seconds).slice(-2);
 
-  return '00:' + days + ':' + hours + ':' + minutes + ':' + seconds;
+  return days + ':' + hours + ':' + minutes + ':' + seconds;
 }
 
 function addAchievement(name, bonus) {
@@ -2716,10 +2716,18 @@ window.setInterval(function () {
   }
   var currentTime = new Date();
   var timeToCheckForSave = new Date();
-  timeToCheckForSave.setMilliseconds(timeToCheckForSave.getMilliseconds() - 1000 * 60 * 5);
+  timeToCheckForSave.setMilliseconds(timeToCheckForSave.getMilliseconds() - 1000 * 1);
 
   if (timeToCheckForSave > lastSaveGameTime) {
     saveGame();
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+        document.getElementById('result').innerHTML = xhr.responseText;
+      }
+    }
+    xhr.open('GET', 'version.txt');
+    xhr.send();
   }
 
   const RESOURCE_PRODUCTION_FRAME_RATE = 200;
