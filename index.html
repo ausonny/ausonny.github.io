@@ -121,7 +121,7 @@
     <div class="row p-1" id="menucontrols">
       <div class="col-12 col-sm-12 text-light bg-secondary">
         <span class="timer" id="timeElapsed">9</span>
-        <button rel="tooltip" title="Enter your tip here" class="btn btn-sm btn-primary" type="button" onclick="saveGame()">Save2</button>
+        <button rel="tooltip" title="Enter your tip here" class="btn btn-sm btn-primary" type="button" onclick="saveGame()">Save</button>
         <button class="btn btn-sm btn-primary" type="button" onclick="init()">Load</button>
         <button class="btn btn-sm btn-primary" type="button" onclick="exportsave()">Export</button>
         <button class="btn btn-sm btn-primary hidden" id="btnGateway" type="button" data-toggle="modal" data-target="#GatewayModal">Gateway</button>
@@ -203,7 +203,7 @@
       </div>
       <div class="col-6 col-sm-2 text-light bg-secondary text-center hidden" id="fightcontrols">
         <span id="MissionName">0</span><br />Zone: <span id="zone">0</span>/<span id="zonemax">0</span><br />
-        <button class="btn btn-sm btn-success hidden" type="button" id="btnFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="sendShip()">Fight</button><br />
+        <button rel="tooltip" class="btn btn-sm btn-success hidden" type="button" id="btnFight" title="TTOB" onclick="sendShip()">Fight2</button><br />
         <button class="btn btn-sm btn-warning hidden" type="button" id="btnSuicide" onclick="suicideShip()">Self Destruct</button><br />
         <button class="btn btn-sm btn-primary hidden" type="button" id="btnAutoFightOn" onclick="switchAutoFight()">autofight</button><br />
       </div>
