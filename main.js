@@ -1623,17 +1623,15 @@ function exportsave() { // eslint-disable-line no-unused-vars
 }
 
 function init() {
-  debugText = '0.5.5 has a new GUI that I think is a step better but still not where I want it.  There was also some rebalancing.  In general things are cheaper.\n';
   debugText += 'Known issues and other ramblings:\n1. If the tab loses focus or is closed, when you return you will notice the game runs faster than expected until time catches up.  Enjoy this for now, eventually there will be an ability that will allow/limit this time\n';
+  debugText += '1. There are currently no tooltips for touchscreen users.\n';
   debugText += '2. TODO I need an achievement screen that shows all achievements completed and still to do, along with the current bonus gained from achievements\n';
   debugText += '3. There is currently no confirmation dialog on clicking the reset button under settings.  Be careful.\n';
   debugText += '4. Tooltips for most research projects don\'t show benefits gained.\n';
   debugText += '5. The flavor text is basically in rough draft form.  There are issues with person and tense.  Plus.  You know.  It needs other help.\n';
   debugText += '6. Balance is an ongoing chore and any thoughts are appreciated.\n';
   debugText += '7. Autosave is hardcoded for every five minutes.  This needs to be adjustable in settings.  And Playfab integration is coming.  One day.\n';
-  debugText += '8. I\'d like to notify the player when a new version is released.\n';
   debugText += '9. Current achievements are limited.\n';
-  debugText += '10. I\'d like to redo the entire GUI.  It feels a little derivative of Trimps\n';
   debugText += '11. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.\n';
   resetData();
   var savegame = JSON.parse(localStorage.getItem('save'));
@@ -2716,7 +2714,7 @@ window.setInterval(function () {
   }
   var currentTime = new Date();
   var timeToCheckForSave = new Date();
-  timeToCheckForSave.setMilliseconds(timeToCheckForSave.getMilliseconds() - 1000 * 60 * 1);
+  timeToCheckForSave.setMilliseconds(timeToCheckForSave.getMilliseconds() - 1000 * 60 * 5);
 
   if (timeToCheckForSave > lastSaveGameTime) {
     saveGame();

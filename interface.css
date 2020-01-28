@@ -79,18 +79,9 @@ button {
   border: 1px solid #808080;
 }
 
-@media (max-width: 767px) {
-    .column {
-        width: 100%;
-    }
-}
-@media (min-width: 768px) and (max-width: 1024px) {
-    .column {
-        width: 50%;
-    }
-}
-@media (min-width: 1025px) {
-    .column {
-        width: 25%;
-    }
+.myemail {
+  width: 120px;
+  margin: 1px;
+  display: inline-block;
+
 }
