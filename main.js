@@ -1041,6 +1041,7 @@ var gameBuildings = {
           event_label: 'label',
           value: 'value'
         });
+        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
         sortBuildings($('#techvisible'));
       }
     }
@@ -1123,6 +1124,7 @@ var gameEquipment = {
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
         sortBuildings($('#techvisible'));
+        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
   },
@@ -1200,6 +1202,7 @@ var gameEquipment = {
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
         sortBuildings($('#techvisible'));
+        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
   },
@@ -1277,6 +1280,7 @@ var gameEquipment = {
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
         sortBuildings($('#techvisible'));
+        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
   },
@@ -1354,6 +1358,7 @@ var gameEquipment = {
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
         sortBuildings($('#techvisible'));
+        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
   },
@@ -1431,6 +1436,7 @@ var gameEquipment = {
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
         sortBuildings($('#techvisible'));
+        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
   },
@@ -1508,6 +1514,7 @@ var gameEquipment = {
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
         sortBuildings($('#techvisible'));
+        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
   }
@@ -1724,6 +1731,7 @@ function init() {
   if (typeof savegame.story.initial !== 'undefined') gameData.story.initial = savegame.story.initial;
   if (typeof savegame.story.firstfight !== 'undefined') gameData.story.firstfight = savegame.story.firstfight;
 
+  $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
   $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
   $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
     '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
@@ -1986,7 +1994,6 @@ function updateGUI() {
   gamePerks.speed.updateBuyButtonText();
   gamePerks.speed.updateBuyButtonTooltip();
 
-  $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
   $('#btnFight').removeClass('btn-success').addClass('btn-danger');
   if (canAffordFight()) {
     $('#btnFight').removeClass('btn-danger').addClass('btn-success');
