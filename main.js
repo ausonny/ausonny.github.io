@@ -2716,7 +2716,7 @@ window.setInterval(function () {
   }
   var currentTime = new Date();
   var timeToCheckForSave = new Date();
-  timeToCheckForSave.setMilliseconds(timeToCheckForSave.getMilliseconds() - 1000 * 1);
+  timeToCheckForSave.setMilliseconds(timeToCheckForSave.getMilliseconds() - 1000 * 60 * 1);
 
   if (timeToCheckForSave > lastSaveGameTime) {
     saveGame();
