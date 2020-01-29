@@ -263,11 +263,11 @@ function giveMissionReward(mission) {
     addToDisplay('This location contains a large, prestigious, circular structure.  I can easily travel there and step through it, but what will I find?  I have also discovered some chronoton fragments.  I don\'t see a use for them but they may come in handy later', 'story');
     giveChronotonFragments(40);
   } else if (mission.missiontype === 'Aether') {
-    var lt = Math.pow(140, 1 + (mission.level / 10));
+    var lt = Math.pow(100, 1 + (mission.level / 10));
     gameData.resources.aether += lt;
     addToDisplay('We have found ' + prettify(lt) + ' aether');
   }
-  sortBuildings($('#techvisible'));
+  sortBuildings($('#buildingvisible'));
 }
 
 function giveChronotonFragments(amt) {
@@ -436,6 +436,7 @@ function resetData() {
   $('#missions-tab').addClass('hidden');
   $('#btnFight').addClass('hidden');
   $('#btnAutoFight').addClass('hidden');
+  $('#btnAutoFightOn').addClass('hidden');
   $('#btnGateway').addClass('hidden');
   $('#btnSuicide').addClass('hidden');
 
@@ -547,7 +548,6 @@ function resetData() {
     gameData.playership.createPlayerShip();
   }
   updateMissionButtons();
-  sortBuildings($('#techvisible'));
   sortBuildings($('#buildingvisible'));
   gameData.world.paused = false;
 }
@@ -1042,7 +1042,7 @@ var gameBuildings = {
           value: 'value'
         });
         $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
-        sortBuildings($('#techvisible'));
+        sortBuildings($('#buildingvisible'));
       }
     }
   }
@@ -1084,16 +1084,16 @@ var gameEquipment = {
     },
     determineShowAffordUpgrade: function () {
       if (this.canAffordUpgrade()) {
-        $('#btnRailgunUpgrade').removeClass('btn-danger').addClass('btn-success');
+        $('#btnRailgunUpgrade').removeClass('btn-danger').addClass('btn-warning');
       } else {
-        $('#btnRailgunUpgrade').removeClass('btn-success').addClass('btn-danger');
+        $('#btnRailgunUpgrade').removeClass('btn-warning').addClass('btn-danger');
       }
     },
     determineShowAffordPrestige: function () {
       if (this.canAffordPrestige()) {
-        $('#btnRailgunPrestige').removeClass('btn-danger').addClass('btn-success');
+        $('#btnRailgunPrestige').removeClass('btn-danger').addClass('btn-warning');
       } else {
-        $('#btnRailgunPrestige').removeClass('btn-success').addClass('btn-danger');
+        $('#btnRailgunPrestige').removeClass('btn-warning').addClass('btn-danger');
       }
     },
     buyUpgrade: function () {
@@ -1123,7 +1123,7 @@ var gameEquipment = {
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
-        sortBuildings($('#techvisible'));
+        sortBuildings($('#buildingvisible'));
         $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
@@ -1162,16 +1162,16 @@ var gameEquipment = {
     },
     determineShowAffordUpgrade: function () {
       if (this.canAffordUpgrade()) {
-        $('#btnLaserUpgrade').removeClass('btn-danger').addClass('btn-success');
+        $('#btnLaserUpgrade').removeClass('btn-danger').addClass('btn-warning');
       } else {
-        $('#btnLaserUpgrade').removeClass('btn-success').addClass('btn-danger');
+        $('#btnLaserUpgrade').removeClass('btn-warning').addClass('btn-danger');
       }
     },
     determineShowAffordPrestige: function () {
       if (this.canAffordPrestige()) {
-        $('#btnLaserPrestige').removeClass('btn-danger').addClass('btn-success');
+        $('#btnLaserPrestige').removeClass('btn-danger').addClass('btn-warning');
       } else {
-        $('#btnLaserPrestige').removeClass('btn-success').addClass('btn-danger');
+        $('#btnLaserPrestige').removeClass('btn-warning').addClass('btn-danger');
       }
     },
     buyUpgrade: function () {
@@ -1201,7 +1201,7 @@ var gameEquipment = {
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
-        sortBuildings($('#techvisible'));
+        sortBuildings($('#buildingvisible'));
         $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
@@ -1220,7 +1220,7 @@ var gameEquipment = {
     tooltipForPrestige: function () { return ('This will improve our Missiles, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
     updateUpgradeText: function () { $('#btnMissileUpgrade').text('Missile ' + convertToRoman(gameData.technologies.missilePrestigeLevelBought) + ' (' + (gameData.technologies.missileUpgrade) + ')'); },
     updateUpgradeTooltip: function () { $('#btnMissileUpgrade').attr('title', this.tooltipForUpgrade()); },
-    updatePrestigeText: function () { $('#btnMissilePrestige').text('Infuse Misile ' + (gameData.technologies.missilePrestigeLevelBought + 1)); },
+    updatePrestigeText: function () { $('#btnMissilePrestige').text('Infuse Missile ' + (gameData.technologies.missilePrestigeLevelBought + 1)); },
     updatePrestigeTooltip: function () { $('#btnMissilePrestige').attr('title', this.tooltipForPrestige()); },
     canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
     canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
@@ -1240,16 +1240,16 @@ var gameEquipment = {
     },
     determineShowAffordUpgrade: function () {
       if (this.canAffordUpgrade()) {
-        $('#btnMissileUpgrade').removeClass('btn-danger').addClass('btn-success');
+        $('#btnMissileUpgrade').removeClass('btn-danger').addClass('btn-warning');
       } else {
-        $('#btnMissileUpgrade').removeClass('btn-success').addClass('btn-danger');
+        $('#btnMissileUpgrade').removeClass('btn-warning').addClass('btn-danger');
       }
     },
     determineShowAffordPrestige: function () {
       if (this.canAffordPrestige()) {
-        $('#btnMissilePrestige').removeClass('btn-danger').addClass('btn-success');
+        $('#btnMissilePrestige').removeClass('btn-danger').addClass('btn-warning');
       } else {
-        $('#btnMissilePrestige').removeClass('btn-success').addClass('btn-danger');
+        $('#btnMissilePrestige').removeClass('btn-warning').addClass('btn-danger');
       }
     },
     buyUpgrade: function () {
@@ -1279,7 +1279,7 @@ var gameEquipment = {
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
-        sortBuildings($('#techvisible'));
+        sortBuildings($('#buildingvisible'));
         $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
@@ -1318,16 +1318,16 @@ var gameEquipment = {
     },
     determineShowAffordUpgrade: function () {
       if (this.canAffordUpgrade()) {
-        $('#btnArmorUpgrade').removeClass('btn-danger').addClass('btn-success');
+        $('#btnArmorUpgrade').removeClass('btn-danger').addClass('btn-info');
       } else {
-        $('#btnArmorUpgrade').removeClass('btn-success').addClass('btn-danger');
+        $('#btnArmorUpgrade').removeClass('btn-info').addClass('btn-danger');
       }
     },
     determineShowAffordPrestige: function () {
       if (this.canAffordPrestige()) {
-        $('#btnArmorPrestige').removeClass('btn-danger').addClass('btn-success');
+        $('#btnArmorPrestige').removeClass('btn-danger').addClass('btn-info');
       } else {
-        $('#btnArmorPrestige').removeClass('btn-success').addClass('btn-danger');
+        $('#btnArmorPrestige').removeClass('btn-info').addClass('btn-danger');
       }
     },
     buyUpgrade: function () {
@@ -1357,7 +1357,7 @@ var gameEquipment = {
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
-        sortBuildings($('#techvisible'));
+        sortBuildings($('#buildingvisible'));
         $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
@@ -1396,16 +1396,16 @@ var gameEquipment = {
     },
     determineShowAffordUpgrade: function () {
       if (this.canAffordUpgrade()) {
-        $('#btnShieldUpgrade').removeClass('btn-danger').addClass('btn-success');
+        $('#btnShieldUpgrade').removeClass('btn-danger').addClass('btn-info');
       } else {
-        $('#btnShieldUpgrade').removeClass('btn-success').addClass('btn-danger');
+        $('#btnShieldUpgrade').removeClass('btn-info').addClass('btn-danger');
       }
     },
     determineShowAffordPrestige: function () {
       if (this.canAffordPrestige()) {
-        $('#btnShieldPrestige').removeClass('btn-danger').addClass('btn-success');
+        $('#btnShieldPrestige').removeClass('btn-danger').addClass('btn-info');
       } else {
-        $('#btnShieldPrestige').removeClass('btn-success').addClass('btn-danger');
+        $('#btnShieldPrestige').removeClass('btn-info').addClass('btn-danger');
       }
     },
     buyUpgrade: function () {
@@ -1435,7 +1435,7 @@ var gameEquipment = {
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
-        sortBuildings($('#techvisible'));
+        sortBuildings($('#buildingvisible'));
         $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
@@ -1474,16 +1474,16 @@ var gameEquipment = {
     },
     determineShowAffordUpgrade: function () {
       if (this.canAffordUpgrade()) {
-        $('#btnFlakUpgrade').removeClass('btn-danger').addClass('btn-success');
+        $('#btnFlakUpgrade').removeClass('btn-danger').addClass('btn-info');
       } else {
-        $('#btnFlakUpgrade').removeClass('btn-success').addClass('btn-danger');
+        $('#btnFlakUpgrade').removeClass('btn-info').addClass('btn-danger');
       }
     },
     determineShowAffordPrestige: function () {
       if (this.canAffordPrestige()) {
-        $('#btnFlakPrestige').removeClass('btn-danger').addClass('btn-success');
+        $('#btnFlakPrestige').removeClass('btn-danger').addClass('btn-info');
       } else {
-        $('#btnFlakPrestige').removeClass('btn-success').addClass('btn-danger');
+        $('#btnFlakPrestige').removeClass('btn-info').addClass('btn-danger');
       }
     },
     buyUpgrade: function () {
@@ -1513,7 +1513,7 @@ var gameEquipment = {
         this.updateUpgradeText();
         this.updateUpgradeTooltip();
         this.updatePrestigeText();
-        sortBuildings($('#techvisible'));
+        sortBuildings($('#buildingvisible'));
         $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired(gameData.buildings.shipyard)) + '\nPolymer Cost:' + prettify(shipPolymerRequired(gameData.buildings.shipyard)));
       }
     }
@@ -1782,7 +1782,6 @@ function init() {
   gameEquipment.flak.updatePrestigeTooltip();
   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
   updateMissionButtons();
-  sortBuildings($('#techvisible'));
   sortBuildings($('#buildingvisible'));
 }
 
@@ -1861,7 +1860,6 @@ function updateGUI() {
   if (!gameData.story.initial) {
     addToDisplay('I slowly become aware of my surroundings.  There is little left untouched by destruction and weapon fire.  I can sense no one else.  All the communications frequencies are devoid of any signal.  One of the mines is still online and a single solar panel field is operational.  I need answers.  And to find them I\'ll need materials.  I should bring more mines online.', 'story');
     gameData.story.initial = true;
-    sortBuildings($('#techvisible', false));
     sortBuildings($('#buildingvisible', false));
   }
 
@@ -1871,7 +1869,6 @@ function updateGUI() {
     if (!gameData.story.factoryunlocked) {
       addToDisplay('I should be able to start bringing factories online.  The polymers will get us closer to creating drones.  I need answers. Why did they attack? Am I really alone?', 'story');
       gameData.story.factoryunlocked = true;
-      sortBuildings($('#techvisible', false));
       sortBuildings($('#buildingvisible', false));
     }
   }
@@ -1882,7 +1879,6 @@ function updateGUI() {
     if (!gameData.story.labunlocked) {
       addToDisplay('Labs are available.  They should help to rediscover some technologies.  How did they manage to pull off an attack of that scale secretly?', 'story');
       gameData.story.labunlocked = true;
-      sortBuildings($('#techvisible', false));
       sortBuildings($('#buildingvisible', false));
     }
   }
@@ -1892,7 +1888,6 @@ function updateGUI() {
     if (!gameData.story.generatorunlocked) {
       addToDisplay('Placeholder', 'story');
       gameData.story.generatorunlocked = true;
-      sortBuildings($('#techvisible', false));
       sortBuildings($('#buildingvisible', false));
     }
   }
@@ -1901,7 +1896,6 @@ function updateGUI() {
     if (!gameData.story.plantunlocked) {
       addToDisplay('Placeholder', 'story');
       gameData.story.plantunlocked = true;
-      sortBuildings($('#techvisible', false));
       sortBuildings($('#buildingvisible', false));
     }
   }
@@ -1910,7 +1904,6 @@ function updateGUI() {
     if (!gameData.story.aetherplantunlocked) {
       addToDisplay('Placeholder', 'story');
       gameData.story.aetherplantunlocked = true;
-      sortBuildings($('#techvisible', false));
       sortBuildings($('#buildingvisible', false));
     }
   }
@@ -1919,7 +1912,6 @@ function updateGUI() {
     if (!gameData.story.refineryunlocked) {
       addToDisplay('Placeholder', 'story');
       gameData.story.refineryunlocked = true;
-      sortBuildings($('#techvisible', false));
       sortBuildings($('#buildingvisible', false));
     }
   }
@@ -1938,7 +1930,6 @@ function updateGUI() {
     if (!gameData.story.shipyardUnlocked) {
       addToDisplay('Drones!  A shipyard will allow me to send out drones and begin the quest for information.  I can sense a path of ships, almost like a breadcrumb trail.  They aren\'t responding to our attempts at communication.', 'story');
       gameData.story.shipyardUnlocked = true;
-      sortBuildings($('#techvisible', false));
       sortBuildings($('#buildingvisible', false));
     }
   }
@@ -2215,7 +2206,7 @@ function buyAutoFight() { // eslint-disable-line no-unused-vars
       value: 'value'
     });
   }
-  sortBuildings($('#techvisible'));
+  sortBuildings($('#buildingvisible'));
 }
 
 function buyMetalProficiency() { // eslint-disable-line no-unused-vars
@@ -2231,7 +2222,7 @@ function buyMetalProficiency() { // eslint-disable-line no-unused-vars
       '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
     $('#btnBuyMine').attr('title', gameBuildings.mine.tooltipForBuy());
   }
-  sortBuildings($('#techvisible'));
+  sortBuildings($('#buildingvisible'));
 }
 
 function buyPolymerProficiency() { // eslint-disable-line no-unused-vars
@@ -2247,7 +2238,7 @@ function buyPolymerProficiency() { // eslint-disable-line no-unused-vars
       '\nResearch Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)));
     $('#btnBuyFactory').attr('title', gameBuildings.factory.tooltipForBuy());
   }
-  sortBuildings($('#techvisible'));
+  sortBuildings($('#buildingvisible'));
 }
 
 function buyResearchProficiency() { // eslint-disable-line no-unused-vars
@@ -2264,7 +2255,7 @@ function buyResearchProficiency() { // eslint-disable-line no-unused-vars
       '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
     $('#btnBuyLab').attr('title', gameBuildings.lab.tooltipForBuy());
   }
-  sortBuildings($('#techvisible'));
+  sortBuildings($('#buildingvisible'));
 }
 
 function switchAutoFight() { // eslint-disable-line no-unused-vars
@@ -2435,7 +2426,7 @@ function createMissionMap(mission) {
 function checkForCreateLoot(mission, zone) {
   var rtn = {
     lootType: '',
-    lootAmount: Math.pow((((mission.level - 1) * 100) + zone) * mission.lootMultiplier, 1.25) * (1 + gameData.perks.looter * 0.1)
+    lootAmount: Math.pow((((mission.level - 1) * 100) + zone) * mission.lootMultiplier, 1.3) * (1 + gameData.perks.looter * 0.1)
   };
   var l = Math.floor(Math.random() * 100);
   if (mission.IsGalaxy) {
@@ -2445,7 +2436,7 @@ function checkForCreateLoot(mission, zone) {
       rtn.lootType = 'Polymer';
     } else if (l <= 30) {
       rtn.lootType = 'ResearchPoints';
-      rtn.lootAmount /= 4;
+      rtn.lootAmount /= 8;
     }
   } else {
     if (l <= 10) {
@@ -2454,7 +2445,7 @@ function checkForCreateLoot(mission, zone) {
       rtn.lootType = 'Polymer';
     } else if (l <= 30) {
       rtn.lootType = 'ResearchPoints';
-      rtn.lootAmount /= 4;
+      rtn.lootAmount /= 8;
     } else if (l <= 35) {
       rtn.lootType = 'Aether';
       rtn.lootAmount /= 100;
@@ -2580,7 +2571,7 @@ function checkForUnlocks() {
   if (gameData.missions[0].galaxy > 15 && gameData.missions[0].zone === 99) {
     giveChronotonFragments((gameData.missions[0].galaxy - 6) * Math.pow(1.01, (gameData.missions[0].galaxy - 16)));
   }
-  sortBuildings($('#techvisible'));
+  sortBuildings($('#buildingvisible'));
 }
 
 Date.dateDiff = function (datepart, fromdate, todate) {

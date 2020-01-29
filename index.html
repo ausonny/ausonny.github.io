@@ -20,7 +20,7 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="interface.css" />
-  <title>Chasing the Past v0.6.0</title>
+  <title>Chasing the Past v0.6.1</title>
   <meta name="description" content="Chasing the Past">
   <meta name="author" content="ausonny">
 </head>
@@ -237,57 +237,64 @@
       <div class="col-12 col-md-9 bg-secondary rounded shadow p-1" id="upgradesContainer">
         <ul id="myTab" role="tablist" class="nav nav-tabs nav-pills with-arrow lined flex-column flex-md-row">
           <li class="nav-item flex-md-fill">
-            <a id="building-tab" data-toggle="tab" href="#building" role="tab" aria-controls="building" aria-selected="true" class="nav-link text-uppercase font-weight-bold mr-md-3 rounded-0 active">Buildings</a>
+            <a id="building-tab" data-toggle="tab" href="#building" role="tab" aria-controls="building" aria-selected="true" class="nav-link text-uppercase font-weight-bold mr-md-3 rounded-0 active">Actions</a>
           </li>
-          <li class="nav-item flex-md-fill">
+          <!-- <li class="nav-item flex-md-fill">
             <a id="research-tab" data-toggle="tab" href="#research" role="tab" aria-controls="research" aria-selected="false" class="nav-link text-uppercase font-weight-bold mr-md-3 rounded-0">Research</a>
           </li>
           <li class="nav-item flex-md-fill">
             <a id="upgrade-tab" data-toggle="tab" href="#upgrade" role="tab" aria-controls="upgrade" aria-selected="false" class="hidden nav-link text-uppercase font-weight-bold mr-md-3 rounded-0">Upgrades</a>
-          </li>
+          </li> -->
           <li class="nav-item flex-md-fill">
             <a id="missions-tab" data-toggle="tab" href="#missions" role="tab" aria-controls="missions" aria-selected="false" class="hidden nav-link text-uppercase font-weight-bold mr-md-3 rounded-0">Missions</a>
           </li>
         </ul>
         <div id="myTabContent" class="fixedHeight tab-content bg-secondary overflow-auto">
-          <div id="building" role="tabpanel" aria-labelledby="building-tab" class="tab-pane fade show active text-center ">
+          <div id="building" role="tabpanel" aria-labelledby="building-tab" class="tab-pane fade show active">
             <div id="buildingvisible" class="col-md-12 text-light">
-              <button data-sort='01' class="btn btn-sm btn-success" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy()">Buy Panel</button>
-              <button data-sort='02' class="btn btn-sm btn-success hidden" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Buy Plant</button>
-              <button data-sort='03' class="btn btn-sm btn-success hidden" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
-              <button data-sort='04' class="btn btn-sm btn-success hidden" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
-              <br data-sort="05" />
-              <button data-sort='06' class="btn btn-sm btn-success" type="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy()">Buy Mine</button>
-              <button data-sort='07' class="btn btn-sm btn-success hidden" type="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.factory.buy()">Buy Factory</button>
-              <button data-sort='08' class="btn btn-sm btn-success hidden" type="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
-              <button data-sort='09' class="btn btn-sm btn-success hidden" type="button" id="btnBuyRefinery" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.refinery.buy()">Buy Refinery</button>
+              <label data-sort='01' >Buildings</label>
+              <br data-sort="02" />
+              <button data-sort='03' class="btn btn-sm btn-success" type="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
+              <button data-sort='04' class="btn btn-sm btn-success" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy()">Buy Panel</button>
+              <button data-sort='05' class="btn btn-sm btn-success hidden" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Buy Plant</button>
+              <button data-sort='06' class="btn btn-sm btn-success hidden" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
+              <button data-sort='07' class="btn btn-sm btn-success hidden" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
+              <button data-sort='08' class="btn btn-sm btn-success" type="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy()">Buy Mine</button>
+              <button data-sort='09' class="btn btn-sm btn-success hidden" type="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.factory.buy()">Buy Factory</button>
+              <button data-sort='10' class="btn btn-sm btn-success hidden" type="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
+              <button data-sort='11' class="btn btn-sm btn-success hidden" type="button" id="btnBuyRefinery" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.refinery.buy()">Buy Refinery</button>
+              <br data-sort="12" />
+              <label data-sort='13' >Research</label>
+              <br data-sort="14" />
+              <button data-sort='15' class="btn btn-sm btn-success" type="button" id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
+              <button data-sort='16' class="btn btn-sm btn-success" type="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
+              <button data-sort='17' class="btn btn-sm btn-success" type="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
+              <button data-sort='18' class="btn btn-sm btn-success" type="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">RP</button>
+              <button data-sort='19' class="btn btn-sm btn-success" type="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyPrestige()">AP</button>
+              <button data-sort='20' class="btn btn-sm btn-success" type="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">LP</button>
+              <button data-sort='21' class="btn btn-sm btn-success" type="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">AP</button>
+              <button data-sort='22' class="btn btn-sm btn-success" type="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">RP</button>
+              <button data-sort='23' class="btn btn-sm btn-success" type="button" id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">AP</button>
+              <button data-sort='24' class="btn btn-sm btn-success" type="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
+              <br data-sort="25" />
+              <label data-sort='26' >Equipment Upgrades</label>
+              <br data-sort="27" />
+              <button data-sort='28' class="btn btn-sm btn-success" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
+              <button data-sort='29' class="btn btn-sm btn-success" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
+              <button data-sort='30' class="btn btn-sm btn-success" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
+              <button data-sort='31' class="btn btn-sm btn-success" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
+              <button data-sort='32' class="btn btn-sm btn-success" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
+              <button data-sort='33' class="btn btn-sm btn-success" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
             </div>
           </div>
-          <div id="research" role="tabpanel" aria-labelledby="research-tab" class="tab-pane fade text-center ">
+          <!-- <div id="research" role="tabpanel" aria-labelledby="research-tab" class="tab-pane fade text-center ">
             <div id="techvisible" class="col-md-12 text-light hidden">
-              <button class="btn btn-sm btn-success" type="button" data-sort='01' id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='02' id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='03' id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='04' id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='05' id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">RP</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='06' id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyPrestige()">AP</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='07' id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">LP</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='08' id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">AP</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='09' id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">RP</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='10' id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">AP</button>
-              <button class="btn btn-sm btn-success" type="button" data-sort='11' id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
             </div>
           </div>
           <div id="upgrade" role="tabpanel" aria-labelledby="upgrade-tab" class="tab-pane fade text-center ">
             <div id="upgradevisible" class="col-md-12 text-light hidden">
-              <button class="btn btn-sm btn-success" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
-              <button class="btn btn-sm btn-success" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
-              <button class="btn btn-sm btn-success" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button><br />
-              <button class="btn btn-sm btn-success" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
-              <button class="btn btn-sm btn-success" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
-              <button class="btn btn-sm btn-success" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
             </div>
-          </div>
+          </div> -->
           <div id="missions" role="tabpanel" aria-labelledby="mission-tab" class="tab-pane fade">
             <div id="missionvisible" class="col-md-12 text-light text-center hidden">
             </div>
@@ -298,8 +305,8 @@
     <div class="row" id="contactcontainer">
       <div class="col text-light text-left bg-dark">
         <p>Email: <span class="myemail">(need JavaScript for email link)</span></p>
-        version:<label class="myemail text-center" id="current">v0.6.0</label>
-        latest version:<label class="myemail text-center" id="result">v0.6.0</label>
+        version:<label class="myemail text-center" id="current">0.6.1</label>
+        latest version:<label class="myemail text-center" id="result">0.6.1</label>
       </div>
     </div>
     <div class="row" id="debugContainer">
