@@ -595,7 +595,7 @@ function sumOfExponents(lvlsBought, baseCost, growthfactor) {
 
 var gamePerks = {
   looter: {
-    chronotonforBuy: function () { return 1 * Math.pow(gameData.perks.looter, 1.3); },
+    chronotonforBuy: function () { return 1 * Math.pow(1.3, gameData.perks.looter); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.looter, 1, 1.3); },
     canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
     updateBuyButtonText: function () { $('#btnLooter').text('Looter(' + (gameData.perks.looter) + ')\n'); },
@@ -614,7 +614,7 @@ var gamePerks = {
     }
   },
   producer: {
-    chronotonforBuy: function () { return 1 * Math.pow(gameData.perks.producer, 1.3); },
+    chronotonforBuy: function () { return 1 * Math.pow(1.3, gameData.perks.producer); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.producer, 1, 1.3); },
     canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
     updateBuyButtonText: function () { $('#btnProducer').text('Producer(' + (gameData.perks.producer) + ')\n'); },
@@ -633,7 +633,7 @@ var gamePerks = {
     }
   },
   damager: {
-    chronotonforBuy: function () { return 1 * Math.pow(gameData.perks.damager, 1.3); },
+    chronotonforBuy: function () { return 1 * Math.pow(1.3, gameData.perks.damager); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.damager, 1, 1.3); },
     canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
     updateBuyButtonText: function () { $('#btnDamager').text('Damager(' + (gameData.perks.damager) + ')'); },
@@ -652,7 +652,7 @@ var gamePerks = {
     }
   },
   thickskin: {
-    chronotonforBuy: function () { return 1 * Math.pow(gameData.perks.thickskin, 1.3); },
+    chronotonforBuy: function () { return 1 * Math.pow(1.3, gameData.perks.thickskin); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.thickskin, 1, 1.3); },
     canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
     updateBuyButtonText: function () { $('#btnThickSkin').text('ThickSkin(' + (gameData.perks.thickskin) + ')'); },
@@ -671,7 +671,7 @@ var gamePerks = {
     }
   },
   speed: {
-    chronotonforBuy: function () { return 4 * Math.pow(gameData.perks.speed, 1.3); },
+    chronotonforBuy: function () { return 4 * Math.pow(1.3, gameData.perks.speed); },
     chronotonSpent: function () { return sumOfExponents(gameData.perks.speed, 4, 1.3); },
     canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
     updateBuyButtonText: function () { $('#btnSpeed').text('Speed(' + (gameData.perks.speed) + ')'); },
@@ -1783,6 +1783,16 @@ function init() {
   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
   updateMissionButtons();
   sortBuildings($('#buildingvisible'));
+  gamePerks.looter.updateBuyButtonText();
+  gamePerks.looter.updateBuyButtonTooltip();
+  gamePerks.producer.updateBuyButtonText();
+  gamePerks.producer.updateBuyButtonTooltip();
+  gamePerks.damager.updateBuyButtonText();
+  gamePerks.damager.updateBuyButtonTooltip();
+  gamePerks.thickskin.updateBuyButtonText();
+  gamePerks.thickskin.updateBuyButtonTooltip();
+  gamePerks.speed.updateBuyButtonText();
+  gamePerks.speed.updateBuyButtonTooltip();
 }
 
 function getAchievementBonus() {
@@ -2426,7 +2436,7 @@ function createMissionMap(mission) {
 function checkForCreateLoot(mission, zone) {
   var rtn = {
     lootType: '',
-    lootAmount: Math.pow((((mission.level - 1) * 100) + zone) * mission.lootMultiplier, 1.3) * (1 + gameData.perks.looter * 0.1)
+    lootAmount: ((((mission.level - 1) * 100) + zone) * mission.lootMultiplier) * Math.pow(1.001, (((mission.level - 1) * 100) + zone) * mission.lootMultiplier) * (1 + gameData.perks.looter * 0.1)
   };
   var l = Math.floor(Math.random() * 100);
   if (mission.IsGalaxy) {
@@ -2472,6 +2482,7 @@ function checkForUnlocks() {
   if (gameData.missions[0].zone === 99) {
     gameData.technologies.shipyardTechUnlock = gameData.missions[0].galaxy + 1;
     addToDisplay('An upgrade to the shipyard would allow for bigger drones', 'mission');
+    sortBuildings($('#buildingvisible'));
     if (gameData.missions[0].galaxy === 1) {
       addAchievement('First Galaxy Completed!', 1);
     }
@@ -2488,20 +2499,21 @@ function checkForUnlocks() {
   if (gameData.missions[0].galaxy > 3) {
     var prestigelvl = (Math.floor((gameData.missions[0].galaxy - 1) / 3));
     if (prestigelvl >= (GetMissionNameCount('Railgun Plans') + gameData.technologies.railgunPrestigeLevelUnlocked)) {
-      createMission('Railgun Plans', 'Prestige', gameData.missions[0].galaxy, true, 1, 1, gameData.missions[0].galaxy, 100, false);
-      createMission('Armor Plans', 'Prestige', gameData.missions[0].galaxy, true, 1, 1, gameData.missions[0].galaxy, 100, false);
+      createMission('Railgun Plans', 'Prestige', gameData.missions[0].galaxy, true, 1.5, 1, gameData.missions[0].galaxy, 100, false);
+      createMission('Armor Plans', 'Prestige', gameData.missions[0].galaxy, true, 1.5, 1, gameData.missions[0].galaxy, 100, false);
       updateMissionButtons();
+      sortBuildings($('#buildingvisible'));
     }
     prestigelvl = (Math.floor((gameData.missions[0].galaxy - 2) / 3));
     if (prestigelvl >= (GetMissionNameCount('Laser Plans') + gameData.technologies.laserPrestigeLevelUnlocked)) {
-      createMission('Laser Plans', 'Prestige', gameData.missions[0].galaxy, true, 1, 1, gameData.missions[0].galaxy, 100, false);
-      createMission('Shield Plans', 'Prestige', gameData.missions[0].galaxy, true, 1, 1, gameData.missions[0].galaxy, 100, false);
+      createMission('Laser Plans', 'Prestige', gameData.missions[0].galaxy, true, 1.5, 1, gameData.missions[0].galaxy, 100, false);
+      createMission('Shield Plans', 'Prestige', gameData.missions[0].galaxy, true, 1.5, 1, gameData.missions[0].galaxy, 100, false);
       updateMissionButtons();
     }
     prestigelvl = (Math.floor((gameData.missions[0].galaxy - 3) / 3));
     if (prestigelvl >= (GetMissionNameCount('Missile Plans') + gameData.technologies.missilePrestigeLevelUnlocked)) {
-      createMission('Missile Plans', 'Prestige', gameData.missions[0].galaxy, true, 1, 1, gameData.missions[0].galaxy, 100, false);
-      createMission('Flak Plans', 'Prestige', gameData.missions[0].galaxy, true, 1, 1, gameData.missions[0].galaxy, 100, false);
+      createMission('Missile Plans', 'Prestige', gameData.missions[0].galaxy, true, 1.5, 1, gameData.missions[0].galaxy, 100, false);
+      createMission('Flak Plans', 'Prestige', gameData.missions[0].galaxy, true, 1.5, 1, gameData.missions[0].galaxy, 100, false);
       updateMissionButtons();
     }
   }
@@ -2510,7 +2522,7 @@ function checkForUnlocks() {
     updateMissionButtons();
     addToDisplay('I have found the locaton of an ancient Gold Mine.  It may be worth checking out.', 'story');
   }
-  if (lvlsCleared === 1600) {
+  if (lvlsCleared === 1699) {
     createMission('The Gateway', 'Gateway', 1, true, 2, 1, 15, 100, false);
     updateMissionButtons();
     addToDisplay('This site is putting off unusual power readings.  I don\'t know what it is, perhaps exploration is in order.', 'story');
@@ -2522,6 +2534,7 @@ function checkForUnlocks() {
     $('#btnLaserUpgrade').text('Laser(' + (gameData.technologies.laserUpgrade) + ')');
     $('#btnLaserUpgrade').attr('title', gameEquipment.laser.tooltipForUpgrade());
     addToDisplay('As more capabilities come online I am finding new ways to take enemies offline.  I have rediscovered lasers.', 'story');
+    sortBuildings($('#buildingvisible'));
   }
   if (lvlsCleared === 274) {
     gameData.technologies.shieldPrestigeLevelUnlocked = 1;
@@ -2530,6 +2543,7 @@ function checkForUnlocks() {
     $('#btnShieldUpgrade').text('Shield(' + (gameData.technologies.shieldUpgrade) + ')');
     $('#btnShieldUpgrade').attr('title', gameEquipment.shield.tooltipForUpgrade());
     addToDisplay('I have found the plans to allow us to add shields to drones.  This should increase their survivability.', 'story');
+    sortBuildings($('#buildingvisible'));
   }
   if (lvlsCleared === 327) {
     gameData.technologies.missilePrestigeLevelUnlocked = 1;
@@ -2538,6 +2552,7 @@ function checkForUnlocks() {
     $('#btnMissileUpgrade').text('Upgrade Missile(' + (gameData.technologies.missileUpgrade) + ')');
     $('#btnMissileUpgrade').attr('title', gameEquipment.missile.tooltipForUpgrade());
     addToDisplay('Missiles.  Maybe this will force them to talk.', 'story');
+    sortBuildings($('#buildingvisible'));
   }
   if (lvlsCleared === 371) {
     gameData.technologies.flakPrestigeLevelUnlocked = 1;
@@ -2546,6 +2561,7 @@ function checkForUnlocks() {
     $('#btnFlakUpgrade').text('Flak(' + (gameData.technologies.flakUpgrade) + ')');
     $('#btnFlakUpgrade').attr('title', gameEquipment.flak.tooltipForUpgrade());
     addToDisplay('Rudimentary plans for a new defense system have been found. Flak is online.', 'story');
+    sortBuildings($('#buildingvisible'));
   }
   if ((lvlsCleared - 100) % 400 === 0 && lvlsCleared > 200) {
     createMission('Aether Mine ' + prettify(Math.floor((lvlsCleared - 100) / 400)), 'Aether', 1, true, 2, 3, gameData.missions[0].galaxy, 100, false);
@@ -2555,23 +2571,26 @@ function checkForUnlocks() {
   if ((gameData.technologies.metalProficiencyUnlocked < Math.floor((lvlsCleared - 10) / 100))) {
     gameData.technologies.metalProficiencyUnlocked = gameData.missions[0].galaxy;
     addToDisplay('I\'m gonna need a bigger pickaxe.', 'mission');
+    sortBuildings($('#buildingvisible'));
   }
   if ((gameData.technologies.polymerProficiencyUnlocked < Math.floor((lvlsCleared - 20) / 100))) {
     gameData.technologies.polymerProficiencyUnlocked = gameData.missions[0].galaxy;
     addToDisplay('Plastics are my life.', 'mission');
+    sortBuildings($('#buildingvisible'));
   }
   if (gameData.technologies.researchProficiency < Math.floor((lvlsCleared - 30) / 100)) {
     gameData.technologies.researchProficiency = Math.floor((lvlsCleared - 30) / 100);
     addToDisplay('Smarter I can become', 'mission');
+    sortBuildings($('#buildingvisible'));
   }
   if ((gameData.missions[0].galaxy >= 1) && (gameData.missions[0].zone >= 5) && (gameData.technologies.autofightUnlock < 1)) {
     gameData.technologies.autofightUnlock = 1;
     addToDisplay('Your boffins have figured out how to send a ship when it is ready', 'mission');
+    sortBuildings($('#buildingvisible'));
   }
   if (gameData.missions[0].galaxy > 15 && gameData.missions[0].zone === 99) {
     giveChronotonFragments((gameData.missions[0].galaxy - 6) * Math.pow(1.01, (gameData.missions[0].galaxy - 16)));
   }
-  sortBuildings($('#buildingvisible'));
 }
 
 Date.dateDiff = function (datepart, fromdate, todate) {
@@ -2803,4 +2822,4 @@ window.setInterval(function () {
       value: msRunTime
     });
   }
-}, 10);
+}, 25);
