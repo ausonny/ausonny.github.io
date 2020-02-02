@@ -7,8 +7,6 @@ body {
   background-attachment: fixed;
   background-repeat: no-repeat;
 }
-/.header {
-}
 /* .overlay {
   position: absolute;
   min-height: 100%;
@@ -39,7 +37,7 @@ body {
 }
 
 button {
-  width: 158px;
+  width: 150px;
   margin: 1px;
 }
 
@@ -80,8 +78,6 @@ button {
 }
 
 .myemail {
-  width: 120px;
-  margin: 1px;
   display: inline-block;
 
 }
