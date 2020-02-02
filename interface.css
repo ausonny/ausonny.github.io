@@ -37,12 +37,17 @@ body {
 }
 
 button {
-  width: 150px;
+  width: 195px;
   margin: 1px;
 }
 
 .menubutton {
   width: 120px;
+  margin: 1px;
+}
+
+.fightbutton {
+  width: 150px;
   margin: 1px;
 }
 
