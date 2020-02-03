@@ -97,13 +97,13 @@ const RAILGUN_UPGRADE_AETHER_BASE_COST = 90;
 
 const LASER_UPGRADE_METAL_BASE_COST = 50;
 const LASER_UPGRADE_POLYMER_BASE_COST = 50;
-const LASER_UPGRADE_RP_BASE_COST = 40;
+const LASER_UPGRADE_RP_BASE_COST = 60;
 const LASER_UPGRADE_BASE_IMPROVEMENT = 8;
 const LASER_UPGRADE_AETHER_BASE_COST = 120;
 
 const MISSILE_UPGRADE_METAL_BASE_COST = 50;
 const MISSILE_UPGRADE_POLYMER_BASE_COST = 100;
-const MISSILE_UPGRADE_RP_BASE_COST = 50;
+const MISSILE_UPGRADE_RP_BASE_COST = 90;
 const MISSILE_UPGRADE_BASE_IMPROVEMENT = 16;
 const MISSILE_UPGRADE_AETHER_BASE_COST = 150;
 
@@ -115,17 +115,18 @@ const ARMOR_UPGRADE_AETHER_BASE_COST = 90;
 
 const SHIELD_UPGRADE_METAL_BASE_COST = 0;
 const SHIELD_UPGRADE_POLYMER_BASE_COST = 100;
-const SHIELD_UPGRADE_RP_BASE_COST = 40;
+const SHIELD_UPGRADE_RP_BASE_COST = 60;
 const SHIELD_UPGRADE_BASE_IMPROVEMENT = 40;
 const SHIELD_UPGRADE_AETHER_BASE_COST = 120;
 
 const FLAK_UPGRADE_METAL_BASE_COST = 100;
 const FLAK_UPGRADE_POLYMER_BASE_COST = 50;
-const FLAK_UPGRADE_RP_BASE_COST = 50;
+const FLAK_UPGRADE_RP_BASE_COST = 90;
 const FLAK_UPGRADE_BASE_IMPROVEMENT = 60;
 const FLAK_UPGRADE_AETHER_BASE_COST = 150;
 
 var notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
+
 class PossibleEnemies {
   name:string
   attackMod:number
@@ -155,15 +156,47 @@ var gameData: saveGameData
 // Date.prototype.toJSON = function () {
 //   return moment(this).format();
 // };
+class challenge {
+  unlocked: boolean
+  completed: boolean
+
+  constructor() {
+    this.unlocked = false;
+    this.completed = false;
+  }
+}
+
+class challenges {
+  consistency: challenge
+
+  constructor() {
+    this.consistency = new challenge();
+    this.consistency.unlocked = false;
+    this.consistency.completed = false;
+  }
+}
+
+class perks {
+  looter: number
+  producer: number
+  damager: number
+  thickskin: number
+  speed: number
+  consistency: number
+
+  constructor () {
+    this.looter = 0;
+    this.producer = 0;
+    this.damager = 0;
+    this.thickskin = 0;
+    this.speed = 0;
+    this.consistency = 0;
+  }
+}
 
 class saveGameData {
   name: string
-  challenges: {
-    consistency: {
-      unlocked: boolean
-      completed: boolean
-    }
-  }
+  challenges: challenges
   story: {
       shipyardUnlocked: boolean,
       gatewayUnlocked: boolean,
@@ -176,14 +209,7 @@ class saveGameData {
       aetherplantunlocked: boolean,
       refineryunlocked: boolean
   }
-  perks: {
-        looter: number,
-        producer: number,
-        damager: number,
-        thickskin: number,
-        speed: number,
-        consistency: number
-      }
+  perks: perks
   achievements: Achievement[]
   missions: Mission[]
   options: {
@@ -257,12 +283,7 @@ class saveGameData {
 
   constructor(name: string) {
     this.name = name;
-    this.challenges = {
-      consistency: {
-        unlocked: false,
-        completed: false
-      }
-    }
+    this.challenges = new challenges();
     this.story = {
       aetherplantunlocked: false,
       factoryunlocked: false,
@@ -275,14 +296,7 @@ class saveGameData {
       refineryunlocked: false,
       shipyardUnlocked: false
     }
-    this.perks = {
-      consistency: 0,
-      looter: 0,
-      producer: 0,
-      damager: 0,
-      thickskin: 0,
-      speed:0
-    }
+    this.perks =  new perks;
     this.options = {
       logNotBase: 1,
       standardNotation: 1
@@ -382,14 +396,6 @@ class Mission {
   enemies: Ship[]
 
   constructor(name:string, missiontype:string, missionversion:number, unique:boolean, difficulty:number, lootMultiplier:number, level:number, zones:number, IsGalaxy:boolean) {
-    possibleEnemies = [];
-    possibleEnemies.push(new PossibleEnemies('Raider', 1, 1, 1));
-    possibleEnemies.push(new PossibleEnemies('Tank', 0.5, 2, 1));
-    possibleEnemies.push(new PossibleEnemies('Wizard', 2, 0.5, 1));
-    possibleEnemies.push(new PossibleEnemies('Paladin', 1.5, 0.7, 1));
-    possibleEnemies.push(new PossibleEnemies('Ranger', 0.7, 1.5, 1));
-    possibleEnemies.push(new PossibleEnemies('Raider', 1, 1, 1));
-  
     this.name = name;
     this.zone = 0;
     this.IsGalaxy = IsGalaxy;
@@ -605,121 +611,22 @@ function chronotonAvailable() {
   return rtn;
 }
 
-function resetData(existingSave:saveGameData) {
-
-  gameData = new saveGameData('new');
-  if (gameData.missions.length < 1) {
-    var newMission = new Mission('Galaxy 1','Galaxy', 1, true, 1, 1, 1, 100, true);
-    gameData.missions.unshift(newMission);
-    gameData.enemyship = gameData.missions[0].zones[gameData.missions[0].zone];
-  }
-
-  if (existingSave.name === 'old') {
-    gameData.resources.chronoton = existingSave.resources.chronoton;
-    gameData.achievements = existingSave.achievements;
-    gameData.perks = existingSave.perks;
-    gameData.challenges = existingSave.challenges;
-  }
-  $('#building').tab('show');
-  $('#polymercontainer').addClass('hidden');
-  $('#btnBuyFactory').addClass('hidden');
-  $('#labscontainer').addClass('hidden');
-  $('#btnBuyLab').addClass('hidden');
-  $('#btnBuyGenerator').addClass('hidden');
-  $('#btnBuyPlant').addClass('hidden');
-  $('#btnBuyRefinery').addClass('hidden');
-  $('#btnBuyAetherPlant').addClass('hidden');
-  $('#fightcontrols').addClass('hidden');
-  $('#fightdisplay').addClass('hidden');
-  $('#missionvisible').addClass('hidden');
-  $('#upgradevisible').addClass('hidden');
-  $('#techvisible').addClass('hidden');
-  $('#chronotonfragmentscontainer').addClass('hidden');
-  $('#chronotoncontainer').addClass('hidden');
-  $('#aethercontainer').addClass('hidden');
-  $('#upgrade-tab').addClass('hidden');
-  $('#missions-tab').addClass('hidden');
-  $('#btnFight').addClass('hidden');
-  $('#btnAutoFight').addClass('hidden');
-  $('#btnAutoFightOn').addClass('hidden');
-  $('#btnGateway').addClass('hidden');
-  $('#btnSuicide').addClass('hidden');
-
-  $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
-  $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
-    '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
-  $('#btnPolymerTech').attr('title', 'Polymer Cost:' + prettify(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)) +
-    '\nResearch Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)));
-  $('#btnResearchTech').attr('title', 'Metal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
-    '\nPolymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
-    '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
-  $('#btnBuyShipyard').attr('title', gameBuildings.shipyard.tooltipForBuy());
-  $('#btnBuyMine').attr('title', gameBuildings.mine.tooltipForBuy());
-  $('#btnBuyLab').attr('title', gameBuildings.lab.tooltipForBuy());
-  $('#btnBuyPanel').attr('title', gameBuildings.panel.tooltipForBuy());
-  $('#btnBuyGenerator').attr('title', gameBuildings.generator.tooltipForBuy());
-  $('#btnBuyPlant').attr('title', gameBuildings.plant.tooltipForBuy());
-  $('#btnBuyAetherPlant').attr('title', gameBuildings.aetherPlant.tooltipForBuy());
-  $('#btnBuyFactory').attr('title', gameBuildings.factory.tooltipForBuy());
-  $('#btnBuyRefinery').attr('title', gameBuildings.refinery.tooltipForBuy());
-  gameEquipment.railgun.updateUpgradeText();
-  gameEquipment.railgun.updatePrestigeText();
-  gameEquipment.railgun.updateUpgradeTooltip();
-  gameEquipment.railgun.updatePrestigeTooltip();
-  gameEquipment.laser.updateUpgradeText();
-  gameEquipment.laser.updatePrestigeText();
-  gameEquipment.laser.updateUpgradeTooltip();
-  gameEquipment.laser.updatePrestigeTooltip();
-  gameEquipment.missile.updateUpgradeText();
-  gameEquipment.missile.updatePrestigeText();
-  gameEquipment.missile.updateUpgradeTooltip();
-  gameEquipment.missile.updatePrestigeTooltip();
-  gameEquipment.armor.updateUpgradeText();
-  gameEquipment.armor.updatePrestigeText();
-  gameEquipment.armor.updateUpgradeTooltip();
-  gameEquipment.armor.updatePrestigeTooltip();
-  gameEquipment.shield.updateUpgradeText();
-  gameEquipment.shield.updatePrestigeText();
-  gameEquipment.shield.updateUpgradeTooltip();
-  gameEquipment.shield.updatePrestigeTooltip();
-  gameEquipment.flak.updateUpgradeText();
-  gameEquipment.flak.updatePrestigeText();
-  gameEquipment.flak.updateUpgradeTooltip();
-  gameEquipment.flak.updatePrestigeTooltip();
-  $('#btnBuyMine').text('Mine(' + (gameData.buildings.mines) + ')');
-  $('#btnBuyLab').text('Lab(' + (gameData.buildings.labs) + ')');
-  $('#btnBuyFactory').text('Factory(' + (gameData.buildings.factories) + ')');
-  $('#btnBuyRefinery').text('Refinery(' + (gameData.buildings.refineries) + ')');
-  $('#btnBuyGenerator').text('Generator(' + (gameData.buildings.generators) + ')');
-  $('#btnBuyPlant').text('Plant(' + (gameData.buildings.plants) + ')');
-  $('#btnBuyAetherPlant').text('Aether Plant(' + (gameData.buildings.aetherPlants) + ')');
-  $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')');
-  $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
-
-  gamePerks.looter.updateBuyButtonText();
-  gamePerks.looter.updateBuyButtonTooltip();
-  gamePerks.producer.updateBuyButtonText();
-  gamePerks.producer.updateBuyButtonTooltip();
-  gamePerks.damager.updateBuyButtonText();
-  gamePerks.damager.updateBuyButtonTooltip();
-  gamePerks.thickskin.updateBuyButtonText();
-  gamePerks.thickskin.updateBuyButtonTooltip();
-  gamePerks.speed.updateBuyButtonText();
-  gamePerks.speed.updateBuyButtonTooltip();
-  gamePerks.consistency.updateBuyButtonText();
-  gamePerks.consistency.updateBuyButtonTooltip();
-
-  updateMissionButtons();
-  sortBuildings($('#buildingvisible'));
-  gameData.name = 'old';
-  gameData.world.paused = false;
-}
-
 function gatewayClick() { // eslint-disable-line no-unused-vars
   gameData.world.paused = true;
   gameData.resources.chronoton += gameData.resources.chronotonfragments;
   gameData.resources.chronotonfragments = 0;
-  resetData(gameData);
+  var savedperks = new perks();
+  savedperks.looter = gameData.perks.looter;
+  savedperks.consistency = gameData.perks.consistency;
+  savedperks.producer=gameData.perks.producer;
+  savedperks.damager = gameData.perks.damager;
+  savedperks.speed = gameData.perks.speed;
+  savedperks.thickskin = gameData.perks.thickskin;
+  var savedachievements = gameData.achievements;
+  var savedChallenges = new challenges();
+  savedChallenges.consistency.completed = gameData.challenges.consistency.completed;
+  savedChallenges.consistency.unlocked = gameData.challenges.consistency.unlocked;
+  init(gameData.resources.chronoton, savedperks, savedachievements, savedChallenges, true)
   $('#GatewayModal').modal('hide');
   // gtag('event', 'gateway', {
   //   event_category: 'event',
@@ -1805,7 +1712,7 @@ function exportsave() { // eslint-disable-line no-unused-vars
   debugText = JSON.stringify(gameData);
 }
 
-function init() {
+function init(chronoton: number = 0, perks: perks, passedAchievements : Achievement[] = [], challenges: challenges, gatewayReset: boolean = false) {
   debugText += 'Known issues and other ramblings:\n1. If the tab loses focus or is closed, when you return you will notice the game runs faster than expected until time catches up.  Enjoy this for now, eventually there will be an ability that will allow/limit this time\n';
   debugText += '2. There are currently no tooltips for touchscreen users.\n';
   debugText += '3. TODO I need an achievement screen that shows all achievements completed and still to do, along with the current bonus gained from achievements\n';
@@ -1815,11 +1722,13 @@ function init() {
   debugText += '7. Autosave is hardcoded for every five minutes.  This needs to be adjustable in settings.  And Playfab integration is coming.  One day.\n';
   debugText += '9. Current achievements are limited.\n';
   debugText += '10. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.\n'
-
-  gameData = new saveGameData('new');
-  var savegame = JSON.parse(localStorage.getItem('save'));
-
   possibleEnemies = [];
+  possibleEnemies.push(new PossibleEnemies('Raider', 1, 1, 1));
+  possibleEnemies.push(new PossibleEnemies('Tank', 0.5, 2, 1));
+  possibleEnemies.push(new PossibleEnemies('Wizard', 2, 0.5, 1));
+  possibleEnemies.push(new PossibleEnemies('Paladin', 1.5, 0.7, 1));
+  possibleEnemies.push(new PossibleEnemies('Ranger', 0.7, 1.5, 1));
+  possibleEnemies.push(new PossibleEnemies('Raider', 1, 1, 1));
   textToDisplay = [];
   textGameSaved = [];
   textLoot = [];
@@ -1827,99 +1736,199 @@ function init() {
   textStory = [];
   textMissions = [];
 
-  if (savegame !== null) {
-    if (typeof savegame.buildings.shipyard !== 'undefined') gameData.buildings.shipyard = savegame.buildings.shipyard;
-    if (typeof savegame.buildings.factories !== 'undefined') gameData.buildings.factories = savegame.buildings.factories;
-    if (typeof savegame.buildings.refineries !== 'undefined') gameData.buildings.refineries = savegame.buildings.refineries;
-    if (typeof savegame.buildings.panels !== 'undefined') gameData.buildings.panels = savegame.buildings.panels;
-    if (typeof savegame.buildings.generators !== 'undefined') gameData.buildings.generators = savegame.buildings.generators;
-    if (typeof savegame.buildings.plants !== 'undefined') gameData.buildings.plants = savegame.buildings.plants;
-    if (typeof savegame.buildings.aetherPlants !== 'undefined') gameData.buildings.aetherPlants = savegame.buildings.aetherPlants;
-    if (typeof savegame.buildings.labs !== 'undefined') gameData.buildings.labs = savegame.buildings.labs;
-    if (typeof savegame.buildings.mines !== 'undefined') gameData.buildings.mines = savegame.buildings.mines;
-    if (typeof savegame.enemyship.shield !== 'undefined') gameData.enemyship.shield = savegame.enemyship.shield;
-    if (typeof savegame.enemyship.name !== 'undefined') gameData.enemyship.name = savegame.enemyship.name;
-    if (typeof savegame.enemyship.shieldMax !== 'undefined') gameData.enemyship.shieldMax = savegame.enemyship.shieldMax;
-    if (typeof savegame.enemyship.hitPoints !== 'undefined') gameData.enemyship.hitPoints = savegame.enemyship.hitPoints;
-    if (typeof savegame.enemyship.hitPointsMax !== 'undefined') gameData.enemyship.hitPointsMax = savegame.enemyship.hitPointsMax;
-    if (typeof savegame.enemyship.maxDamage !== 'undefined') gameData.enemyship.maxDamage = savegame.enemyship.maxDamage;
-    if (typeof savegame.enemyship.minDamage !== 'undefined') gameData.enemyship.minDamage = savegame.enemyship.minDamage;
-    if (typeof savegame.enemyship.attributes !== 'undefined') gameData.enemyship.attributes = savegame.enemyship.attributes;
-    if (typeof savegame.enemyship.size !== 'undefined') gameData.enemyship.size = savegame.enemyship.size;
-    if (typeof savegame.lastRailgunCombatProcessTime !== 'undefined') gameData.lastRailgunCombatProcessTime = new Date(savegame.lastRailgunCombatProcessTime);
-    if (typeof savegame.lastLaserCombatProcessTime !== 'undefined') gameData.lastLaserCombatProcessTime = new Date(savegame.lastLaserCombatProcessTime);
-    if (typeof savegame.lastResourceProcessTime !== 'undefined') gameData.lastResourceProcessTime = new Date(savegame.lastResourceProcessTime);
-    if (typeof savegame.nextProcessTime !== 'undefined') gameData.nextProcessTime = new Date(savegame.nextProcessTime);
-    if (typeof savegame.lastSentShipTime !== 'undefined') gameData.lastSentShipTime = new Date(savegame.lastSentShipTime);
-    if (typeof savegame.playership.shield !== 'undefined') gameData.playership.shield = savegame.playership.shield;
-    if (typeof savegame.playership.shieldMax !== 'undefined') gameData.playership.shieldMax = savegame.playership.shieldMax;
-    if (typeof savegame.playership.hitPoints !== 'undefined') gameData.playership.hitPoints = savegame.playership.hitPoints;
-    if (typeof savegame.playership.hitPointsMax !== 'undefined') gameData.playership.hitPointsMax = savegame.playership.hitPointsMax;
-    if (typeof savegame.playership.maxDamage !== 'undefined') gameData.playership.maxDamage = savegame.playership.maxDamage;
-    if (typeof savegame.playership.minDamage !== 'undefined') gameData.playership.minDamage = savegame.playership.minDamage;
-    if (typeof savegame.playership.size !== 'undefined') gameData.playership.size = savegame.playership.size;
-    if (typeof savegame.playership.name !== 'undefined') gameData.playership.name = savegame.playership.name;
-    if (typeof savegame.resources.metal !== 'undefined') gameData.resources.metal = savegame.resources.metal;
-    if (typeof savegame.resources.polymer !== 'undefined') gameData.resources.polymer = savegame.resources.polymer;
-    if (typeof savegame.resources.power !== 'undefined') gameData.resources.power = savegame.resources.power;
-    if (typeof savegame.resources.researchPoints !== 'undefined') gameData.resources.researchPoints = savegame.resources.researchPoints;
-    if (typeof savegame.resources.aether !== 'undefined') gameData.resources.aether = savegame.resources.aether;
-    if (typeof savegame.resources.chronoton !== 'undefined') gameData.resources.chronoton = savegame.resources.chronoton;
-    if (typeof savegame.resources.chronotonfragments !== 'undefined') gameData.resources.chronotonfragments = savegame.resources.chronotonfragments;
-    if (typeof savegame.technologies.autofightBought !== 'undefined') gameData.technologies.autofightBought = savegame.technologies.autofightBought;
-    if (typeof savegame.technologies.autofightOn !== 'undefined') gameData.technologies.autofightOn = savegame.technologies.autofightOn;
-    if (typeof savegame.technologies.autofightUnlock !== 'undefined') gameData.technologies.autofightUnlock = savegame.technologies.autofightUnlock;
-    if (typeof savegame.technologies.metalProficiencyUnlocked !== 'undefined') gameData.technologies.metalProficiencyUnlocked = savegame.technologies.metalProficiencyUnlocked;
-    if (typeof savegame.technologies.metalProficiencyBought !== 'undefined') gameData.technologies.metalProficiencyBought = savegame.technologies.metalProficiencyBought;
-    if (typeof savegame.technologies.polymerProficiencyUnlocked !== 'undefined') gameData.technologies.polymerProficiencyUnlocked = savegame.technologies.polymerProficiencyUnlocked;
-    if (typeof savegame.technologies.polymerProficiencyBought !== 'undefined') gameData.technologies.polymerProficiencyBought = savegame.technologies.polymerProficiencyBought;
-    if (typeof savegame.technologies.researchProficiency !== 'undefined') gameData.technologies.researchProficiency = savegame.technologies.researchProficiency;
-    if (typeof savegame.technologies.researchProficiencyBought !== 'undefined') gameData.technologies.researchProficiencyBought = savegame.technologies.researchProficiencyBought;
-    if (typeof savegame.technologies.shipyardTechUnlock !== 'undefined') gameData.technologies.shipyardTechUnlock = savegame.technologies.shipyardTechUnlock;
-    if (typeof savegame.technologies.railgunPrestigeLevelUnlocked !== 'undefined') gameData.technologies.railgunPrestigeLevelUnlocked = savegame.technologies.railgunPrestigeLevelUnlocked;
-    if (typeof savegame.technologies.railgunPrestigeLevelBought !== 'undefined') gameData.technologies.railgunPrestigeLevelBought = savegame.technologies.railgunPrestigeLevelBought;
-    if (typeof savegame.technologies.railgunUpgrade !== 'undefined') gameData.technologies.railgunUpgrade = savegame.technologies.railgunUpgrade;
-    if (typeof savegame.technologies.laserPrestigeLevelUnlocked !== 'undefined') gameData.technologies.laserPrestigeLevelUnlocked = savegame.technologies.laserPrestigeLevelUnlocked;
-    if (typeof savegame.technologies.laserPrestigeLevelBought !== 'undefined') gameData.technologies.laserPrestigeLevelBought = savegame.technologies.laserPrestigeLevelBought;
-    if (typeof savegame.technologies.laserUpgrade !== 'undefined') gameData.technologies.laserUpgrade = savegame.technologies.laserUpgrade;
-    if (typeof savegame.technologies.missilePrestigeLevelUnlocked !== 'undefined') gameData.technologies.missilePrestigeLevelUnlocked = savegame.technologies.missilePrestigeLevelUnlocked;
-    if (typeof savegame.technologies.missilePrestigeLevelBought !== 'undefined') gameData.technologies.missilePrestigeLevelBought = savegame.technologies.missilePrestigeLevelBought;
-    if (typeof savegame.technologies.missileUpgrade !== 'undefined') gameData.technologies.missileUpgrade = savegame.technologies.missileUpgrade;
-    if (typeof savegame.technologies.armorPrestigeLevelUnlocked !== 'undefined') gameData.technologies.armorPrestigeLevelUnlocked = savegame.technologies.armorPrestigeLevelUnlocked;
-    if (typeof savegame.technologies.armorPrestigeLevelBought !== 'undefined') gameData.technologies.armorPrestigeLevelBought = savegame.technologies.armorPrestigeLevelBought;
-    if (typeof savegame.technologies.armorUpgrade !== 'undefined') gameData.technologies.armorUpgrade = savegame.technologies.armorUpgrade;
-    if (typeof savegame.technologies.shieldPrestigeLevelUnlocked !== 'undefined') gameData.technologies.shieldPrestigeLevelUnlocked = savegame.technologies.shieldPrestigeLevelUnlocked;
-    if (typeof savegame.technologies.shieldPrestigeLevelBought !== 'undefined') gameData.technologies.shieldPrestigeLevelBought = savegame.technologies.shieldPrestigeLevelBought;
-    if (typeof savegame.technologies.shieldUpgrade !== 'undefined') gameData.technologies.shieldUpgrade = savegame.technologies.shieldUpgrade;
-    if (typeof savegame.technologies.flakPrestigeLevelUnlocked !== 'undefined') gameData.technologies.flakPrestigeLevelUnlocked = savegame.technologies.flakPrestigeLevelUnlocked;
-    if (typeof savegame.technologies.flakPrestigeLevelBought !== 'undefined') gameData.technologies.flakPrestigeLevelBought = savegame.technologies.flakPrestigeLevelBought;
-    if (typeof savegame.technologies.flakUpgrade !== 'undefined') gameData.technologies.flakUpgrade = savegame.technologies.flakUpgrade;
-    if (typeof savegame.technologies.goldMine !== 'undefined') gameData.technologies.goldMine = savegame.technologies.goldMine;
-    if (typeof savegame.missions !== 'undefined') gameData.missions = savegame.missions;
-    if (typeof savegame.world.currentMission !== 'undefined') gameData.world.currentMission = savegame.world.currentMission;
-    if (typeof savegame.world.lastGalaxy !== 'undefined') gameData.world.lastGalaxy = savegame.world.lastGalaxy;
-    if (typeof savegame.world.timeElapsed !== 'undefined') gameData.world.timeElapsed = savegame.world.timeElapsed;
-    if (typeof savegame.options.standardNotation !== 'undefined') gameData.options.standardNotation = savegame.options.standardNotation;
-    if (typeof savegame.options.logNotBase !== 'undefined') gameData.options.logNotBase = savegame.options.logNotBase;
-    if (typeof savegame.achievements !== 'undefined') gameData.achievements = savegame.achievements;
-    if (typeof savegame.perks.damager !== 'undefined') gameData.perks.damager = savegame.perks.damager;
-    if (typeof savegame.perks.looter !== 'undefined') gameData.perks.looter = savegame.perks.looter;
-    if (typeof savegame.perks.thickskin !== 'undefined') gameData.perks.thickskin = savegame.perks.thickskin;
-    if (typeof savegame.perks.speed !== 'undefined') gameData.perks.speed = savegame.perks.speed;
-    if (typeof savegame.perks.producer !== 'undefined') gameData.perks.producer = savegame.perks.producer;
-    if (typeof savegame.perks.consistency !== 'undefined') gameData.perks.consistency = savegame.perks.consistency;
-    if (typeof savegame.story.shipyardUnlocked !== 'undefined') gameData.story.shipyardUnlocked = savegame.story.shipyardUnlocked;
-    if (typeof savegame.story.gatewayUnlocked !== 'undefined') gameData.story.gatewayUnlocked = savegame.story.gatewayUnlocked;
-    if (typeof savegame.story.factoryunlocked !== 'undefined') gameData.story.factoryunlocked = savegame.story.factoryunlocked;
-    if (typeof savegame.story.labunlocked !== 'undefined') gameData.story.labunlocked = savegame.story.labunlocked;
-    if (typeof savegame.story.generatorunlocked !== 'undefined') gameData.story.generatorunlocked = savegame.story.generatorunlocked;
-    if (typeof savegame.story.plantunlocked !== 'undefined') gameData.story.plantunlocked = savegame.story.plantunlocked;
-    if (typeof savegame.story.aetherplantunlocked !== 'undefined') gameData.story.aetherplantunlocked = savegame.story.aetherplantunlocked;
-    if (typeof savegame.story.refineryunlocked !== 'undefined') gameData.story.refineryunlocked = savegame.story.refineryunlocked;
-    if (typeof savegame.story.initial !== 'undefined') gameData.story.initial = savegame.story.initial;
-    if (typeof savegame.story.firstfight !== 'undefined') gameData.story.firstfight = savegame.story.firstfight;
-    if (typeof savegame.challenges!== 'undefined') gameData.challenges = savegame.challenges;
+  gameData = new saveGameData('new');
+
+  if (gatewayReset) {
+    gameData.resources.chronoton = chronoton;
+    gameData.perks = perks;
+    gameData.achievements = passedAchievements;
+    gameData.challenges = challenges;
+  } else {
+    var savegame = JSON.parse(localStorage.getItem('save'));
+    if (savegame !== null) {
+      if (typeof savegame.buildings.shipyard !== 'undefined') gameData.buildings.shipyard = savegame.buildings.shipyard;
+      if (typeof savegame.buildings.factories !== 'undefined') gameData.buildings.factories = savegame.buildings.factories;
+      if (typeof savegame.buildings.refineries !== 'undefined') gameData.buildings.refineries = savegame.buildings.refineries;
+      if (typeof savegame.buildings.panels !== 'undefined') gameData.buildings.panels = savegame.buildings.panels;
+      if (typeof savegame.buildings.generators !== 'undefined') gameData.buildings.generators = savegame.buildings.generators;
+      if (typeof savegame.buildings.plants !== 'undefined') gameData.buildings.plants = savegame.buildings.plants;
+      if (typeof savegame.buildings.aetherPlants !== 'undefined') gameData.buildings.aetherPlants = savegame.buildings.aetherPlants;
+      if (typeof savegame.buildings.labs !== 'undefined') gameData.buildings.labs = savegame.buildings.labs;
+      if (typeof savegame.buildings.mines !== 'undefined') gameData.buildings.mines = savegame.buildings.mines;
+      if (typeof savegame.enemyship.shield !== 'undefined') gameData.enemyship.shield = savegame.enemyship.shield;
+      if (typeof savegame.enemyship.name !== 'undefined') gameData.enemyship.name = savegame.enemyship.name;
+      if (typeof savegame.enemyship.shieldMax !== 'undefined') gameData.enemyship.shieldMax = savegame.enemyship.shieldMax;
+      if (typeof savegame.enemyship.hitPoints !== 'undefined') gameData.enemyship.hitPoints = savegame.enemyship.hitPoints;
+      if (typeof savegame.enemyship.hitPointsMax !== 'undefined') gameData.enemyship.hitPointsMax = savegame.enemyship.hitPointsMax;
+      if (typeof savegame.enemyship.maxDamage !== 'undefined') gameData.enemyship.maxDamage = savegame.enemyship.maxDamage;
+      if (typeof savegame.enemyship.minDamage !== 'undefined') gameData.enemyship.minDamage = savegame.enemyship.minDamage;
+      if (typeof savegame.enemyship.attributes !== 'undefined') gameData.enemyship.attributes = savegame.enemyship.attributes;
+      if (typeof savegame.enemyship.size !== 'undefined') gameData.enemyship.size = savegame.enemyship.size;
+      if (typeof savegame.lastRailgunCombatProcessTime !== 'undefined') gameData.lastRailgunCombatProcessTime = new Date(savegame.lastRailgunCombatProcessTime);
+      if (typeof savegame.lastLaserCombatProcessTime !== 'undefined') gameData.lastLaserCombatProcessTime = new Date(savegame.lastLaserCombatProcessTime);
+      if (typeof savegame.lastResourceProcessTime !== 'undefined') gameData.lastResourceProcessTime = new Date(savegame.lastResourceProcessTime);
+      if (typeof savegame.nextProcessTime !== 'undefined') gameData.nextProcessTime = new Date(savegame.nextProcessTime);
+      if (typeof savegame.lastSentShipTime !== 'undefined') gameData.lastSentShipTime = new Date(savegame.lastSentShipTime);
+      if (typeof savegame.playership.shield !== 'undefined') gameData.playership.shield = savegame.playership.shield;
+      if (typeof savegame.playership.shieldMax !== 'undefined') gameData.playership.shieldMax = savegame.playership.shieldMax;
+      if (typeof savegame.playership.hitPoints !== 'undefined') gameData.playership.hitPoints = savegame.playership.hitPoints;
+      if (typeof savegame.playership.hitPointsMax !== 'undefined') gameData.playership.hitPointsMax = savegame.playership.hitPointsMax;
+      if (typeof savegame.playership.maxDamage !== 'undefined') gameData.playership.maxDamage = savegame.playership.maxDamage;
+      if (typeof savegame.playership.minDamage !== 'undefined') gameData.playership.minDamage = savegame.playership.minDamage;
+      if (typeof savegame.playership.size !== 'undefined') gameData.playership.size = savegame.playership.size;
+      if (typeof savegame.playership.name !== 'undefined') gameData.playership.name = savegame.playership.name;
+      if (typeof savegame.resources.metal !== 'undefined') gameData.resources.metal = savegame.resources.metal;
+      if (typeof savegame.resources.polymer !== 'undefined') gameData.resources.polymer = savegame.resources.polymer;
+      if (typeof savegame.resources.power !== 'undefined') gameData.resources.power = savegame.resources.power;
+      if (typeof savegame.resources.researchPoints !== 'undefined') gameData.resources.researchPoints = savegame.resources.researchPoints;
+      if (typeof savegame.resources.aether !== 'undefined') gameData.resources.aether = savegame.resources.aether;
+      if (typeof savegame.resources.chronoton !== 'undefined') gameData.resources.chronoton = savegame.resources.chronoton;
+      if (typeof savegame.resources.chronotonfragments !== 'undefined') gameData.resources.chronotonfragments = savegame.resources.chronotonfragments;
+      if (typeof savegame.technologies.autofightBought !== 'undefined') gameData.technologies.autofightBought = savegame.technologies.autofightBought;
+      if (typeof savegame.technologies.autofightOn !== 'undefined') gameData.technologies.autofightOn = savegame.technologies.autofightOn;
+      if (typeof savegame.technologies.autofightUnlock !== 'undefined') gameData.technologies.autofightUnlock = savegame.technologies.autofightUnlock;
+      if (typeof savegame.technologies.metalProficiencyUnlocked !== 'undefined') gameData.technologies.metalProficiencyUnlocked = savegame.technologies.metalProficiencyUnlocked;
+      if (typeof savegame.technologies.metalProficiencyBought !== 'undefined') gameData.technologies.metalProficiencyBought = savegame.technologies.metalProficiencyBought;
+      if (typeof savegame.technologies.polymerProficiencyUnlocked !== 'undefined') gameData.technologies.polymerProficiencyUnlocked = savegame.technologies.polymerProficiencyUnlocked;
+      if (typeof savegame.technologies.polymerProficiencyBought !== 'undefined') gameData.technologies.polymerProficiencyBought = savegame.technologies.polymerProficiencyBought;
+      if (typeof savegame.technologies.researchProficiency !== 'undefined') gameData.technologies.researchProficiency = savegame.technologies.researchProficiency;
+      if (typeof savegame.technologies.researchProficiencyBought !== 'undefined') gameData.technologies.researchProficiencyBought = savegame.technologies.researchProficiencyBought;
+      if (typeof savegame.technologies.shipyardTechUnlock !== 'undefined') gameData.technologies.shipyardTechUnlock = savegame.technologies.shipyardTechUnlock;
+      if (typeof savegame.technologies.railgunPrestigeLevelUnlocked !== 'undefined') gameData.technologies.railgunPrestigeLevelUnlocked = savegame.technologies.railgunPrestigeLevelUnlocked;
+      if (typeof savegame.technologies.railgunPrestigeLevelBought !== 'undefined') gameData.technologies.railgunPrestigeLevelBought = savegame.technologies.railgunPrestigeLevelBought;
+      if (typeof savegame.technologies.railgunUpgrade !== 'undefined') gameData.technologies.railgunUpgrade = savegame.technologies.railgunUpgrade;
+      if (typeof savegame.technologies.laserPrestigeLevelUnlocked !== 'undefined') gameData.technologies.laserPrestigeLevelUnlocked = savegame.technologies.laserPrestigeLevelUnlocked;
+      if (typeof savegame.technologies.laserPrestigeLevelBought !== 'undefined') gameData.technologies.laserPrestigeLevelBought = savegame.technologies.laserPrestigeLevelBought;
+      if (typeof savegame.technologies.laserUpgrade !== 'undefined') gameData.technologies.laserUpgrade = savegame.technologies.laserUpgrade;
+      if (typeof savegame.technologies.missilePrestigeLevelUnlocked !== 'undefined') gameData.technologies.missilePrestigeLevelUnlocked = savegame.technologies.missilePrestigeLevelUnlocked;
+      if (typeof savegame.technologies.missilePrestigeLevelBought !== 'undefined') gameData.technologies.missilePrestigeLevelBought = savegame.technologies.missilePrestigeLevelBought;
+      if (typeof savegame.technologies.missileUpgrade !== 'undefined') gameData.technologies.missileUpgrade = savegame.technologies.missileUpgrade;
+      if (typeof savegame.technologies.armorPrestigeLevelUnlocked !== 'undefined') gameData.technologies.armorPrestigeLevelUnlocked = savegame.technologies.armorPrestigeLevelUnlocked;
+      if (typeof savegame.technologies.armorPrestigeLevelBought !== 'undefined') gameData.technologies.armorPrestigeLevelBought = savegame.technologies.armorPrestigeLevelBought;
+      if (typeof savegame.technologies.armorUpgrade !== 'undefined') gameData.technologies.armorUpgrade = savegame.technologies.armorUpgrade;
+      if (typeof savegame.technologies.shieldPrestigeLevelUnlocked !== 'undefined') gameData.technologies.shieldPrestigeLevelUnlocked = savegame.technologies.shieldPrestigeLevelUnlocked;
+      if (typeof savegame.technologies.shieldPrestigeLevelBought !== 'undefined') gameData.technologies.shieldPrestigeLevelBought = savegame.technologies.shieldPrestigeLevelBought;
+      if (typeof savegame.technologies.shieldUpgrade !== 'undefined') gameData.technologies.shieldUpgrade = savegame.technologies.shieldUpgrade;
+      if (typeof savegame.technologies.flakPrestigeLevelUnlocked !== 'undefined') gameData.technologies.flakPrestigeLevelUnlocked = savegame.technologies.flakPrestigeLevelUnlocked;
+      if (typeof savegame.technologies.flakPrestigeLevelBought !== 'undefined') gameData.technologies.flakPrestigeLevelBought = savegame.technologies.flakPrestigeLevelBought;
+      if (typeof savegame.technologies.flakUpgrade !== 'undefined') gameData.technologies.flakUpgrade = savegame.technologies.flakUpgrade;
+      if (typeof savegame.technologies.goldMine !== 'undefined') gameData.technologies.goldMine = savegame.technologies.goldMine;
+      if (typeof savegame.missions !== 'undefined') gameData.missions = savegame.missions;
+      if (typeof savegame.world.currentMission !== 'undefined') gameData.world.currentMission = savegame.world.currentMission;
+      if (typeof savegame.world.lastGalaxy !== 'undefined') gameData.world.lastGalaxy = savegame.world.lastGalaxy;
+      if (typeof savegame.world.timeElapsed !== 'undefined') gameData.world.timeElapsed = savegame.world.timeElapsed;
+      if (typeof savegame.options.standardNotation !== 'undefined') gameData.options.standardNotation = savegame.options.standardNotation;
+      if (typeof savegame.options.logNotBase !== 'undefined') gameData.options.logNotBase = savegame.options.logNotBase;
+      if (typeof savegame.achievements !== 'undefined') gameData.achievements = savegame.achievements;
+      if (typeof savegame.perks.damager !== 'undefined') gameData.perks.damager = savegame.perks.damager;
+      if (typeof savegame.perks.looter !== 'undefined') gameData.perks.looter = savegame.perks.looter;
+      if (typeof savegame.perks.thickskin !== 'undefined') gameData.perks.thickskin = savegame.perks.thickskin;
+      if (typeof savegame.perks.speed !== 'undefined') gameData.perks.speed = savegame.perks.speed;
+      if (typeof savegame.perks.producer !== 'undefined') gameData.perks.producer = savegame.perks.producer;
+      if (typeof savegame.perks.consistency !== 'undefined') gameData.perks.consistency = savegame.perks.consistency;
+      if (typeof savegame.story.shipyardUnlocked !== 'undefined') gameData.story.shipyardUnlocked = savegame.story.shipyardUnlocked;
+      if (typeof savegame.story.gatewayUnlocked !== 'undefined') gameData.story.gatewayUnlocked = savegame.story.gatewayUnlocked;
+      if (typeof savegame.story.factoryunlocked !== 'undefined') gameData.story.factoryunlocked = savegame.story.factoryunlocked;
+      if (typeof savegame.story.labunlocked !== 'undefined') gameData.story.labunlocked = savegame.story.labunlocked;
+      if (typeof savegame.story.generatorunlocked !== 'undefined') gameData.story.generatorunlocked = savegame.story.generatorunlocked;
+      if (typeof savegame.story.plantunlocked !== 'undefined') gameData.story.plantunlocked = savegame.story.plantunlocked;
+      if (typeof savegame.story.aetherplantunlocked !== 'undefined') gameData.story.aetherplantunlocked = savegame.story.aetherplantunlocked;
+      if (typeof savegame.story.refineryunlocked !== 'undefined') gameData.story.refineryunlocked = savegame.story.refineryunlocked;
+      if (typeof savegame.story.initial !== 'undefined') gameData.story.initial = savegame.story.initial;
+      if (typeof savegame.story.firstfight !== 'undefined') gameData.story.firstfight = savegame.story.firstfight;
+      if (typeof savegame.challenges!== 'undefined') gameData.challenges = savegame.challenges;
+    }
   }
+  $('#building').tab('show');
+  $('#polymercontainer').addClass('hidden');
+  $('#btnBuyFactory').addClass('hidden');
+  $('#labscontainer').addClass('hidden');
+  $('#btnBuyLab').addClass('hidden');
+  $('#btnBuyGenerator').addClass('hidden');
+  $('#btnBuyPlant').addClass('hidden');
+  $('#btnBuyRefinery').addClass('hidden');
+  $('#btnBuyAetherPlant').addClass('hidden');
+  $('#fightcontrols').addClass('hidden');
+  $('#fightdisplay').addClass('hidden');
+  $('#missionvisible').addClass('hidden');
+  $('#upgradevisible').addClass('hidden');
+  $('#techvisible').addClass('hidden');
+  $('#chronotonfragmentscontainer').addClass('hidden');
+  $('#chronotoncontainer').addClass('hidden');
+  $('#aethercontainer').addClass('hidden');
+  $('#upgrade-tab').addClass('hidden');
+  $('#missions-tab').addClass('hidden');
+  $('#btnFight').addClass('hidden');
+  $('#btnAutoFight').addClass('hidden');
+  $('#btnAutoFightOn').addClass('hidden');
+  $('#btnGateway').addClass('hidden');
+  $('#btnSuicide').addClass('hidden');
+
+  $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
+  $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
+    '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
+  $('#btnPolymerTech').attr('title', 'Polymer Cost:' + prettify(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)) +
+    '\nResearch Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)));
+  $('#btnResearchTech').attr('title', 'Metal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
+    '\nPolymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
+    '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
+  $('#btnBuyShipyard').attr('title', gameBuildings.shipyard.tooltipForBuy());
+  $('#btnBuyMine').attr('title', gameBuildings.mine.tooltipForBuy());
+  $('#btnBuyLab').attr('title', gameBuildings.lab.tooltipForBuy());
+  $('#btnBuyPanel').attr('title', gameBuildings.panel.tooltipForBuy());
+  $('#btnBuyGenerator').attr('title', gameBuildings.generator.tooltipForBuy());
+  $('#btnBuyPlant').attr('title', gameBuildings.plant.tooltipForBuy());
+  $('#btnBuyAetherPlant').attr('title', gameBuildings.aetherPlant.tooltipForBuy());
+  $('#btnBuyFactory').attr('title', gameBuildings.factory.tooltipForBuy());
+  $('#btnBuyRefinery').attr('title', gameBuildings.refinery.tooltipForBuy());
+  $('#btnBuyMine').text('Mine(' + (gameData.buildings.mines) + ')');
+  $('#btnBuyLab').text('Lab(' + (gameData.buildings.labs) + ')');
+  $('#btnBuyFactory').text('Factory(' + (gameData.buildings.factories) + ')');
+  $('#btnBuyRefinery').text('Refinery(' + (gameData.buildings.refineries) + ')');
+  $('#btnBuyGenerator').text('Generator(' + (gameData.buildings.generators) + ')');
+  $('#btnBuyPlant').text('Plant(' + (gameData.buildings.plants) + ')');
+  $('#btnBuyAetherPlant').text('Aether Plant(' + (gameData.buildings.aetherPlants) + ')');
+  $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')');
+  $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
+  
+  gameEquipment.railgun.updateUpgradeText();
+  gameEquipment.railgun.updatePrestigeText();
+  gameEquipment.railgun.updateUpgradeTooltip();
+  gameEquipment.railgun.updatePrestigeTooltip();
+  gameEquipment.laser.updateUpgradeText();
+  gameEquipment.laser.updatePrestigeText();
+  gameEquipment.laser.updateUpgradeTooltip();
+  gameEquipment.laser.updatePrestigeTooltip();
+  gameEquipment.missile.updateUpgradeText();
+  gameEquipment.missile.updatePrestigeText();
+  gameEquipment.missile.updateUpgradeTooltip();
+  gameEquipment.missile.updatePrestigeTooltip();
+  gameEquipment.armor.updateUpgradeText();
+  gameEquipment.armor.updatePrestigeText();
+  gameEquipment.armor.updateUpgradeTooltip();
+  gameEquipment.armor.updatePrestigeTooltip();
+  gameEquipment.shield.updateUpgradeText();
+  gameEquipment.shield.updatePrestigeText();
+  gameEquipment.shield.updateUpgradeTooltip();
+  gameEquipment.shield.updatePrestigeTooltip();
+  gameEquipment.flak.updateUpgradeText();
+  gameEquipment.flak.updatePrestigeText();
+  gameEquipment.flak.updateUpgradeTooltip();
+  gameEquipment.flak.updatePrestigeTooltip();
+
+  gamePerks.looter.updateBuyButtonText();
+  gamePerks.looter.updateBuyButtonTooltip();
+  gamePerks.producer.updateBuyButtonText();
+  gamePerks.producer.updateBuyButtonTooltip();
+  gamePerks.damager.updateBuyButtonText();
+  gamePerks.damager.updateBuyButtonTooltip();
+  gamePerks.thickskin.updateBuyButtonText();
+  gamePerks.thickskin.updateBuyButtonTooltip();
+  gamePerks.speed.updateBuyButtonText();
+  gamePerks.speed.updateBuyButtonTooltip();
+  gamePerks.consistency.updateBuyButtonText();
+  gamePerks.consistency.updateBuyButtonTooltip();
+
   $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
   $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
   $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
@@ -1947,43 +1956,8 @@ function init() {
   gameBuildings.plant.updateBuyButtonTooltip();
   gameBuildings.aetherPlant.updateBuyButtonText();
   gameBuildings.aetherPlant.updateBuyButtonTooltip();
-  gameEquipment.railgun.updateUpgradeText();
-  gameEquipment.railgun.updatePrestigeText();
-  gameEquipment.railgun.updateUpgradeTooltip();
-  gameEquipment.railgun.updatePrestigeTooltip();
-  gameEquipment.laser.updateUpgradeText();
-  gameEquipment.laser.updatePrestigeText();
-  gameEquipment.laser.updateUpgradeTooltip();
-  gameEquipment.laser.updatePrestigeTooltip();
-  gameEquipment.missile.updateUpgradeText();
-  gameEquipment.missile.updatePrestigeText();
-  gameEquipment.missile.updateUpgradeTooltip();
-  gameEquipment.missile.updatePrestigeTooltip();
-  gameEquipment.armor.updateUpgradeText();
-  gameEquipment.armor.updatePrestigeText();
-  gameEquipment.armor.updateUpgradeTooltip();
-  gameEquipment.armor.updatePrestigeTooltip();
-  gameEquipment.shield.updateUpgradeText();
-  gameEquipment.shield.updatePrestigeText();
-  gameEquipment.shield.updateUpgradeTooltip();
-  gameEquipment.shield.updatePrestigeTooltip();
-  gameEquipment.flak.updateUpgradeText();
-  gameEquipment.flak.updatePrestigeText();
-  gameEquipment.flak.updateUpgradeTooltip();
-  gameEquipment.flak.updatePrestigeTooltip();
+
   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
-  gamePerks.looter.updateBuyButtonText();
-  gamePerks.looter.updateBuyButtonTooltip();
-  gamePerks.producer.updateBuyButtonText();
-  gamePerks.producer.updateBuyButtonTooltip();
-  gamePerks.damager.updateBuyButtonText();
-  gamePerks.damager.updateBuyButtonTooltip();
-  gamePerks.thickskin.updateBuyButtonText();
-  gamePerks.thickskin.updateBuyButtonTooltip();
-  gamePerks.speed.updateBuyButtonText();
-  gamePerks.speed.updateBuyButtonTooltip();
-  gamePerks.consistency.updateBuyButtonText();
-  gamePerks.consistency.updateBuyButtonTooltip();
 
   if (gameData.missions.length < 1) {
     var newMission = new Mission('Galaxy 1','Galaxy', 1, true, 1, 1, 1, 100, true);
@@ -1993,6 +1967,7 @@ function init() {
   initted = true;
   updateMissionButtons();
   sortBuildings($('#buildingvisible'), true);
+  gameData.world.paused = false;
 }
 
 function getAchievementBonus() {
@@ -2950,9 +2925,15 @@ function addAchievement(name:string, bonus:number) {
 window.setInterval(function () {
   if (!initted) {
     if(document.readyState === "complete" ) {
-      init();
+      var savedperks = new perks();
+      var savedachievements = [];
+      var savedChallenges = new challenges();
+     init(0, savedperks, savedachievements, savedChallenges, false)
     }
     return; // still waiting on pageload
+  }
+  if (gameData.world.paused) {
+    return;
   }
   var currentTime = new Date();
   var timeToCheckForSave = new Date();
@@ -2983,7 +2964,7 @@ window.setInterval(function () {
       gameData.world.timeElapsed += RESOURCE_PRODUCTION_FRAME_RATE;
     }
 
-    if (gameData.nextProcessTime > gameData.lastRailgunCombatProcessTime && !gameData.world.paused) {
+    if (gameData.nextProcessTime > gameData.lastRailgunCombatProcessTime) {
       gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() + MILLISECONDS_PER_ATTACK_BASE - (gameData.perks.speed * 50));
       // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick
       if (gameData.playership.hitPoints > 0) {
