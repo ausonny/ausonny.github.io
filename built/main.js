@@ -393,26 +393,50 @@ function giveReward() {
 function giveMissionReward(mission) {
     if (mission.name === 'Railgun Plans') {
         gameData.technologies.railgunPrestigeLevelUnlocked++;
+        gameEquipment.railgun.updateUpgradeText();
+        gameEquipment.railgun.updatePrestigeText();
+        gameEquipment.railgun.updateUpgradeTooltip();
+        gameEquipment.railgun.updatePrestigeTooltip();
         addToDisplay('I have discovered plans that will allow me to infuse railguns with aether!', 'mission');
     }
     else if (mission.name === 'Laser Plans') {
         gameData.technologies.laserPrestigeLevelUnlocked++;
+        gameEquipment.laser.updateUpgradeText();
+        gameEquipment.laser.updatePrestigeText();
+        gameEquipment.laser.updateUpgradeTooltip();
+        gameEquipment.laser.updatePrestigeTooltip();
         addToDisplay('I have discovered plans that will allow me to infuse lasers with aether', 'mission');
     }
     else if (mission.name === 'Missile Plans') {
         gameData.technologies.missilePrestigeLevelUnlocked++;
+        gameEquipment.missile.updateUpgradeText();
+        gameEquipment.missile.updatePrestigeText();
+        gameEquipment.missile.updateUpgradeTooltip();
+        gameEquipment.missile.updatePrestigeTooltip();
         addToDisplay('Missiles can be even more missiley!', 'mission');
     }
     else if (mission.name === 'Armor Plans') {
         gameData.technologies.armorPrestigeLevelUnlocked++;
+        gameEquipment.armor.updateUpgradeText();
+        gameEquipment.armor.updatePrestigeText();
+        gameEquipment.armor.updateUpgradeTooltip();
+        gameEquipment.armor.updatePrestigeTooltip();
         addToDisplay('Aether will really help out our Armor!', 'mission');
     }
     else if (mission.name === 'Shield Plans') {
         gameData.technologies.shieldPrestigeLevelUnlocked++;
+        gameEquipment.shield.updateUpgradeText();
+        gameEquipment.shield.updatePrestigeText();
+        gameEquipment.shield.updateUpgradeTooltip();
+        gameEquipment.shield.updatePrestigeTooltip();
         addToDisplay('Shields.  Now with 8 times the shieldiness!', 'mission');
     }
     else if (mission.name === 'Flak Plans') {
         gameData.technologies.flakPrestigeLevelUnlocked++;
+        gameEquipment.flak.updateUpgradeText();
+        gameEquipment.flak.updatePrestigeText();
+        gameEquipment.flak.updateUpgradeTooltip();
+        gameEquipment.flak.updatePrestigeTooltip();
         addToDisplay('Flak is even more flaky! Flakky? I dunno', 'mission');
     }
     else if (mission.name === 'A Gold Mine') {
@@ -2654,42 +2678,6 @@ function checkForUnlocks() {
         gameData.challenges.consistency.unlocked = true;
     }
 }
-// Date.dateDiff = function (datepart, fromdate, todate) {
-//   datepart = datepart.toLowerCase();
-//   var diff = todate - fromdate;
-//   var divideBy = {
-//     w: 604800000,
-//     d: 86400000,
-//     h: 3600000,
-//     n: 60000,
-//     s: 1000,
-//     ms: 1
-//   };
-//   return Math.floor(diff / divideBy[datepart]);
-// };
-// document.addEventListener('DOMContentLoaded', function() {
-//   init();
-// }, false);
-// $(document).ready(function(){
-//   init();
-//   });
-// function OnPageLoadFunction() {
-//   init();
-// }
-// function addLoadEvent(func) {
-//   var oldonload = window.onload;
-//   if (typeof window.onload !== 'function') {
-//     window.onload = func;
-//   } else {
-//     window.onload = function () {
-//       if (oldonload) {
-//         oldonload();
-//       }
-//       func();
-//     };
-//   }
-// }
-// addLoadEvent(OnPageLoadFunction);
 function checkForGalaxy(s) {
     if (gameData.missions[0].missiontype != 'Galaxy') {
         addToDisplay('PROBLEM PROBLEM PROBLEM' + s, 'story');
