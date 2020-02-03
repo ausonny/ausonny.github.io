@@ -560,25 +560,49 @@ function giveReward() {
 function giveMissionReward(mission: Mission) {
   if (mission.name === 'Railgun Plans') {
     gameData.technologies.railgunPrestigeLevelUnlocked++;
-    addToDisplay('I have discovered plans that will allow me to infuse railguns with aether!', 'mission');
+    gameEquipment.railgun.updateUpgradeText();
+    gameEquipment.railgun.updatePrestigeText();
+    gameEquipment.railgun.updateUpgradeTooltip();
+    gameEquipment.railgun.updatePrestigeTooltip();
+      addToDisplay('I have discovered plans that will allow me to infuse railguns with aether!', 'mission');
   } else if (mission.name === 'Laser Plans') {
     gameData.technologies.laserPrestigeLevelUnlocked++;
-    addToDisplay('I have discovered plans that will allow me to infuse lasers with aether', 'mission');
+    gameEquipment.laser.updateUpgradeText();
+    gameEquipment.laser.updatePrestigeText();
+    gameEquipment.laser.updateUpgradeTooltip();
+    gameEquipment.laser.updatePrestigeTooltip();
+      addToDisplay('I have discovered plans that will allow me to infuse lasers with aether', 'mission');
   } else if (mission.name === 'Missile Plans') {
     gameData.technologies.missilePrestigeLevelUnlocked++;
-    addToDisplay('Missiles can be even more missiley!', 'mission');
+    gameEquipment.missile.updateUpgradeText();
+    gameEquipment.missile.updatePrestigeText();
+    gameEquipment.missile.updateUpgradeTooltip();
+    gameEquipment.missile.updatePrestigeTooltip();
+      addToDisplay('Missiles can be even more missiley!', 'mission');
   } else if (mission.name === 'Armor Plans') {
     gameData.technologies.armorPrestigeLevelUnlocked++;
-    addToDisplay('Aether will really help out our Armor!', 'mission');
+    gameEquipment.armor.updateUpgradeText();
+    gameEquipment.armor.updatePrestigeText();
+    gameEquipment.armor.updateUpgradeTooltip();
+    gameEquipment.armor.updatePrestigeTooltip();
+     addToDisplay('Aether will really help out our Armor!', 'mission');
   } else if (mission.name === 'Shield Plans') {
     gameData.technologies.shieldPrestigeLevelUnlocked++;
-    addToDisplay('Shields.  Now with 8 times the shieldiness!', 'mission');
+    gameEquipment.shield.updateUpgradeText();
+    gameEquipment.shield.updatePrestigeText();
+    gameEquipment.shield.updateUpgradeTooltip();
+    gameEquipment.shield.updatePrestigeTooltip();
+      addToDisplay('Shields.  Now with 8 times the shieldiness!', 'mission');
   } else if (mission.name === 'Flak Plans') {
     gameData.technologies.flakPrestigeLevelUnlocked++;
-    addToDisplay('Flak is even more flaky! Flakky? I dunno', 'mission');
+    gameEquipment.flak.updateUpgradeText();
+    gameEquipment.flak.updatePrestigeText();
+    gameEquipment.flak.updateUpgradeTooltip();
+    gameEquipment.flak.updatePrestigeTooltip();
+      addToDisplay('Flak is even more flaky! Flakky? I dunno', 'mission');
   } else if (mission.name === 'A Gold Mine') {
     gameData.technologies.goldMine++;
-    addToDisplay('With the new algorithms gained at the Gold Mine I can double all forms of production!', 'story');
+      addToDisplay('With the new algorithms gained at the Gold Mine I can double all forms of production!', 'story');
   } else if (mission.name === 'The Gateway') {
     gameData.story.gatewayUnlocked = true;
     addToDisplay('This location contains a large, prestigious, circular structure.  I can easily travel there and step through it, but what will I find?  I have also discovered some chronoton fragments.  I don\'t see a use for them but they may come in handy later', 'story');
@@ -2757,47 +2781,6 @@ function checkForUnlocks() {
     gameData.challenges.consistency.unlocked = true;
   }
 }
-
-// Date.dateDiff = function (datepart, fromdate, todate) {
-//   datepart = datepart.toLowerCase();
-//   var diff = todate - fromdate;
-//   var divideBy = {
-//     w: 604800000,
-//     d: 86400000,
-//     h: 3600000,
-//     n: 60000,
-//     s: 1000,
-//     ms: 1
-//   };
-
-//   return Math.floor(diff / divideBy[datepart]);
-// };
-
-// document.addEventListener('DOMContentLoaded', function() {
-//   init();
-// }, false);
-
-// $(document).ready(function(){
-//   init();
-//   });
-// function OnPageLoadFunction() {
-//   init();
-// }
-
-// function addLoadEvent(func) {
-//   var oldonload = window.onload;
-//   if (typeof window.onload !== 'function') {
-//     window.onload = func;
-//   } else {
-//     window.onload = function () {
-//       if (oldonload) {
-//         oldonload();
-//       }
-//       func();
-//     };
-//   }
-// }
-// addLoadEvent(OnPageLoadFunction);
 
 function checkForGalaxy(s:number) {
   if (gameData.missions[0].missiontype != 'Galaxy') {
