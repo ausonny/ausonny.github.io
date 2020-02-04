@@ -83,27 +83,22 @@
         </div>
         <button class="btn btn-sm btn-primary menubutton" id="btnAbilities" type="button" data-toggle="modal" data-target="#AbilitiesModal">Abilities</button>
         <div class="modal fade" id="AbilitiesModal" tabindex="-1" role="dialog" aria-labelledby="abilitiesModalLabel" aria-hidden="true">
-          <div class="modal-dialog" role="document">
+          <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
               <div class="modal-header bg-dark">
                 <h5 class="modal-title" id="abilitiesModalLabel">Abilities</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               </div>
               <div class="modal-body bg-secondary">
-                Chronoton:<span id="chronoton2">0</span>
+                Chronoton:<span id="chronoton2">0</span><br />
                 Chronoton Spent:<span id="chronotonspent">0</span><br />
                 <button class="btn btn-sm btn-danger" id="btnResetAbilities" type="button" data-toggle="tooltip" data-placement="bottom" title="Resets all abilities to 0" onclick="resetAbilities()">Reset Abilities</button>
                 <button class="btn btn-sm btn-primary" id="btnLooter" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to looting additively" onclick="gamePerks.looter.add()">Looter 1</button>
-                <button class="btn btn-sm btn-primary" id="btnProducer" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to metal and polymer production additively"
-                  onclick="gamePerks.producer.add()">Producer
-                  1</button>
+                <button class="btn btn-sm btn-primary" id="btnProducer" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to metal and polymer production additively" onclick="gamePerks.producer.add()">Producer 1</button>
                 <button class="btn btn-sm btn-primary" id="btnDamager" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to damage additively" onclick="gamePerks.damager.add()">Damager 1</button>
-                <button class="btn btn-sm btn-primary" id="btnThickSkin" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to defenses additively" onclick="gamePerks.thickskin.add()">Thick Skin
-                  1</button>
-                <button class="btn btn-sm btn-primary" id="btnSpeed" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten the wait time between attacks by 50ms" onclick="gamePerks.speed.add()">Speed
-                  1</button>
+                <button class="btn btn-sm btn-primary" id="btnThickSkin" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to defenses additively" onclick="gamePerks.thickskin.add()">Thick Skin 1</button>
+                <button class="btn btn-sm btn-primary" id="btnSpeed" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten the wait time between attacks by 50ms" onclick="gamePerks.speed.add()">Speed 1</button>
+                <button class="btn btn-sm btn-primary" id="btnConsistency" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will raise the minimum attack by 1%" onclick="gamePerks.consistency.add()">Consistency 1</button>
               </div>
               <div class="modal-footer bg-dark">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
