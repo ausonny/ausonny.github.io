@@ -1,4 +1,4 @@
-/* globals $, gtag, localStorage, moment, location */
+/* globals $, gtag, localStorage, location */
 /* exported gatewayClick, resetGame, buyAutoFight, buyMetalProficiency, buyPolymerProficiency, buyResearchProficiency, switchAutoFight, resetAbilities, changeNotation, exportsave, suicideShip,  */
 const AUTOFIGHT_METAL_COST = 1000;
 const AUTOFIGHT_POLYMER_COST = 500;
@@ -165,7 +165,7 @@ class saveGameData {
             refineryunlocked: false,
             shipyardUnlocked: false
         };
-        this.perks = new perks;
+        this.perks = new perks();
         this.options = {
             logNotBase: 1,
             standardNotation: 1
@@ -177,7 +177,7 @@ class saveGameData {
             metal: 0,
             polymer: 0,
             power: 0,
-            researchPoints: 0,
+            researchPoints: 0
         };
         this.buildings = {
             aetherPlants: 0,
@@ -197,7 +197,9 @@ class saveGameData {
             currentMission: 0,
             lastGalaxy: 0,
             paused: false,
-            timeElapsed: 0
+            timeElapsed: 0,
+            dronesCreated: 0,
+            currentChallenge: ''
         };
         this.achievements = [];
         this.technologies = {
@@ -276,10 +278,10 @@ class Mission {
                 }
                 newEnemy.lootAmount *= 2;
             }
-            if (newEnemy.attributes.filter(att => (att.name === "Hardy")).length > 0) {
+            if (newEnemy.attributes.filter((att) => (att.name === 'Hardy')).length > 0) {
                 newEnemy.hitPointsMax *= 2;
             }
-            if (newEnemy.attributes.filter(att => (att.name === "Elite")).length > 0) {
+            if (newEnemy.attributes.filter((att) => (att.name === 'Elite')).length > 0) {
                 newEnemy.shieldMax *= 2;
             }
             for (var i = 0; i < newEnemy.attributes.length; i++) {
@@ -331,6 +333,8 @@ class Ship {
             var shipPolymerCost = shipPolymerRequired();
             gameData.resources.metal -= shipMetalCost;
             gameData.resources.polymer -= shipPolymerCost;
+            gameData.world.dronesCreated += 1;
+            this.name = 'Drone ' + convertToRoman(gameData.world.dronesCreated);
             this.size = 1 * Math.pow(1.25, gameData.buildings.shipyard - 1);
             this.hitPointsMax = gameData.playership.size * ((gameData.technologies.armorUpgrade * ARMOR_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)));
             this.hitPointsMax += gameData.playership.size * ((gameData.technologies.flakUpgrade * FLAK_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought - 1)));
@@ -344,7 +348,12 @@ class Ship {
             var baseMissileAttack = (gameData.technologies.missileUpgrade * MISSILE_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1));
             var baseAttack = this.size * (baseRailgunAttack + baseLaserAttack + baseMissileAttack) * getAchievementBonus() * gamePerks.damager.getBonus();
             this.minDamage = baseAttack * (0.75 + (gameData.perks.consistency / 100));
-            this.maxDamage = baseAttack * 1.25;
+            if (gameData.world.currentChallenge === 'Consistency') {
+                this.maxDamage = this.minDamage;
+            }
+            else {
+                this.maxDamage = baseAttack * 1.25;
+            }
             if (this.minDamage > 100) {
                 addAchievement('100 Damage Reached!', 1);
             }
@@ -472,7 +481,7 @@ function chronotonAvailable() {
     rtn -= gamePerks.speed.chronotonSpent();
     return rtn;
 }
-function gatewayClick() {
+function gatewayClick(challengeChosen = '') {
     gameData.world.paused = true;
     gameData.resources.chronoton += gameData.resources.chronotonfragments;
     gameData.resources.chronotonfragments = 0;
@@ -487,7 +496,7 @@ function gatewayClick() {
     var savedChallenges = new challenges();
     savedChallenges.consistency.completed = gameData.challenges.consistency.completed;
     savedChallenges.consistency.unlocked = gameData.challenges.consistency.unlocked;
-    init(gameData.resources.chronoton, savedperks, savedachievements, savedChallenges, true);
+    init(savedperks, savedChallenges, true, challengeChosen, gameData.resources.chronoton, savedachievements);
     $('#GatewayModal').modal('hide');
     gtag('event', 'gateway', {
         event_category: 'event',
@@ -678,7 +687,7 @@ var gamePerks = {
         chronotonforBuy: function () { return 1 * Math.pow(1.3, gameData.perks.consistency); },
         chronotonSpent: function () { return sumOfExponents(gameData.perks.consistency, 1, 1.3); },
         canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
-        updateBuyButtonText: function () { $('#btnConsistency').text('Consistency(' + (gameData.perks.thickskin) + ')'); },
+        updateBuyButtonText: function () { $('#btnConsistency').text('Consistency(' + (gameData.perks.consistency) + ')'); },
         updateBuyButtonTooltip: function () { $('#btnConsistency').attr('title', 'Each level bought will add increase the minimum damage by 1% additively\n\nChronoton Cost:' + prettify(this.chronotonforBuy())); },
         determineShowBuyButton: function () {
             if (gameData.challenges.consistency.completed) {
@@ -1618,7 +1627,7 @@ function prettify(number) {
         // Thanks ZXV
         var logBase = gameData.options.logNotBase;
         exponent = (Math.log(number) / Math.log(logBase)).toString();
-        return prettifySub(parseInt(exponent)) + 'L' + logBase;
+        return prettifySub(parseInt(exponent, 10)) + 'L' + logBase;
     }
     number /= Math.pow(1000, base);
     if (number >= 999.5) {
@@ -1679,7 +1688,8 @@ function resetGame() {
 function exportsave() {
     debugText = JSON.stringify(gameData);
 }
-function init(chronoton = 0, perks, passedAchievements = [], challenges, gatewayReset = false) {
+function init(passedperks, passedchallenges, gatewayReset = false, activeChallenge = '', chronoton = 0, passedAchievements = []) {
+    debugText += 'v0.6.7 - Conversion to typescript is complete.\nThe first challenge is in the game.  It is called consistency and lowers the max damage to the min damage.  It is unlocked at galaxy 25 and is completed by reaching level 25.  It is activated on the gateway screen.  It unlocks the consistency ability which increases min damage.  When maxed out min damage will be 100% of the base damage while max damage stays at 125%.';
     debugText += 'Known issues and other ramblings:\n1. If the tab loses focus or is closed, when you return you will notice the game runs faster than expected until time catches up.  Enjoy this for now, eventually there will be an ability that will allow/limit this time\n';
     debugText += '2. There are currently no tooltips for touchscreen users.\n';
     debugText += '3. TODO I need an achievement screen that shows all achievements completed and still to do, along with the current bonus gained from achievements\n';
@@ -1705,9 +1715,10 @@ function init(chronoton = 0, perks, passedAchievements = [], challenges, gateway
     gameData = new saveGameData('new');
     if (gatewayReset) {
         gameData.resources.chronoton = chronoton;
-        gameData.perks = perks;
+        gameData.perks = passedperks;
         gameData.achievements = passedAchievements;
-        gameData.challenges = challenges;
+        gameData.challenges = passedchallenges;
+        gameData.world.currentChallenge = activeChallenge;
     }
     else {
         var savegame = JSON.parse(localStorage.getItem('save'));
@@ -1854,6 +1865,10 @@ function init(chronoton = 0, perks, passedAchievements = [], challenges, gateway
                 gameData.world.lastGalaxy = savegame.world.lastGalaxy;
             if (typeof savegame.world.timeElapsed !== 'undefined')
                 gameData.world.timeElapsed = savegame.world.timeElapsed;
+            if (typeof savegame.world.dronesCreated !== 'undefined')
+                gameData.world.dronesCreated = savegame.world.dronesCreated;
+            if (typeof savegame.world.currentChallenge !== 'undefined')
+                gameData.world.currentChallenge = savegame.world.currentChallenge;
             if (typeof savegame.options.standardNotation !== 'undefined')
                 gameData.options.standardNotation = savegame.options.standardNotation;
             if (typeof savegame.options.logNotBase !== 'undefined')
@@ -1920,6 +1935,10 @@ function init(chronoton = 0, perks, passedAchievements = [], challenges, gateway
     $('#btnAutoFightOn').addClass('hidden');
     $('#btnGateway').addClass('hidden');
     $('#btnSuicide').addClass('hidden');
+    $('#btnConfirmConsistency').addClass('hidden');
+    if (gameData.challenges.consistency.unlocked && !gameData.challenges.consistency.completed) {
+        $('#btnConfirmConsistency').removeClass('hidden');
+    }
     $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
     $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
         '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
@@ -2026,7 +2045,7 @@ function init(chronoton = 0, perks, passedAchievements = [], challenges, gateway
         var newMission = new Mission('Galaxy 1', 'Galaxy', 1, true, 1, 1, 1, 100, true);
         gameData.missions.unshift(newMission);
     }
-    gameData.enemyship = gameData.missions[0].enemies[0];
+    gameData.enemyship = gameData.missions[0].enemies[gameData.missions[0].zone];
     initted = true;
     updateMissionButtons();
     sortBuildings($('#buildingvisible'), true);
@@ -2097,6 +2116,7 @@ function updateGUI() {
         document.getElementById('enemyMinDamage').innerHTML = prettify(gameData.enemyship.minDamage);
         document.getElementById('enemyMaxDamage').innerHTML = prettify(gameData.enemyship.maxDamage);
         document.getElementById('shipSize').innerHTML = prettify(gameData.playership.size);
+        document.getElementById('shipName').innerHTML = gameData.playership.name;
         document.getElementById('shipMinDamage').innerHTML = prettify(gameData.playership.minDamage);
         document.getElementById('shipMaxDamage').innerHTML = prettify(gameData.playership.maxDamage);
         document.getElementById('MissionName').innerHTML = gameData.missions[gameData.world.currentMission].name;
@@ -2302,6 +2322,7 @@ function updateGUI() {
     gamePerks.thickskin.determineShowAffordUpgrade();
     gamePerks.speed.determineShowAffordUpgrade();
     gamePerks.consistency.determineShowAffordUpgrade();
+    gamePerks.consistency.determineShowBuyButton();
     if (debugText.length > 0) {
         $('#debugContainer').removeClass('hidden');
     }
@@ -2535,7 +2556,7 @@ function addColor(theColor, theText) {
 }
 class DisplayItem {
     constructor(txt) {
-        this.timeadded = new Date;
+        this.timeadded = new Date();
         this.txt = txt;
     }
 }
@@ -2571,7 +2592,8 @@ function addToDisplay(newline, category = 'whoops') {
         textStory = textStory.slice(0, 50);
     }
     textToDisplay = textCombat.concat(textGameSaved).concat(textLoot).concat(textMissions).concat(textStory);
-    textToDisplay.sort((a, b) => a.timeadded < b.timeadded ? 1 : -1);
+    // eslint-disable-next-line multiline-ternary
+    textToDisplay.sort((a, b) => (a.timeadded < b.timeadded ? 1 : -1)); // eslint-disable-line no-ternary
 }
 function getDisplayText() {
     var val = '';
@@ -2777,14 +2799,19 @@ function checkForUnlocks() {
         addToDisplay('I have discovered a new address for the Gateway.  It will allow a new challenge to be attempted.  And there should be a nice reward.  Probably even a new ability!', 'story');
         gameData.challenges.consistency.unlocked = true;
     }
-}
-function checkForGalaxy(s) {
-    if (gameData.missions[0].missiontype != 'Galaxy') {
-        addToDisplay('PROBLEM PROBLEM PROBLEM' + s, 'story');
-        return false;
+    if (gameData.missions[0].galaxy > 24 && gameData.world.currentChallenge === 'Consistency') {
+        gameData.world.currentChallenge = '';
+        gameData.challenges.consistency.completed = true;
+        $('#btnConfirmConsistency').addClass('hidden');
     }
-    return true;
 }
+// function checkForGalaxy(s: number) {
+//   if (gameData.missions[0].missiontype != 'Galaxy') {
+//     addToDisplay('PROBLEM PROBLEM PROBLEM' + s, 'story');
+//     return false;
+//   }
+//   return true;
+// }
 function convertToRoman(num) {
     var rtn = '';
     var currentValue = num;
@@ -2894,11 +2921,11 @@ function addAchievement(name, bonus) {
 }
 window.setInterval(function () {
     if (!initted) {
-        if (document.readyState === "complete") {
+        if (document.readyState === 'complete') {
             var savedperks = new perks();
             var savedachievements = [];
             var savedChallenges = new challenges();
-            init(0, savedperks, savedachievements, savedChallenges, false);
+            init(savedperks, savedChallenges, false, '', 0, savedachievements);
         }
         return; // still waiting on pageload
     }
@@ -2934,7 +2961,7 @@ window.setInterval(function () {
             gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() + MILLISECONDS_PER_ATTACK_BASE - (gameData.perks.speed * 50));
             // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick
             if (gameData.playership.hitPoints > 0) {
-                if (gameData.enemyship.attributes.filter(att => (att.name === "Quick")).length > 0) {
+                if (gameData.enemyship.attributes.filter((att) => (att.name === 'Quick')).length > 0) {
                     attack(gameData.enemyship, gameData.playership);
                     attack(gameData.playership, gameData.enemyship);
                 }
