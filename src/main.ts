@@ -553,7 +553,7 @@ class Ship {
       var shipPolymerCost = shipPolymerRequired();
       gameData.resources.metal -= shipMetalCost;
       gameData.resources.polymer -= shipPolymerCost;
-      gameData.world.dronesCreated += 1;
+      gameData.world.dronesCreated++;
       this.name = 'Drone ' + convertToRoman(gameData.world.dronesCreated);
       this.size = 1 * Math.pow(1.25, gameData.buildings.shipyard - 1);
       this.hitPointsMax = gameData.playership.size * ((gameData.technologies.armorUpgrade * ARMOR_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)));
@@ -691,6 +691,7 @@ function chronotonAvailable() {
   rtn -= gamePerks.thickskin.chronotonSpent();
   rtn -= gamePerks.producer.chronotonSpent();
   rtn -= gamePerks.speed.chronotonSpent();
+  rtn -= gamePerks.consistency.chronotonSpent();
   return rtn;
 }
 
@@ -2295,6 +2296,10 @@ function updateGUI() {
     $('#btnGateway').removeClass('hidden');
   }
 
+  if (gameData.resources.chronoton > 0) {
+    $('#fightcontrols').removeClass('hidden');
+  }
+
   if (gameData.buildings.labs >= 2) {
     $('#techvisible').removeClass('hidden');
     if (!gameData.story.shipyardUnlocked) {
@@ -2557,19 +2562,19 @@ function canAffordPolymerProfieciency() {
   return true;
 }
 
-function metalClick(time: number) {
+function giveMetalProduction(time: number) {
   gameData.resources.metal += time / 1000 * gameBuildings.mine.productionPerSecond();
 }
 
-function polymerClick(time: number) {
+function givePolymerProduction(time: number) {
   gameData.resources.polymer += time / 1000 * gameBuildings.factory.productionPerSecond();
 }
 
-function researchClick(time: number) {
+function giveResearchProduction(time: number) {
   gameData.resources.researchPoints += time / 1000 * gameBuildings.lab.productionPerSecond();
 }
 
-function aetherClick(time: number) {
+function giveAetherProduction(time: number) {
   gameData.resources.aether += time / 1000 * gameBuildings.refinery.productionPerSecond();
 }
 
@@ -2663,7 +2668,10 @@ function switchAutoFight() { // eslint-disable-line no-unused-vars
 
 function sendShip() {
   gameData.playership.createPlayerShip();
-  gameData.story.firstfight = true;
+  if (!gameData.story.firstfight) {
+    gameData.story.firstfight = true;
+    addToDisplay('Upon reaching the closest ship they opened fire on us, refusing to ackowledge our attempts at communication.  We had no choice but to retaliate.  Why are they so afraid?  Or is it anger?', 'story');
+  }
 }
 
 function chooseRandom(min: number, max: number) {
@@ -2787,7 +2795,7 @@ const ELITE_ENEMY_ATTRIBUTES = ['Quick', 'Hardy', 'Elite'];
 function checkForCreateLoot(mission: Mission, zone: number) {
   var rtn = {
     lootType: '',
-    lootAmount: ((((mission.level - 1) * 100) + zone) * mission.lootMultiplier) * Math.pow(1.001, (((mission.level - 1) * 100) + zone) * mission.lootMultiplier) * gamePerks.looter.getBonus()
+    lootAmount: Math.pow(((mission.level - 1) * 100) + zone, 1.2) * mission.lootMultiplier * gamePerks.looter.getBonus()
   };
   var l = Math.floor(Math.random() * 100);
   if (mission.IsGalaxy) {
@@ -3080,7 +3088,7 @@ function addAchievement(name: string, bonus: number) {
 
 window.setInterval(function() {
   if (!initted) {
-    if (document.readyState === 'complete') {
+    if (document.readyState === 'complete') { // this seeds the init function, which will overwrite this data with the save if there is one
       var savedperks = new perks();
       var savedachievements = [];
       var savedChallenges = new challenges();
@@ -3095,7 +3103,7 @@ window.setInterval(function() {
   var timeToCheckForSave = new Date();
   timeToCheckForSave.setMilliseconds(timeToCheckForSave.getMilliseconds() - 1000 * 60 * 5);
 
-  if (timeToCheckForSave > lastSaveGameTime) {
+  if (timeToCheckForSave > lastSaveGameTime) { // displays latest uploaded version
     saveGame();
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -3107,31 +3115,29 @@ window.setInterval(function() {
     xhr.send();
   }
 
-  const RESOURCE_PRODUCTION_FRAME_RATE = 200;
+  const RESOURCE_PRODUCTION_FRAME_RATE = 200; // this is how often we update the gui.
   const MILLISECONDS_PER_ATTACK_BASE = 1000;
 
-  if (currentTime > gameData.nextProcessTime) {
-    if (gameData.nextProcessTime > gameData.lastResourceProcessTime) {
-      metalClick(RESOURCE_PRODUCTION_FRAME_RATE);
-      polymerClick(RESOURCE_PRODUCTION_FRAME_RATE);
-      researchClick(RESOURCE_PRODUCTION_FRAME_RATE);
-      aetherClick(RESOURCE_PRODUCTION_FRAME_RATE);
+  if (currentTime > gameData.nextProcessTime) { // this is how we handle the 'bank' of time.  Once the ability is implemented we will need to make sure nextProcessTime is closer to real time than the bank maximum
+    if (gameData.nextProcessTime > gameData.lastResourceProcessTime) { // It's time to process production
+      giveMetalProduction(RESOURCE_PRODUCTION_FRAME_RATE);
+      givePolymerProduction(RESOURCE_PRODUCTION_FRAME_RATE);
+      giveResearchProduction(RESOURCE_PRODUCTION_FRAME_RATE);
+      giveAetherProduction(RESOURCE_PRODUCTION_FRAME_RATE);
       gameData.lastResourceProcessTime.setMilliseconds(gameData.lastResourceProcessTime.getMilliseconds() + RESOURCE_PRODUCTION_FRAME_RATE);
       gameData.world.timeElapsed += RESOURCE_PRODUCTION_FRAME_RATE;
     }
 
-    if (gameData.nextProcessTime > gameData.lastRailgunCombatProcessTime) {
-      gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() + MILLISECONDS_PER_ATTACK_BASE - (gameData.perks.speed * 50));
-      // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick
-      if (gameData.playership.hitPoints > 0) {
-        if (gameData.enemyship.attributes.filter((att) => (att.name === 'Quick')).length > 0) {
+    if (gameData.nextProcessTime > gameData.lastRailgunCombatProcessTime) { // Combat Time!
+      if (gameData.playership.hitPoints > 0) { // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick as opposed to both
+        if (gameData.enemyship.attributes.filter((att) => (att.name === 'Quick')).length > 0) { // enemy is quick and gets to attack first
           attack(gameData.enemyship, gameData.playership);
           attack(gameData.playership, gameData.enemyship);
         } else {
           attack(gameData.playership, gameData.enemyship);
           attack(gameData.enemyship, gameData.playership);
         }
-        if (gameData.playership.hitPoints <= 0) {
+        if (gameData.playership.hitPoints <= 0) { // We dead
           addToDisplay('The drone is no longer on the sensors', 'combat');
         }
       } else {
@@ -3140,12 +3146,13 @@ window.setInterval(function() {
           sendShip();
         }
       }
+      gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() + MILLISECONDS_PER_ATTACK_BASE - (gameData.perks.speed * 50));
     }
 
-    if (gameData.enemyship.hitPoints === 0) { // new enemy
+    if (gameData.enemyship.hitPoints <= 0) { // new enemy
       gameData.playership.shield = gameData.playership.shieldMax;
       giveReward(); // reward stored in enemy
-      checkForUnlocks();
+      checkForUnlocks(); // Prizes!
       gameData.missions[gameData.world.currentMission].zone++;
       if (gameData.missions[gameData.world.currentMission].zone > gameData.missions[gameData.world.currentMission].enemies.length - 1) {
         gtag('event', 'completed region', {
@@ -3153,12 +3160,13 @@ window.setInterval(function() {
           event_label: 'label',
           value: gameData.missions[gameData.world.currentMission].name
         });
-        var newGalaxy = gameData.missions[0].galaxy + 1;
+        var newGalaxyNum = gameData.missions[0].galaxy + 1;
         gameData.world.lastGalaxy = gameData.missions[0].galaxy;
         giveMissionReward((gameData.missions[gameData.world.currentMission]));
         if (gameData.world.currentMission === 0) {
           removeMission(0);
-          gameData.missions.unshift(new Mission('Galaxy ' + newGalaxy, 'Galaxy', 1, true, 1, 1, newGalaxy, 100, true));
+          gameData.missions.unshift(new Mission('Galaxy ' + newGalaxyNum, 'Galaxy', 1, true, 1, 1, newGalaxyNum, 100, true));
+          updateMissionButtons();
         } else if (gameData.missions[gameData.world.currentMission].unique) {
           removeMission(gameData.world.currentMission);
         } else {
@@ -3178,7 +3186,7 @@ window.setInterval(function() {
 
   var endTime = new Date();
   var msRunTime = endTime.getTime() - currentTime.getTime();
-  if (msRunTime > 50) {
+  if (msRunTime > 150) {
     addToDisplay(msRunTime.toString(), 'story');
     gtag('event', 'Interval exceeded', {
       event_category: 'error',
