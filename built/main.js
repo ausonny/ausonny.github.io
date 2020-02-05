@@ -231,7 +231,8 @@ class saveGameData {
             shieldPrestigeLevelBought: 0,
             shieldPrestigeLevelUnlocked: 0,
             shieldUpgrade: 0,
-            shipyardTechUnlock: 1
+            shipyardTechUnlock: 1,
+            panelUpgrade: 0
         };
         this.lastResourceProcessTime = new Date();
         this.lastRailgunCombatProcessTime = new Date();
@@ -449,6 +450,10 @@ function giveMissionReward(mission) {
     }
     else if (mission.name === 'A Gold Mine') {
         gameData.technologies.goldMine++;
+        addToDisplay('With the new algorithms gained at the Gold Mine I can double all forms of production!', 'story');
+    }
+    else if (mission.name === 'Panel Improvements') {
+        gameData.technologies.panelUpgrade++;
         addToDisplay('With the new algorithms gained at the Gold Mine I can double all forms of production!', 'story');
     }
     else if (mission.name === 'The Gateway') {
@@ -726,7 +731,7 @@ var gameBuildings = {
         tooltipForBuy: function () { return ('Creates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy())); },
         canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy()); },
         totalPowerCreated: function () { return (gameData.buildings.panels * this.powerPer()); },
-        powerPer: function () { return (POWER_PER_PANEL); },
+        powerPer: function () { return (POWER_PER_PANEL * Math.pow(2, gameData.technologies.panelUpgrade)); },
         updateBuyButtonText: function () { $('#btnBuyPanel').text('Panel(' + (gameData.buildings.panels) + ')'); },
         updateBuyButtonTooltip: function () { $('#btnBuyPanel').attr('title', this.tooltipForBuy()); },
         determineShowAffordBuy: function () {
@@ -2185,7 +2190,7 @@ function updateGUI() {
     else {
         $('#btnResetAbilities').removeClass('hidden');
     }
-    if (gameData.story.gatewayUnlocked) {
+    if (gameData.story.gatewayUnlocked || gameData.resources.chronotonfragments > 100) {
         $('#btnGateway').removeClass('hidden');
     }
     if (gameData.resources.chronoton > 0) {
@@ -2732,6 +2737,11 @@ function checkForUnlocks() {
         gameData.missions.push(new Mission('A Gold Mine', 'GoldMine', 1, true, 2, 3, gameData.missions[0].galaxy, 100, false));
         updateMissionButtons();
         addToDisplay('I have found the locaton of an ancient Gold Mine.  It may be worth checking out.', 'story');
+    }
+    if (lvlsCleared === 2550) {
+        gameData.missions.push(new Mission('Panel Improvement', 'PanelImprovement', 1, true, 2, 1, gameData.missions[0].galaxy, 100, false));
+        updateMissionButtons();
+        addToDisplay('I have found the location of plans that will improve the efficieny of our panels.', 'story');
     }
     if (lvlsCleared === 1599) {
         gameData.missions.push(new Mission('The Gateway', 'Gateway', 1, true, 2, 1, 15, 100, false));
