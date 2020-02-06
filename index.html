@@ -20,7 +20,7 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="interface.css" />
-  <title>Chasing the Past v0.6.7</title>
+  <title>Chasing the Past v0.6.8</title>
   <meta name="description" content="Chasing the Past">
   <meta name="author" content="ausonny">
 </head>
@@ -101,7 +101,7 @@
                 <h5 class="modal-title" id="abilitiesModalLabel">Abilities</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               </div>
-              <div class="modal-body bg-secondary">
+              <div class="modal-body bg-secondary text-left">
                 Chronoton:<span id="chronoton2">0</span><br />
                 Chronoton Spent:<span id="chronotonspent">0</span><br />
                 <button class="btn btn-sm btn-danger" id="btnResetAbilities" type="button" data-toggle="tooltip" data-placement="bottom" title="Resets all abilities to 0" onclick="resetAbilities()">Reset Abilities</button>
@@ -264,22 +264,23 @@
               <button data-sort='15' class="btn btn-sm btn-success" type="button" id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
               <button data-sort='16' class="btn btn-sm btn-success" type="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
               <button data-sort='17' class="btn btn-sm btn-success" type="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
-              <button data-sort='18' class="btn btn-sm btn-success" type="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">RP</button>
-              <button data-sort='19' class="btn btn-sm btn-success" type="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyPrestige()">AP</button>
-              <button data-sort='20' class="btn btn-sm btn-success" type="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">LP</button>
-              <button data-sort='21' class="btn btn-sm btn-success" type="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">AP</button>
-              <button data-sort='22' class="btn btn-sm btn-success" type="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">RP</button>
-              <button data-sort='23' class="btn btn-sm btn-success" type="button" id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">AP</button>
-              <button data-sort='24' class="btn btn-sm btn-success" type="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
-              <br data-sort="25" />
-              <label data-sort='26' >Equipment Upgrades</label>
-              <br data-sort="27" />
-              <button data-sort='28' class="btn btn-sm btn-success" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
-              <button data-sort='29' class="btn btn-sm btn-success" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
-              <button data-sort='30' class="btn btn-sm btn-success" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
-              <button data-sort='31' class="btn btn-sm btn-success" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
-              <button data-sort='32' class="btn btn-sm btn-success" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
-              <button data-sort='33' class="btn btn-sm btn-success" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
+              <button data-sort='18' class="btn btn-sm btn-success" type="button" id="btnAetherTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAetherProficiency()">Send Ships</button>
+              <button data-sort='19' class="btn btn-sm btn-success" type="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">RP</button>
+              <button data-sort='20' class="btn btn-sm btn-success" type="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyPrestige()">AP</button>
+              <button data-sort='21' class="btn btn-sm btn-success" type="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">LP</button>
+              <button data-sort='22' class="btn btn-sm btn-success" type="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">AP</button>
+              <button data-sort='23' class="btn btn-sm btn-success" type="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">RP</button>
+              <button data-sort='24' class="btn btn-sm btn-success" type="button" id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">AP</button>
+              <button data-sort='25' class="btn btn-sm btn-success" type="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
+              <br data-sort="26" />
+              <label data-sort='27' >Equipment Upgrades</label>
+              <br data-sort="28" />
+              <button data-sort='29' class="btn btn-sm btn-success" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
+              <button data-sort='30' class="btn btn-sm btn-success" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
+              <button data-sort='31' class="btn btn-sm btn-success" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
+              <button data-sort='32' class="btn btn-sm btn-success" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
+              <button data-sort='33' class="btn btn-sm btn-success" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
+              <button data-sort='34' class="btn btn-sm btn-success" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
             </div>
           </div>
           <!-- <div id="research" role="tabpanel" aria-labelledby="research-tab" class="tab-pane fade text-center ">
@@ -300,8 +301,8 @@
     <div class="row" id="contactcontainer">
       <div class="col text-light text-left bg-dark">
         <p>Email: <span class="myemail">(need JavaScript for email link)</span></p>
-        version:<label class="myemail text-center" id="current">0.6.7</label>
-        latest version:<label class="myemail text-center" id="result">0.6.7</label>
+        version:<label class="myemail text-center" id="current">0.6.8</label>
+        latest version:<label class="myemail text-center" id="result">0.6.8</label>
       </div>
     </div>
     <div class="row" id="debugContainer">

@@ -89,6 +89,15 @@ const RESEARCH_PROFIECIENCY_RP_COST = 500;
 const RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR = 1.3;
 const RESEARCH_PROFICIENCY_BASE_RATE = 1.25;
 
+const AETHER_PROFIECIENCY_METAL_COST = 1000000;
+const AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR = 1.3;
+const AETHER_PROFIECIENCY_POLYMER_COST = 100000;
+const AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.3;
+const AETHER_PROFIECIENCY_RP_COST = 500000;
+const AETHER_PROFIECIENCY_RP_GROWTH_FACTOR = 1.3;
+const AETHER_PROFICIENCY_BASE_RATE = 1.5;
+
+
 const RAILGUN_UPGRADE_METAL_BASE_COST = 100;
 const RAILGUN_UPGRADE_POLYMER_BASE_COST = 0;
 const RAILGUN_UPGRADE_RP_BASE_COST = 30;
@@ -218,7 +227,8 @@ class saveGameData {
     generatorunlocked: boolean,
     plantunlocked: boolean,
     aetherplantunlocked: boolean,
-    refineryunlocked: boolean
+    refineryunlocked: boolean,
+    consistencyunlocked: boolean
   }
 
   perks: perks
@@ -277,6 +287,8 @@ class saveGameData {
     polymerProficiencyBought: number
     researchProficiency: number
     researchProficiencyBought: number
+    aetherProficiencyUnlocked: number
+    aetherProficiencyBought: number
     shipyardTechUnlock: number
     railgunPrestigeLevelUnlocked: number
     railgunPrestigeLevelBought: number
@@ -323,7 +335,8 @@ class saveGameData {
       labunlocked: false,
       plantunlocked: false,
       refineryunlocked: false,
-      shipyardUnlocked: false
+      shipyardUnlocked: false,
+      consistencyunlocked: false
     };
     this.perks = new perks();
     this.options = {
@@ -392,7 +405,9 @@ class saveGameData {
       shieldPrestigeLevelUnlocked: 0,
       shieldUpgrade: 0,
       shipyardTechUnlock: 1,
-      panelUpgrade: 0
+      panelUpgrade: 0,
+      aetherProficiencyBought: 0,
+      aetherProficiencyUnlocked: 0
     };
     this.lastResourceProcessTime = new Date();
     this.lastRailgunCombatProcessTime = new Date();
@@ -664,7 +679,7 @@ function giveMissionReward(mission: Mission) {
   } else if (mission.name === 'A Gold Mine') {
     gameData.technologies.goldMine++;
     addToDisplay('With the new algorithms gained at the Gold Mine I can double all forms of production!', 'story');
-  } else if (mission.name === 'Panel Improvements') {
+  } else if (mission.name === 'Panel Improvement') {
     gameData.technologies.panelUpgrade++;
     addToDisplay('With the new algorithms gained at the Gold Mine I can double all forms of production!', 'story');
   } else if (mission.name === 'The Gateway') {
@@ -1214,7 +1229,7 @@ var gameBuildings = {
     tooltipForBuy: function() { return ('Creates ' + prettify(this.productionPerSecond() / gameData.buildings.refineries) + ' aether per second\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy()) + '\nPower Cost: ' + prettify(this.powerForBuy())); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy() && CheckPower(this.powerForBuy())); },
     productionPerSecond: function() {
-      var increase = gameData.buildings.refineries;
+      var increase = gameData.buildings.refineries * Math.pow(AETHER_PROFICIENCY_BASE_RATE, gameData.technologies.aetherProficiencyBought);
       increase *= Math.pow(2, gameData.technologies.goldMine);
       increase *= gamePerks.producer.getBonus();
       return increase;
@@ -1962,6 +1977,8 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       if (typeof savegame.technologies.polymerProficiencyBought !== 'undefined') gameData.technologies.polymerProficiencyBought = savegame.technologies.polymerProficiencyBought;
       if (typeof savegame.technologies.researchProficiency !== 'undefined') gameData.technologies.researchProficiency = savegame.technologies.researchProficiency;
       if (typeof savegame.technologies.researchProficiencyBought !== 'undefined') gameData.technologies.researchProficiencyBought = savegame.technologies.researchProficiencyBought;
+      if (typeof savegame.technologies.aetherProficiencyUnlocked !== 'undefined') gameData.technologies.aetherProficiencyUnlocked = savegame.technologies.aetherProficiencyUnlocked;
+      if (typeof savegame.technologies.aetherProficiencyBought !== 'undefined') gameData.technologies.aetherProficiencyBought = savegame.technologies.aetherProficiencyBought;
       if (typeof savegame.technologies.shipyardTechUnlock !== 'undefined') gameData.technologies.shipyardTechUnlock = savegame.technologies.shipyardTechUnlock;
       if (typeof savegame.technologies.railgunPrestigeLevelUnlocked !== 'undefined') gameData.technologies.railgunPrestigeLevelUnlocked = savegame.technologies.railgunPrestigeLevelUnlocked;
       if (typeof savegame.technologies.railgunPrestigeLevelBought !== 'undefined') gameData.technologies.railgunPrestigeLevelBought = savegame.technologies.railgunPrestigeLevelBought;
@@ -1982,6 +1999,7 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       if (typeof savegame.technologies.flakPrestigeLevelBought !== 'undefined') gameData.technologies.flakPrestigeLevelBought = savegame.technologies.flakPrestigeLevelBought;
       if (typeof savegame.technologies.flakUpgrade !== 'undefined') gameData.technologies.flakUpgrade = savegame.technologies.flakUpgrade;
       if (typeof savegame.technologies.goldMine !== 'undefined') gameData.technologies.goldMine = savegame.technologies.goldMine;
+      if (typeof savegame.technologies.panelUpgrade !== 'undefined') gameData.technologies.panelUpgrade = savegame.technologies.panelUpgrade;
       if (typeof savegame.missions !== 'undefined') gameData.missions = savegame.missions;
       if (typeof savegame.world.currentMission !== 'undefined') gameData.world.currentMission = savegame.world.currentMission;
       if (typeof savegame.world.lastGalaxy !== 'undefined') gameData.world.lastGalaxy = savegame.world.lastGalaxy;
@@ -2007,6 +2025,7 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       if (typeof savegame.story.refineryunlocked !== 'undefined') gameData.story.refineryunlocked = savegame.story.refineryunlocked;
       if (typeof savegame.story.initial !== 'undefined') gameData.story.initial = savegame.story.initial;
       if (typeof savegame.story.firstfight !== 'undefined') gameData.story.firstfight = savegame.story.firstfight;
+      if (typeof savegame.story.consistencyunlocked !== 'undefined') gameData.story.consistencyunlocked = savegame.story.consistencyunlocked;
       if (typeof savegame.challenges !== 'undefined') gameData.challenges = savegame.challenges;
     }
   }
@@ -2038,6 +2057,7 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   if (gameData.challenges.consistency.unlocked && !gameData.challenges.consistency.completed) {
     $('#btnConfirmConsistency').removeClass('hidden');
   }
+  $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
   $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
   $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
     '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
@@ -2046,6 +2066,9 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   $('#btnResearchTech').attr('title', 'Metal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
     '\nPolymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
     '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
+  $('#btnAetherTech').attr('title', 'Metal Cost:' + prettify(AETHER_PROFIECIENCY_METAL_COST * Math.pow(AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)) +
+    '\nPolymer Cost:' + prettify(AETHER_PROFIECIENCY_POLYMER_COST * Math.pow(AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)) +
+    '\nResearch Cost:' + prettify(AETHER_PROFIECIENCY_RP_COST * Math.pow(AETHER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)));
   $('#btnBuyShipyard').attr('title', gameBuildings.shipyard.tooltipForBuy());
   $('#btnBuyMine').attr('title', gameBuildings.mine.tooltipForBuy());
   $('#btnBuyLab').attr('title', gameBuildings.lab.tooltipForBuy());
@@ -2115,15 +2138,6 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   gamePerks.consistency.determineShowAffordUpgrade();
   gamePerks.consistency.determineShowBuyButton();
 
-  $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
-  $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
-  $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
-    '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))));
-  $('#btnPolymerTech').attr('title', 'Polymer Cost:' + prettify(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)) +
-    '\nResearch Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)));
-  $('#btnResearchTech').attr('title', 'Metal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
-    '\nPolymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) +
-    '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
   gameBuildings.mine.updateBuyButtonText();
   gameBuildings.mine.updateBuyButtonTooltip();
   gameBuildings.factory.updateBuyButtonText();
@@ -2143,7 +2157,6 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   gameBuildings.aetherPlant.updateBuyButtonText();
   gameBuildings.aetherPlant.updateBuyButtonTooltip();
 
-  $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
 
   if (gameData.missions.length < 1) {
     var newMission = new Mission('Galaxy 1', 'Galaxy', 1, true, 1, 1, 1, 100, true);
@@ -2405,6 +2418,16 @@ function updateGUI() {
     }
   }
 
+  $('#btnAetherTech').removeClass('btn-success').addClass('btn-danger');
+  $('#btnAetherTech').addClass('hidden');
+  if (gameData.technologies.aetherProficiencyUnlocked > gameData.technologies.aetherProficiencyBought) {
+    $('#btnAetherTech').removeClass('hidden');
+    $('#btnAetherTech').text('Upgrade Aether ' + (gameData.technologies.aetherProficiencyBought + 1));
+    if (canAffordAetherProfieciency()) {
+      $('#btnAetherTech').removeClass('btn-danger').addClass('btn-success');
+    }
+  }
+
   $('#btnBuyShipyard').removeClass('btn-success').addClass('btn-danger');
   $('#btnBuyShipyard').addClass('hidden');
   if (gameData.buildings.shipyard < gameData.technologies.shipyardTechUnlock) {
@@ -2538,33 +2561,21 @@ function canAffordMetalProfieciency() {
     gameData.resources.researchPoints > Math.floor(METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought)));
 }
 
+function canAffordAetherProfieciency() {
+  return (gameData.resources.metal > Math.floor(AETHER_PROFIECIENCY_METAL_COST * Math.pow(AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)) &&
+    gameData.resources.polymer > Math.floor(AETHER_PROFIECIENCY_POLYMER_COST * Math.pow(AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)) &&
+    gameData.resources.researchPoints > Math.floor(AETHER_PROFIECIENCY_RP_COST * Math.pow(AETHER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)));
+}
+
 function canAffordResearchProfieciency() {
-  var facilityMetalCost = Math.floor(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought));
-  if (gameData.resources.metal < facilityMetalCost) {
-    return false;
-  }
-  var facilityPolymerCost = Math.floor(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought));
-  if (gameData.resources.polymer < facilityPolymerCost) {
-    return false;
-  }
-  var facilityRPCost = Math.floor(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought));
-  if (gameData.resources.researchPoints < facilityRPCost) {
-    return false;
-  }
-  return true;
+  return (gameData.resources.metal > Math.floor(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) &&
+    gameData.resources.polymer > Math.floor(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)) &&
+    gameData.resources.researchPoints > Math.floor(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiencyBought)));
 }
 
 function canAffordPolymerProfieciency() {
-  var facilityPolymerCost = 0;
-  facilityPolymerCost += Math.floor(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought));
-  if (gameData.resources.polymer < facilityPolymerCost) {
-    return false;
-  }
-  var facilityRPCost = Math.floor(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought));
-  if (gameData.resources.researchPoints < facilityRPCost) {
-    return false;
-  }
-  return true;
+  return (gameData.resources.polymer > Math.floor(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)) &&
+    gameData.resources.researchPoints > Math.floor(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiencyBought)));
 }
 
 function giveMetalProduction(time: number) {
@@ -2584,7 +2595,7 @@ function giveAetherProduction(time: number) {
 }
 
 function updatePower() {
-  var powerAvailable = (gameData.buildings.panels * POWER_PER_PANEL + gameData.buildings.generators * POWER_PER_GENERATOR + gameData.buildings.plants * POWER_PER_PLANT + gameData.buildings.aetherPlants * POWER_PER_AETHER_PLANT);
+  var powerAvailable = (gameBuildings.generator.totalPowerCreated() + gameBuildings.plant.totalPowerCreated() + gameBuildings.panel.totalPowerCreated() + gameBuildings.aetherPlant.totalPowerCreated());
   var facilities = gameBuildings.mine.powerSpent() + gameBuildings.shipyard.powerSpent() + gameBuildings.factory.powerSpent() + gameBuildings.lab.powerSpent() + gameBuildings.refinery.powerSpent();
   gameData.resources.power = powerAvailable - facilities;
 }
@@ -2657,6 +2668,24 @@ function buyResearchProficiency() { // eslint-disable-line no-unused-vars
   }
   sortBuildings($('#buildingvisible'));
 }
+
+function buyAetherProficiency() { // eslint-disable-line no-unused-vars
+  var nextMetalCost = AETHER_PROFIECIENCY_METAL_COST * Math.pow(AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought);
+  var nextPolymerCost = AETHER_PROFIECIENCY_POLYMER_COST * Math.pow(AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought);
+  var nextRPCost = AETHER_PROFIECIENCY_RP_COST * Math.pow(AETHER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought);
+  if (gameData.resources.metal >= nextMetalCost && gameData.resources.polymer >= nextPolymerCost && gameData.technologies.aetherProficiencyBought < gameData.technologies.aetherProficiencyUnlocked && gameData.resources.researchPoints >= nextRPCost) {
+    gameData.technologies.aetherProficiencyBought++;
+    gameData.resources.metal -= nextMetalCost;
+    gameData.resources.polymer -= nextPolymerCost;
+    gameData.resources.researchPoints -= nextRPCost;
+    $('#btnAetherTech').attr('title', 'This research will increase our aether production by 50% multiplicative\nMetal Cost:' + prettify((AETHER_PROFIECIENCY_METAL_COST * Math.pow(AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought))) +
+      '\nPolymer Cost:' + prettify((AETHER_PROFIECIENCY_POLYMER_COST * Math.pow(AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought))) +
+      '\nResearch Cost:' + prettify((AETHER_PROFIECIENCY_RP_COST * Math.pow(AETHER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought))));
+    $('#btnBuyRefinery').attr('title', gameBuildings.refinery.tooltipForBuy());
+  }
+  sortBuildings($('#buildingvisible'));
+}
+
 
 function switchAutoFight() { // eslint-disable-line no-unused-vars
   if (gameData.technologies.autofightOn === 1) {
@@ -2889,7 +2918,7 @@ function checkForUnlocks() {
   if (lvlsCleared === 2550) {
     gameData.missions.push(new Mission('Panel Improvement', 'PanelImprovement', 1, true, 2, 1, gameData.missions[0].galaxy, 100, false));
     updateMissionButtons();
-    addToDisplay('I have found the location of plans that will improve the efficieny of our panels.', 'story');
+    addToDisplay('I have found the location of plans that will improve the efficiency of our panels.', 'story');
   }
   if (lvlsCleared === 1599) {
     gameData.missions.push(new Mission('The Gateway', 'Gateway', 1, true, 2, 1, 15, 100, false));
@@ -2939,17 +2968,22 @@ function checkForUnlocks() {
   }
   if ((gameData.technologies.metalProficiencyUnlocked < Math.floor((lvlsCleared - 9) / 100))) {
     gameData.technologies.metalProficiencyUnlocked = gameData.missions[0].galaxy;
-    addToDisplay('I\'m gonna need a bigger pickaxe.', 'mission');
+    addToDisplay('I\'m gonna need a bigger pickaxe.', 'story');
     sortBuildings($('#buildingvisible'));
   }
   if ((gameData.technologies.polymerProficiencyUnlocked < Math.floor((lvlsCleared - 19) / 100))) {
     gameData.technologies.polymerProficiencyUnlocked = gameData.missions[0].galaxy;
-    addToDisplay('Plastics are my life.', 'mission');
+    addToDisplay('Plastics are my life.', 'story');
     sortBuildings($('#buildingvisible'));
   }
   if (gameData.technologies.researchProficiency < Math.floor((lvlsCleared - 29) / 100)) {
     gameData.technologies.researchProficiency = Math.floor((lvlsCleared - 29) / 100);
-    addToDisplay('Smarter I can become', 'mission');
+    addToDisplay('Smarter I can become', 'story');
+    sortBuildings($('#buildingvisible'));
+  }
+  if (gameData.technologies.aetherProficiencyUnlocked < Math.floor((lvlsCleared - 1539) / 100)) {
+    gameData.technologies.aetherProficiencyUnlocked = Math.floor((lvlsCleared - 1539) / 100);
+    addToDisplay('Aether can be improved', 'story');
     sortBuildings($('#buildingvisible'));
   }
   if ((gameData.missions[0].galaxy >= 1) && (gameData.missions[0].zone >= 5) && gameData.technologies.autofightUnlock < 1) {
@@ -2961,7 +2995,10 @@ function checkForUnlocks() {
     giveChronotonFragments((gameData.missions[0].galaxy - 6) * Math.pow(1.01, (gameData.missions[0].galaxy - 16)));
   }
   if (gameData.missions[0].galaxy > 24) {
-    addToDisplay('I have discovered a new address for the Gateway.  It will allow a new challenge to be attempted.  And there should be a nice reward.  Probably even a new ability!', 'story');
+    if (!gameData.story.consistencyunlocked) {
+      addToDisplay('I have discovered a new address for the Gateway.  It will allow a new challenge to be attempted.  And there should be a nice reward.  Probably even a new ability!', 'story');
+      gameData.story.consistencyunlocked = true;
+    }
     gameData.challenges.consistency.unlocked = true;
   }
 
