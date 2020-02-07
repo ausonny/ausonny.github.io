@@ -51,6 +51,11 @@ button {
   margin: 1px;
 }
 
+.prestigebutton {
+  width: 10px;
+  margin: 1px;
+}
+
 .timer {
   width: 120px;
   margin: 1px;
@@ -75,11 +80,6 @@ button {
   color: #fff;
   border-color: #6c757d;
   background-color: #6c757d;
-}
-
-.row {
-  padding: 5px 5px 5px 5px;
-  border: 1px solid #808080;
 }
 
 .myemail {
