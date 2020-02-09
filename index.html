@@ -20,7 +20,7 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="interface.css" />
-  <title>Chasing the Past v0.6.9</title>
+  <title>Chasing the Past v0.7.0</title>
   <meta name="description" content="Chasing the Past">
   <meta name="author" content="ausonny">
 </head>
@@ -63,15 +63,15 @@
       </div>
     </div>
     <div class="row p-1 m-1 border border-secondary rounded">
-      <div id="missionvisible" class="border border-secondary rounded col-12 bg-secondary text-center rounded shadow hidden">
+      <div id="missionvisible" style="height:220px;" class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 overflow-auto border border-secondary rounded bg-secondary text-center rounded shadow hidden">
       </div>
-    </div>
-    <div class="row p-1 m-1 border border-secondary rounded">
-      <div class="border border-secondary rounded col-12 col-sm-6 col-md-8 col-lg-5 col-xl-6 text-light bg-dark">
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 border border-secondary rounded text-light bg-dark">
         <div class="container text-small overflow-auto" style="height:220px;" id="textToDisplay">
         </div>
       </div>
-      <div class="border border-secondary rounded col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 text-light bg-secondary text-center hidden" id="fightcontrols">
+    </div>
+    <div class="row p-1 m-1 border border-secondary rounded">
+      <div class="border border-secondary rounded col-12 col-sm-5 col-md-6 col-lg-3 col-xl-2 text-light bg-secondary text-center hidden" id="fightcontrols">
         <span id="MissionName">Galaxy 1</span><br />Zone: <span id="zone">1</span>/<span id="zonemax">100</span><br />
         <button class="btn btn-sm btn-success hidden fightbutton" type="button" id="btnFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="sendShip()">Fight</button><br />
         <button class="btn btn-sm btn-warning hidden fightbutton" type="button" id="btnSuicide" onclick="suicideShip()">Self Destruct</button><br />
@@ -98,158 +98,12 @@
             </div>
           </div>
         </div>
-        <button class="btn btn-sm btn-primary fightbutton" id="btnAbilities" type="button" data-toggle="modal" data-target="#AbilitiesModal">Abilities</button>
-        <div class="modal fade" id="AbilitiesModal" tabindex="-1" role="dialog" aria-labelledby="abilitiesModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header bg-dark">
-                <h5 class="modal-title" id="abilitiesModalLabel">Abilities</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              </div>
-              <div class="modal-body bg-secondary text-left">
-                Chronoton:<span id="chronoton2">0</span><br />
-                Chronoton Spent:<span id="chronotonspent">0</span><br />
-                <button class="btn btn-sm btn-danger" id="btnResetAbilities" type="button" data-toggle="tooltip" data-placement="bottom" title="Resets all abilities to 0" onclick="resetAbilities()">Reset Abilities</button>
-                <button class="btn btn-sm btn-primary" id="btnLooter" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to looting additively" onclick="gamePerks.looter.add()">Looter 1</button>
-                <button class="btn btn-sm btn-primary" id="btnProducer" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to metal and polymer production additively" onclick="gamePerks.producer.add()">Producer 1</button>
-                <button class="btn btn-sm btn-primary" id="btnDamager" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to damage additively" onclick="gamePerks.damager.add()">Damager 1</button>
-                <button class="btn btn-sm btn-primary" id="btnThickSkin" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to defenses additively" onclick="gamePerks.thickskin.add()">Thick Skin 1</button>
-                <button class="btn btn-sm btn-primary" id="btnSpeed" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten the wait time between attacks by 50ms" onclick="gamePerks.speed.add()">Speed 1</button>
-                <button class="btn btn-sm btn-primary" id="btnConsistency" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will raise the minimum attack by 1%" onclick="gamePerks.consistency.add()">Consistency 1</button>
-                <button class="btn btn-sm btn-primary" id="btnPower" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will raise power production by 10%" onclick="gamePerks.power.add()">Power 1</button>
-              </div>
-              <div class="modal-footer bg-dark">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-      <div class="border border-secondary rounded col-12 col-sm-12 col-md-12 col-lg-4 col-xl-4 bg-dark text-light hidden" id="fightdisplay">
-        <div class="bg-secondary">
-          <span id="shipName">Drone</span> (<span id="shipSize">0</span>)
-          Damage: <span id="shipMinDamage">0</span>-<span id="shipMaxDamage">0</span>
-          <div class="progress center-block" style="height: 25px;">
-            <div id="PlayerHullShieldBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-            <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="PlayerShieldText"></div>
-          </div>
-          <div class="progress center-block" style="height: 25px;">
-            <div id="PlayerHullHealthBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-            <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="PlayerHealthText"></div>
-          </div>
-        </div>
-        <br />
-        <div class="bg-secondary">
-          <span id="enemyName">0</span> (<span id="enemyShipSize">0</span>)
-          Damage: <span id="enemyMinDamage">0</span>-<span id="enemyMaxDamage">0</span>
-          <div class="progress" style="height: 25px;">
-            <div id="EnemyHullShieldBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-            <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="EnemyShieldText"></div>
-          </div>
-          <div class="progress" style="height: 25px;">
-            <div id="EnemyHullHealthBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-            <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="EnemyHealthText"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="row p-1 m-1 border border-secondary rounded">
-      <div class="border border-secondary rounded col-12 col-sm-12 col-md-4 col-lg-3 text-light bg-secondary">
-        <div class="row">
-          <div class="col-6 font-weight-bold">
-            Resource
-          </div>
-          <div class="col-3 font-weight-bold">
-            Qty
-          </div>
-          <div class="col-3 font-weight-bold">
-            /s
-          </div>
-        </div>
-        <div class="row bg-dark">
-          <div class="col-6">
-            Power
-          </div>
-          <div class="col-6">
-            <span id="power">9</span>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-6">
-            Metal
-          </div>
-          <div class="col-3">
-            <span id="metal">0</span>
-          </div>
-          <div class="col-3">
-            <span id="metalpersec">0</span>
-          </div>
-        </div>
-        <div class="row bg-dark" id="polymercontainer">
-          <div class="col-6">
-            Polymer
-          </div>
-          <div class="col-3">
-            <span id="polymer">0</span>
-          </div>
-          <div class="col-3">
-            <span id="polymerpersec">0</span>
-          </div>
-        </div>
-        <div class="row" id="labscontainer">
-          <div class="col-6">
-            Research
-          </div>
-          <div class="col-3">
-            <span id="researchPoints">0</span>
-          </div>
-          <div class="col-3">
-            <span id="researchpersec">0</span>
-          </div>
-        </div>
-        <div class="row bg-dark" id="aethercontainer">
-          <div class="col-6">
-            Aether
-          </div>
-          <div class="col-3">
-            <span id="aether">0</span>
-          </div>
-          <div class="col-3">
-            <span id="aetherpersec">0</span>
-          </div>
-        </div>
-        <div class="row" id="chronotonfragmentscontainer">
-          <div class="col-6">
-            Fragments
-          </div>
-          <div class="col-6">
-            <span id="chronotonfragments">0</span>
-          </div>
-        </div>
-        <div class="row bg-dark" id="chronotoncontainer">
-          <div class="col-6">
-            Chronoton
-          </div>
-          <div class="col-6">
-            <span id="chronoton">0</span>
-          </div>
-        </div>
-      </div>
-      <div class="border border-secondary rounded col-12 col-sm-6 col-md-4 col-lg-3 bg-secondary text-center rounded shadow" id="buildingsContainer">
-        <label data-sort='01' >Buildings</label>
-        <br data-sort="02" />
-        <button data-sort='03' class="btn btn-sm btn-success" type="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
-        <button data-sort='04' class="btn btn-sm btn-success" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy()">Buy Panel</button>
-        <button data-sort='05' class="btn btn-sm btn-success hidden" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Buy Plant</button>
-        <button data-sort='06' class="btn btn-sm btn-success hidden" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
-        <button data-sort='07' class="btn btn-sm btn-success hidden" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
-        <button data-sort='08' class="btn btn-sm btn-success" type="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy()">Buy Mine</button>
-        <button data-sort='09' class="btn btn-sm btn-success hidden" type="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.factory.buy()">Buy Factory</button>
-        <button data-sort='10' class="btn btn-sm btn-success hidden" type="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
-        <button data-sort='11' class="btn btn-sm btn-success hidden" type="button" id="btnBuyRefinery" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.refinery.buy()">Buy Refinery</button>
-      </div>
-      <div class="border border-secondary rounded col-12 col-sm-6 col-md-4 col-lg-3 text-light text-center bg-dark rounded shadow" id="equipmentContainer">
+      <div class="border border-secondary rounded col-12 col-sm-7 col-md-6 col-lg-4 col-xl-3 text-light text-center bg-dark rounded shadow hidden" id="equipmentContainer">
         <label data-sort='21' >Equipment Upgrades</label>
+        <br data-sort="15" />
+        <button data-sort='23' class="btn btn-sm btn-success hidden prestigebutton" type="button" id="placeholder" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">I</button>
+        <button data-sort='03' class="btn btn-sm btn-success" type="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
         <br data-sort="15" />
         <button data-sort='23' class="btn btn-sm btn-success prestigebutton" type="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">I</button>
         <button data-sort='24' class="btn btn-sm btn-success" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
@@ -260,8 +114,8 @@
         <button data-sort='29' class="btn btn-sm btn-success prestigebutton" type="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">I</button>
         <button data-sort='30' class="btn btn-sm btn-success" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
         <br data-sort="31" />
-        <button data-sort='32' class="btn btn-sm btn-success prestigebutton" type="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">I</button>
-        <button data-sort='33' class="btn btn-sm btn-success" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
+        <button data-sort='32' class="btn btn-sm btn-primary prestigebutton" type="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">I</button>
+        <button data-sort='33' class="btn btn-sm btn-primary" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
         <br data-sort="34" />
         <button data-sort='35' class="btn btn-sm btn-success prestigebutton" type="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">I</button>
         <button data-sort='36' class="btn btn-sm btn-success" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
@@ -269,21 +123,130 @@
         <button data-sort='38' class="btn btn-sm btn-success prestigebutton" type="button" id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">I</button>
         <button data-sort='39' class="btn btn-sm btn-success" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
       </div>
-      <div class="border border-secondary rounded col-12 col-sm-6 col-md-4 col-lg-3 bg-secondary text-center rounded shadow" id="researchContainer">
-        <label data-sort='13' >Research</label>
-        <br data-sort="14" />
-        <button data-sort='15' class="btn btn-sm btn-success" type="button" id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
-        <button data-sort='16' class="btn btn-sm btn-success" type="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
-        <button data-sort='17' class="btn btn-sm btn-success" type="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
-        <button data-sort='18' class="btn btn-sm btn-success" type="button" id="btnAetherTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAetherProficiency()">Send Ships</button>
-        <button data-sort='19' class="btn btn-sm btn-success" type="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
+      <div class="border border-secondary rounded col-12 col-sm-12 col-md-12 col-lg-5 col-xl-7 bg-secondary text-light hidden" id="fightdisplay">
+        <div class="border border-light rounded bg-dark">
+          <span id="shipName">Drone</span> (<span id="shipSize">0</span>)<br />
+          <span id="shipDamage" class="bg-warning text-dark">Damage</span>
+          <div class="progress center-block" style="height: 25px;">
+            <div id="PlayerHullShieldBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="PlayerShieldText"></div>
+          </div>
+          <div class="progress center-block" style="height: 25px;">
+            <div id="PlayerHullHealthBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="PlayerHealthText"></div>
+          </div>
+        </div>
+        <br />
+        <div class="border border-light rounded bg-dark">
+          <span id="enemyName">0</span> (<span id="enemyShipSize">0</span>)<br />
+          <span id="enemyDamage" class="bg-warning text-dark">Damage</span>
+          <div class="progress" style="height: 25px;">
+            <div id="EnemyHullShieldBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="EnemyShieldText"></div>
+          </div>
+          <div class="progress" style="height: 25px;">
+            <div id="EnemyHullHealthBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%; color:black;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="text-largejbb justify-content-center d-flex position-absolute w-100" style="color:black" id="EnemyHealthText"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row p-1 m-1 border border-secondary rounded text-center">
+      <div class="col-12 border border-secondary rounded text-light">
+        <div class="row">
+          <div class="col-12 col-md-6 col-lg-3 col-xl-3 bg-dark">
+            Power <br />
+            <span id="power">9</span><br />
+            <button data-sort='04' class="btn btn-sm btn-primary" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy()">Buy Panel</button>
+            <button data-sort='05' class="btn btn-sm btn-primary hidden" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Buy Plant</button>
+            <button data-sort='06' class="btn btn-sm btn-primary hidden" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
+            <button data-sort='07' class="btn btn-sm btn-primary hidden" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
+          </div>
+          <div class="col-12 col-md-6 col-lg-3 col-xl-3">
+            <div class="row bg-dark">
+              <div class="col">
+                Metal<br /><span id="metal">0</span><br /><span id="metalpersec">0</span> /s<br />
+                <button data-sort='08' class="btn btn-sm btn-success" type="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy()">Buy Mine</button>
+              </div>
+            </div>
+            <div class="row bg-dark hidden" id="polymercontainer">
+              <div class="col">
+                Polymer<br /><span id="polymer">0</span><br/><span id="polymerpersec">0</span> /s<br />
+                <button data-sort='09' class="btn btn-sm btn-success hidden" type="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.factory.buy()">Buy Factory</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-3 col-xl-3">
+            <div class="row bg-dark hidden" id="researchcontainer">
+              <div class="col">
+                Research<br /><span id="researchPoints">0</span><br /><span id="researchpersec">0</span> /s<br />
+                <button data-sort='10' class="btn btn-sm btn-success hidden" type="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
+              </div>
+            </div>
+            <div class="row bg-dark hidden" id="aethercontainer">
+              <div class="col">
+                Aether<br /><span id="aether">0</span><br /><span id="aetherpersec">0</span> /s<br/>
+                <button data-sort='11' class="btn btn-sm btn-success hidden" type="button" id="btnBuyRefinery" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.refinery.buy()">Buy Refinery</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-3 col-xl-3">
+            <div class="row bg-dark hidden" id="fragmentcontainer">
+              <div class="col">
+                Fragments<br/><span id="chronotonfragments">0</span><br/><br /><button data-sort='23' class="btn btn-sm btn-success hidden prestigebutton" type="button" id="placeholder" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">I</button>
+              </div>
+            </div>
+            <div class="row bg-dark hidden" id="chronotoncontainer">
+              <div class="col">
+                Chronoton<br /><span id="chronoton">0</span><br /><br />
+                <button class="btn btn-sm btn-primary fightbutton" id="btnAbilities" type="button" data-toggle="modal" data-target="#AbilitiesModal">Abilities</button>
+                <div class="modal fade" id="AbilitiesModal" tabindex="-1" role="dialog" aria-labelledby="abilitiesModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="abilitiesModalLabel">Abilities</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      </div>
+                      <div class="modal-body bg-secondary text-left">
+                        Chronoton:<span id="chronoton2">0</span><br />
+                        Chronoton Spent:<span id="chronotonspent">0</span><br />
+                        <button class="btn btn-sm btn-danger" id="btnResetAbilities" type="button" data-toggle="tooltip" data-placement="bottom" title="Resets all abilities to 0" onclick="resetAbilities()">Reset Abilities</button>
+                        <button class="btn btn-sm btn-primary" id="btnLooter" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to looting additively" onclick="gamePerks.looter.add()">Looter 1</button>
+                        <button class="btn btn-sm btn-primary" id="btnProducer" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to metal and polymer production additively" onclick="gamePerks.producer.add()">Producer 1</button>
+                        <button class="btn btn-sm btn-primary" id="btnDamager" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to damage additively" onclick="gamePerks.damager.add()">Damager 1</button>
+                        <button class="btn btn-sm btn-primary" id="btnThickSkin" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will add 10% to defenses additively" onclick="gamePerks.thickskin.add()">Thick Skin 1</button>
+                        <button class="btn btn-sm btn-primary" id="btnSpeed" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten the wait time between attacks by 50ms" onclick="gamePerks.speed.add()">Speed 1</button>
+                        <button class="btn btn-sm btn-primary" id="btnConsistency" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will raise the minimum attack by 1%" onclick="gamePerks.consistency.add()">Consistency 1</button>
+                        <button class="btn btn-sm btn-primary" id="btnPower" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will raise power production by 10%" onclick="gamePerks.power.add()">Power 1</button>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <br/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row p-1 m-1 border border-secondary rounded">
+      <div class="border border-secondary rounded col-12 col-sm-12 col-md-12 col-lg-12 bg-dark text-center text-light rounded shadow" id="researchContainer">
+          Research<br />
+          <button data-sort='15' class="btn btn-sm btn-success" type="button" id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
+          <button data-sort='16' class="btn btn-sm btn-success" type="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
+          <button data-sort='17' class="btn btn-sm btn-success" type="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
+          <button data-sort='18' class="btn btn-sm btn-success" type="button" id="btnAetherTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAetherProficiency()">Send Ships</button>
+          <button data-sort='19' class="btn btn-sm btn-success" type="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
       </div>
     </div>
     <div class="row p-1 m-1 border border-secondary rounded" id="contactcontainer">
       <div class="border border-secondary rounded col text-light text-left bg-dark">
         <p>Email: <span class="myemail">(need JavaScript for email link)</span></p>
-        version:<label class="myemail text-center" id="current">0.6.9</label>
-        latest version:<label class="myemail text-center" id="result">0.6.9</label>
+        version:<label class="myemail text-center" id="current">0.7.0</label>
+        latest version:<label class="myemail text-center" id="result">0.7.0</label>
       </div>
     </div>
     <div class="row p-1 m-1 border border-secondary rounded" id="debugContainer">

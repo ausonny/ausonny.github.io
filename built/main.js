@@ -329,9 +329,9 @@ class Ship {
         this.lootType = lootType;
         this.lootAmount = lootAmount;
         this.size = size;
-        this.hitPoints = difficulty * hpMod * size * 30 * Math.pow(2.2, galaxy - 1) * Math.pow(1.007, zone - 1);
+        this.hitPoints = difficulty * hpMod * size * 30 * Math.pow(2.1, galaxy - 1) * Math.pow(1.007, zone - 1);
         this.hitPointsMax = this.hitPoints;
-        var baseEnemyAttack = difficulty * attackMod * 15 * Math.pow(2.2, galaxy - 1) * Math.pow(1.007, zone - 1);
+        var baseEnemyAttack = difficulty * attackMod * 15 * Math.pow(2.1, galaxy - 1) * Math.pow(1.007, zone - 1);
         this.minDamage = size * baseEnemyAttack / 1.25;
         this.maxDamage = size * baseEnemyAttack * 1.25;
         this.shieldMax = this.hitPoints * shmod;
@@ -519,7 +519,7 @@ function gatewayClick(challengeChosen = '') {
     var savedachievements = gameData.achievements;
     var savedChallenges = new challenges();
     savedChallenges.consistency.completed = gameData.challenges.consistency.completed;
-    savedChallenges.power.completed = gameData.challenges.consistency.completed;
+    savedChallenges.power.completed = gameData.challenges.power.completed;
     savedChallenges.consistency.unlocked = gameData.challenges.consistency.unlocked;
     savedChallenges.power.unlocked = gameData.challenges.power.unlocked;
     init(savedperks, savedChallenges, true, challengeChosen, gameData.resources.chronoton, savedachievements);
@@ -745,7 +745,7 @@ var gamePerks = {
         }
     },
     power: {
-        chronotonforBuy: function () { return 10 * Math.pow(1.3, gameData.perks.power); },
+        chronotonforBuy: function () { return 25 * Math.pow(1.3, gameData.perks.power); },
         chronotonSpent: function () { return sumOfExponents(gameData.perks.power, 1, 1.3); },
         canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
         updateBuyButtonText: function () { $('#btnPower').text('Power(' + (gameData.perks.power) + ')'); },
@@ -1518,18 +1518,18 @@ var gameEquipment = {
         },
         determineShowAffordUpgrade: function () {
             if (this.canAffordUpgrade()) {
-                $('#btnShieldUpgrade').removeClass('btn-danger').addClass('btn-info');
+                $('#btnShieldUpgrade').removeClass('btn-danger').addClass('btn-primary');
             }
             else {
-                $('#btnShieldUpgrade').removeClass('btn-info').addClass('btn-danger');
+                $('#btnShieldUpgrade').removeClass('btn-primary').addClass('btn-danger');
             }
         },
         determineShowAffordPrestige: function () {
             if (this.canAffordPrestige()) {
-                $('#btnShieldPrestige').removeClass('btn-danger').addClass('btn-info');
+                $('#btnShieldPrestige').removeClass('btn-danger').addClass('btn-primary');
             }
             else {
-                $('#btnShieldPrestige').removeClass('btn-info').addClass('btn-danger');
+                $('#btnShieldPrestige').removeClass('btn-primary').addClass('btn-danger');
             }
         },
         buyUpgrade: function () {
@@ -1751,6 +1751,7 @@ function exportsave() {
     debugText = JSON.stringify(gameData);
 }
 function init(passedperks, passedchallenges, gatewayReset = false, activeChallenge = '', chronoton = 0, passedAchievements = []) {
+    debugText += 'v0.7.0 - Another new attempt at a GUI and fixed the power challenge to not immediately be completed.';
     debugText += 'v0.6.9 - New GUI and some balance changes.';
     debugText += '\nv0.6.8 - added another new challenge called power that cuts power generation in half.  It is unlocked at galaxy 25 and is completed by reaching galaxy 25.  It unlocks the power ability that increases power generation by 10% additively.  Also moved the consistency challenge to level 35.';
     debugText += '\nv0.6.7 - Conversion to typescript is complete.\nThe first challenge is in the game.  It is called consistency and lowers the max damage to the min damage.  It is unlocked at galaxy 25 and is completed by reaching level 25.  It is activated on the gateway screen.  It unlocks the consistency ability which increases min damage.  When maxed out min damage will be 100% of the base damage while max damage stays at 125%.';
@@ -2195,12 +2196,10 @@ function updateGUI() {
         }
         $('#EnemyHullShieldBar').css('width', prettify(width) + '%');
         $('#EnemyShieldText').text('Shield:' + prettify(gameData.enemyship.shield) + '/' + prettify(gameData.enemyship.shieldMax));
-        document.getElementById('enemyMinDamage').innerHTML = prettify(gameData.enemyship.minDamage);
-        document.getElementById('enemyMaxDamage').innerHTML = prettify(gameData.enemyship.maxDamage);
+        document.getElementById('enemyDamage').innerHTML = 'Damage: ' + prettify(gameData.enemyship.minDamage) + '-' + prettify(gameData.enemyship.maxDamage);
         document.getElementById('shipSize').innerHTML = prettify(gameData.playership.size);
         document.getElementById('shipName').innerHTML = gameData.playership.name;
-        document.getElementById('shipMinDamage').innerHTML = prettify(gameData.playership.minDamage);
-        document.getElementById('shipMaxDamage').innerHTML = prettify(gameData.playership.maxDamage);
+        document.getElementById('shipDamage').innerHTML = 'Damage: ' + prettify(gameData.playership.minDamage) + '-' + prettify(gameData.playership.maxDamage);
         document.getElementById('MissionName').innerHTML = gameData.missions[gameData.world.currentMission].name;
         document.getElementById('zone').innerHTML = prettify(gameData.missions[gameData.world.currentMission].zone + 1);
         document.getElementById('zonemax').innerHTML = prettify(gameData.missions[gameData.world.currentMission].enemies.length);
@@ -2220,7 +2219,7 @@ function updateGUI() {
         }
     }
     if (gameData.buildings.factories >= 5) {
-        $('#labscontainer').removeClass('hidden');
+        $('#researchcontainer').removeClass('hidden');
         gameBuildings.lab.showBuyButton();
         if (!gameData.story.labunlocked) {
             addToDisplay('Labs are available.  They should help to rediscover some technologies.  How did they manage to pull off an attack of that scale secretly?', 'story');
@@ -2273,7 +2272,7 @@ function updateGUI() {
         $('#fightcontrols').removeClass('hidden');
     }
     if (gameData.buildings.labs >= 2) {
-        $('#techvisible').removeClass('hidden');
+        $('#equipmentContainer').removeClass('hidden');
         if (!gameData.story.shipyardUnlocked) {
             addToDisplay('Drones!  A shipyard will allow me to send out drones and begin the quest for information.  I can sense a path of ships, almost like a breadcrumb trail.  They aren\'t responding to our attempts at communication.', 'story');
             gameData.story.shipyardUnlocked = true;
@@ -2742,6 +2741,9 @@ function updateMissionButtons() {
         element.classList.add('btn');
         element.classList.add('btn-sm');
         if (missionIndex === 0) {
+            element.classList.add('btn-primary');
+        }
+        else if (gameData.missions[missionIndex].name.includes('Mine')) {
             element.classList.add('btn-warning');
         }
         else {
@@ -2874,8 +2876,8 @@ function checkForUnlocks() {
         gameData.technologies.shieldPrestigeLevelUnlocked = 1;
         gameData.technologies.shieldPrestigeLevelBought = 1;
         gameData.technologies.shieldUpgrade = 1;
-        $('#btnShieldUpgrade').text('Shield(' + (gameData.technologies.shieldUpgrade) + ')');
-        $('#btnShieldUpgrade').attr('title', gameEquipment.shield.tooltipForUpgrade());
+        gameEquipment.shield.updateUpgradeText();
+        gameEquipment.shield.updateUpgradeTooltip();
         addToDisplay('I have found the plans to allow us to add shields to drones.  This should increase their survivability.', 'story');
         sortBuildings($('#buildingvisible'));
     }
@@ -2931,7 +2933,7 @@ function checkForUnlocks() {
         giveChronotonFragments((gameData.missions[0].galaxy - 6) * Math.pow(1.01, (gameData.missions[0].galaxy - 16)));
     }
     if (gameData.missions[0].galaxy > 34) {
-        if (!gameData.story.consistencyunlocked) {
+        if (!gameData.story.consistencyunlocked && !gameData.challenges.consistency.unlocked) {
             addToDisplay('I have discovered a new address for the Gateway.  It will allow a new challenge to be attempted.  And there should be a nice reward.  Probably even a new ability!', 'story');
             gameData.story.consistencyunlocked = true;
         }
@@ -2943,7 +2945,7 @@ function checkForUnlocks() {
         $('#btnConfirmConsistency').addClass('hidden');
     }
     if (gameData.missions[0].galaxy > 24) {
-        if (!gameData.story.powerunlocked) {
+        if (!gameData.story.powerunlocked && !gameData.challenges.power.unlocked) {
             addToDisplay('I have discovered a new address for the Gateway.  It will allow a new challenge to be attempted.  And there should be a nice reward.  Probably even a new ability!', 'story');
             gameData.story.powerunlocked = true;
         }
