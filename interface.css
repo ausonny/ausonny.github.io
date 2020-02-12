@@ -46,6 +46,11 @@ button {
   margin: 1px;
 }
 
+.powerbutton {
+  width: 65px;
+  margin: 1px;
+}
+
 .fightbutton {
   width: 150px;
   margin: 1px;
@@ -61,27 +66,49 @@ button {
   display: inline-block;
 }
 
-.lined .nav-link {
+
+nav > .nav.nav-tabs{
+
   border: none;
-  border-bottom: 3px solid transparent;
-  color: #f8f9fa;
-  background-color: #343a40;
-}
+    color:#f8f9fa;
+    background:#272e38;
+    border-radius:0;
 
-.lined .nav-link:hover {
+}
+nav > div a.nav-item.nav-link,
+nav > div a.nav-item.nav-link.active
+{
   border: none;
-  border-bottom: 3px solid transparent;
-  border-color: #6c757d;
+    padding: 18px 25px;
+    color:#f8f9fa;
+    background:#272e38;
+    border-radius:0;
 }
 
-.lined .nav-link.active {
-  background: none;
-  color: #fff;
-  border-color: #6c757d;
-  background-color: #6c757d;
+nav > div a.nav-item.nav-link.active:after
+ {
+  content: "";
+  position: relative;
+  bottom: -60px;
+  left: -10%;
+  border: 15px solid transparent;
+  border-top-color: #272e38 ;
+}
+.tab-content{
+  background: #6c757d;
+    line-height: 25px;
+    border: 1px solid #ddd;
+    border-top:5px solid #6c757d;
+    border-bottom:5px solid #6c757d;
+    padding:30px 25px;
 }
 
-.myemail {
-  display: inline-block;
-
+nav > div a.nav-item.nav-link:hover,
+nav > div a.nav-item.nav-link:focus
+{
+  border: none;
+    background: #6c757d;
+    color:#f8f9fa;
+    border-radius:0;
+    transition:background 0.20s linear;
 }
