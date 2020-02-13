@@ -161,6 +161,7 @@ class perks {
 class saveGameData {
     constructor(name) {
         this.name = name;
+        this.version = '0.7.2';
         this.challenges = new challenges();
         this.story = {
             aetherplantunlocked: false,
@@ -1813,6 +1814,7 @@ function exportsave() {
     debugText = JSON.stringify(gameData);
 }
 function init(passedperks, passedchallenges, gatewayReset = false, activeChallenge = '', chronoton = 0, passedAchievements = []) {
+    debugText += '\nv0.7.2 - Another new attempt at a GUI!!! and some balance issues mainly related to research';
     debugText += '\nv0.7.1 - Another new attempt at a GUI and nerfed Shields.  Changed Tactical Labs to effect shields instead of armor and flak';
     debugText += '\nv0.7.0 - Another new attempt at a GUI and fixed the power challenge to not immediately be completed.';
     debugText += '\nv0.6.9 - New GUI and some balance changes.';

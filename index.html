@@ -78,19 +78,19 @@
                 Mines: <span id="minecount">0</span><br />
                 Rate: <span id="metalpersec">0</span>
               </div>
-              <div class="col-6 text-right">
+              <div class="col-6 text-right" id="polymercontainer">
                 Polymer: <span id="polymer">0</span><br />
                 Factories: <span id="factorycount">0</span><br />
                 Rate: <span id="polymerpersec">0</span>
               </div>
             </div>
             <div class="row border border-secondary rounded text-xsmall">
-              <div class="col-6 bg-info">
+              <div class="col-6 bg-info" id="researchcontainer">
                 Research: <span id="researchPoints">0</span><br />
                 Labs: <span id="labcount">0</span><br />
                 Rate: <span id="researchpersec">0</span>
               </div>
-              <div class="col-6 text-right bg-secondary">
+              <div class="col-6 text-right bg-secondary" id="aethercontainer">
                 Aether: <span id="aether">0</span><br />
                 Refineries: <span id="refinerycount">0</span><br />
                 Rate: <span id="aetherpersec">0</span>
@@ -132,7 +132,7 @@
               </div>
             </nav>
             <div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
-              <div class="tab-pane fade show active" id="nav-research" role="tabpanel" aria-labelledby="nav-research-tab">
+              <div class="tab-pane fade show active" id="nav-research" role="tabpanel" aria-labelledby="nav-research-tab" id="projectcontainer">
                 <div class="row p-1 m-1 border border-secondary rounded">
                   <div class="border border-secondary rounded col-12 col-sm-12 col-md-12 col-lg-12 bg-dark text-center text-light rounded shadow" id="projectcontainer">
                       <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
@@ -145,7 +145,7 @@
                   </div>
                 </div>
               </div>
-              <div class="tab-pane fade" id="nav-upgrades" role="tabpanel" aria-labelledby="nav-upgrades-tab">
+              <div class="tab-pane fade" id="nav-upgrades" role="tabpanel" aria-labelledby="nav-upgrades-tab" id="equipmentcontainer">
                 <div class="row p-1 m-1 border border-secondary rounded">
                   <div class="border border-secondary rounded col-xl-12 bg-dark text-center text-light rounded shadow hidden" id="equipmentContainer">
                     <button data-sort='23' class="btn btn-sm btn-success hidden prestigebutton" type="button" id="placeholder" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">I</button>
