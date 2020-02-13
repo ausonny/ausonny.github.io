@@ -25,6 +25,10 @@ body {
 }
 
 .text-small {
+  font-size: 90%;
+}
+
+.text-xsmall {
   font-size: 75%;
 }
 
@@ -47,18 +51,28 @@ button {
 }
 
 .powerbutton {
-  width: 65px;
+  width: 75px;
+  height: 40px;
   margin: 1px;
+  font-size: 100%;
 }
 
 .fightbutton {
   width: 150px;
   margin: 1px;
+  font-size: 90%;
 }
 
 .prestigebutton {
-  width: 10px;
+  width: 20px;
 }
+
+.upgradebutton {
+  width: 160px;
+  margin: 1px;
+  font-size: 80%;
+}
+
 
 .timer {
   width: 120px;
@@ -79,7 +93,7 @@ nav > div a.nav-item.nav-link,
 nav > div a.nav-item.nav-link.active
 {
   border: none;
-    padding: 18px 25px;
+    padding: 1px 2px;
     color:#f8f9fa;
     background:#272e38;
     border-radius:0;
@@ -96,7 +110,7 @@ nav > div a.nav-item.nav-link.active:after
 }
 .tab-content{
   background: #6c757d;
-    line-height: 25px;
+    line-height: 2px;
     border: 1px solid #ddd;
     border-top:5px solid #6c757d;
     border-bottom:5px solid #6c757d;

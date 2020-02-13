@@ -221,6 +221,8 @@ class perks {
 class saveGameData {
   name: string
 
+  version: string
+
   challenges: challenges
 
   story: {
@@ -337,6 +339,7 @@ class saveGameData {
 
   constructor(name: string) {
     this.name = name;
+    this.version = '0.7.2';
     this.challenges = new challenges();
     this.story = {
       aetherplantunlocked: false,
@@ -698,9 +701,11 @@ function giveMissionReward(mission: Mission) {
   } else if (mission.name === 'Panel Improvement') {
     gameData.technologies.panelUpgrade++;
     addToDisplay('I have more power now.  Panels are twice as effective.', 'story');
+    gameBuildings.panel.updateBuyButtonTooltip();
   } else if (mission.name === 'Generator Improvement') {
     gameData.technologies.generatorUpgrade++;
     addToDisplay('I have more power now.  Generators are twice as effective.', 'story');
+    gameBuildings.generator.updateBuyButtonTooltip();
   } else if (mission.name === 'The Gateway') {
     gameData.story.gatewayUnlocked = true;
     addToDisplay('This location contains a large, prestigious, circular structure.  I can easily travel there and step through it, but what will I find?  I have also discovered some chronoton fragments.  I don\'t see a use for them but they may come in handy later', 'story');
@@ -1014,17 +1019,17 @@ var gamePerks = {
 var gameBuildings = {
   panel: {
     metalForBuy: function() { return (PANEL_BASE_COST * Math.pow(PANEL_GROWTH_FACTOR, gameData.buildings.panels)); },
-    tooltipForBuy: function() { return ('Solar Panels\nCreate ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy())); },
+    tooltipForBuy: function() { return ((gameData.buildings.panels) + ' Solar Panels\nCreate ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy())); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalForBuy()); },
     totalPowerCreated: function() { return (gameData.buildings.panels * this.powerPer()); },
     powerPer: function() { return (POWER_PER_PANEL * Math.pow(2, gameData.technologies.panelUpgrade) * gamePerks.power.getBonus()); },
-    updateBuyButtonText: function() { $('#btnBuyPanel').text('S(' + (gameData.buildings.panels) + ')'); },
+    updateBuyButtonText: function() { $('#btnBuyPanel').text('Solar Panel'); },
     updateBuyButtonTooltip: function() { $('#btnBuyPanel').attr('title', this.tooltipForBuy()); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyPanel').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyPanel').removeClass('btn-danger').addClass('btn-light');
       } else {
-        $('#btnBuyPanel').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyPanel').removeClass('btn-light').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -1044,19 +1049,19 @@ var gameBuildings = {
   generator: {
     metalForBuy: function() { return (GENERATOR_METAL_BASE_COST * Math.pow(GENERATOR_GROWTH_FACTOR, gameData.buildings.generators)); },
     polymerForBuy: function() { return (GENERATOR_POLYMER_BASE_COST * Math.pow(GENERATOR_GROWTH_FACTOR, gameData.buildings.generators)); },
-    tooltipForBuy: function() { return ('Generator\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy())); },
+    tooltipForBuy: function() { return ((gameData.buildings.generators) + ' Generators\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy())); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy()); },
     totalPowerCreated: function() { return (gameData.buildings.generators * this.powerPer()); },
     powerPer: function() { return (POWER_PER_GENERATOR * Math.pow(2, gameData.technologies.generatorUpgrade) * gamePerks.power.getBonus()); },
-    updateBuyButtonText: function() { $('#btnBuyGenerator').text('G(' + (gameData.buildings.generators) + ')'); },
+    updateBuyButtonText: function() { $('#btnBuyGenerator').text('Generator'); },
     updateBuyButtonTooltip: function() { $('#btnBuyGenerator').attr('title', this.tooltipForBuy()); },
     hideBuyButton: function() { $('#btnBuyGenerator').addClass('hidden'); },
     showBuyButton: function() { $('#btnBuyGenerator').removeClass('hidden'); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyGenerator').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyGenerator').removeClass('btn-danger').addClass('btn-light');
       } else {
-        $('#btnBuyGenerator').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyGenerator').removeClass('btn-light').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -1077,19 +1082,19 @@ var gameBuildings = {
   plant: {
     metalForBuy: function() { return (PLANT_METAL_BASE_COST * Math.pow(PLANT_METAL_GROWTH_FACTOR, gameData.buildings.plants)); },
     polymerForBuy: function() { return (PLANT_POLYMER_BASE_COST * Math.pow(PLANT_POLYMER_GROWTH_FACTOR, gameData.buildings.plants)); },
-    tooltipForBuy: function() { return ('Plant\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy())); },
+    tooltipForBuy: function() { return ((gameData.buildings.plants) + ' Plant\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy())); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy()); },
     totalPowerCreated: function() { return (gameData.buildings.plants * this.powerPer()); },
     powerPer: function() { return POWER_PER_PLANT * gamePerks.power.getBonus(); },
-    updateBuyButtonText: function() { $('#btnBuyPlant').text('P(' + (gameData.buildings.plants) + ')'); },
+    updateBuyButtonText: function() { $('#btnBuyPlant').text('Plant'); },
     updateBuyButtonTooltip: function() { $('#btnBuyPlant').attr('title', this.tooltipForBuy()); },
     hideBuyButton: function() { $('#btnBuyPlant').addClass('hidden'); },
     showBuyButton: function() { $('#btnBuyPlant').removeClass('hidden'); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyPlant').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyPlant').removeClass('btn-danger').addClass('btn-light');
       } else {
-        $('#btnBuyPlant').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyPlant').removeClass('btn-light').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -1111,19 +1116,19 @@ var gameBuildings = {
     metalForBuy: function() { return (AETHER_PLANT_METAL_BASE_COST * Math.pow(AETHER_PLANT_GROWTH_FACTOR, gameData.buildings.aetherPlants)); },
     polymerForBuy: function() { return (AETHER_PLANT_POLYMER_BASE_COST * Math.pow(AETHER_PLANT_GROWTH_FACTOR, gameData.buildings.aetherPlants)); },
     aetherForBuy: function() { return (AETHER_PLANT_AETHER_BASE_COST * Math.pow(AETHER_PLANT_GROWTH_FACTOR, gameData.buildings.aetherPlants)); },
-    tooltipForBuy: function() { return ('Aether Plant\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy()) + '\nAether Cost:' + prettify(this.aetherForBuy())); },
+    tooltipForBuy: function() { return ((gameData.buildings.aetherPlants) + ' Aether Plant\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy()) + '\nAether Cost:' + prettify(this.aetherForBuy())); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy() && gameData.resources.aether >= this.aetherForBuy()); },
     totalPowerCreated: function() { return (gameData.buildings.aetherPlants * this.powerPer()); },
     powerPer: function() { return POWER_PER_AETHER_PLANT * gamePerks.power.getBonus(); },
-    updateBuyButtonText: function() { $('#btnBuyAetherPlant').text('A(' + (gameData.buildings.aetherPlants) + ')'); },
+    updateBuyButtonText: function() { $('#btnBuyAetherPlant').text('Aether Plant'); },
     updateBuyButtonTooltip: function() { $('#btnBuyAetherPlant').attr('title', this.tooltipForBuy()); },
     hideBuyButton: function() { $('#btnBuyAetherPlant').addClass('hidden'); },
     showBuyButton: function() { $('#btnBuyAetherPlant').removeClass('hidden'); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyAetherPlant').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyAetherPlant').removeClass('btn-danger').addClass('btn-light');
       } else {
-        $('#btnBuyAetherPlant').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyAetherPlant').removeClass('btn-light').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -1146,7 +1151,7 @@ var gameBuildings = {
     metalForBuy: function() { return (MINE_BASE_COST * Math.pow(MINE_GROWTH_FACTOR, gameData.buildings.mines)); },
     powerForBuy: function() { return (MINE_POWER_USAGE * Math.pow(MINE_POWER_GROWTH_USAGE, gameData.buildings.mines)); },
     powerSpent: function() { return sumOfExponents(gameData.buildings.mines, MINE_POWER_USAGE, MINE_POWER_GROWTH_USAGE); },
-    tooltipForBuy: function() { return ('Creates ' + prettify(this.productionPerSecond() / gameData.buildings.mines) + ' metal per second\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPower Cost: ' + prettify(this.powerForBuy())); },
+    tooltipForBuy: function() { return (gameData.buildings.mines + ' Create ' + prettify(this.productionPerSecond() / gameData.buildings.mines) + ' metal per second\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPower Cost: ' + prettify(this.powerForBuy())); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalForBuy() && CheckPower(this.powerForBuy())); },
     productionPerSecond: function() {
       var increase = gameData.buildings.mines * Math.pow(METAL_PROFICIENCY_BASE_RATE, gameData.technologies.metalProficiencyBought);
@@ -1154,13 +1159,13 @@ var gameBuildings = {
       increase *= gamePerks.producer.getBonus();
       return increase;
     },
-    updateBuyButtonText: function() { $('#btnBuyMine').text('Mine(' + (gameData.buildings.mines) + ')'); },
+    updateBuyButtonText: function() { $('#btnBuyMine').text('Mine'); },
     updateBuyButtonTooltip: function() { $('#btnBuyMine').attr('title', this.tooltipForBuy()); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyMine').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyMine').removeClass('btn-danger').addClass('btn-warning');
       } else {
-        $('#btnBuyMine').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyMine').removeClass('btn-warning').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -1188,23 +1193,23 @@ var gameBuildings = {
     polymerForBuy: function() { return (LAB_POLYMER_BASE_COST * Math.pow(LAB_POLYMER_GROWTH_FACTOR, gameData.buildings.labs)); },
     powerForBuy: function() { return (LAB_POWER_USAGE * Math.pow(LAB_POWER_GROWTH_USAGE, gameData.buildings.labs)); },
     powerSpent: function() { return sumOfExponents(gameData.buildings.labs, LAB_POWER_USAGE, LAB_POWER_GROWTH_USAGE); },
-    tooltipForBuy: function() { return ('Creates ' + prettify(this.productionPerSecond() / gameData.buildings.labs) + ' research per second\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy()) + '\nPower Cost: ' + prettify(this.powerForBuy())); },
+    tooltipForBuy: function() { return (gameData.buildings.labs + ' create ' + prettify(this.productionPerSecond() / gameData.buildings.labs) + ' research per second\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy()) + '\nPower Cost: ' + prettify(this.powerForBuy())); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy() && CheckPower(this.powerForBuy())); },
     productionPerSecond: function() {
       var increase = gameData.buildings.labs * Math.pow(RESEARCH_PROFICIENCY_BASE_RATE, gameData.technologies.researchProficiencyBought);
       increase *= Math.pow(2, gameData.technologies.goldMine);
       increase *= gamePerks.producer.getBonus();
-      return increase;
+      return increase * 0.25;
     },
-    updateBuyButtonText: function() { $('#btnBuyLab').text('Lab(' + (gameData.buildings.labs) + ')'); },
+    updateBuyButtonText: function() { $('#btnBuyLab').text('Lab'); },
     updateBuyButtonTooltip: function() { $('#btnBuyLab').attr('title', this.tooltipForBuy()); },
     hideBuyButton: function() { $('#btnBuyLab').addClass('hidden'); },
     showBuyButton: function() { $('#btnBuyLab').removeClass('hidden'); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyLab').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyLab').removeClass('btn-danger').addClass('btn-info');
       } else {
-        $('#btnBuyLab').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyLab').removeClass('btn-info').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -1235,7 +1240,7 @@ var gameBuildings = {
     metalForBuy: function() { return (FACTORY_BASE_COST * Math.pow(FACTORY_GROWTH_FACTOR, gameData.buildings.factories)); },
     powerForBuy: function() { return (FACTORY_POWER_USAGE * Math.pow(FACTORY_POWER_GROWTH_USAGE, gameData.buildings.factories)); },
     powerSpent: function() { return sumOfExponents(gameData.buildings.factories, FACTORY_POWER_USAGE, FACTORY_POWER_GROWTH_USAGE); },
-    tooltipForBuy: function() { return ('Creates ' + prettify(this.productionPerSecond() / gameData.buildings.factories) + ' polymer per second\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPower Cost: ' + prettify(this.powerForBuy())); },
+    tooltipForBuy: function() { return (gameData.buildings.factories + ' create ' + prettify(this.productionPerSecond() / gameData.buildings.factories) + ' polymer per second\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPower Cost: ' + prettify(this.powerForBuy())); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalForBuy() && CheckPower(this.powerForBuy())); },
     productionPerSecond: function() {
       var increase = gameData.buildings.factories * Math.pow(POLYMER_PROFICIENCY_BASE_RATE, gameData.technologies.polymerProficiencyBought);
@@ -1243,15 +1248,15 @@ var gameBuildings = {
       increase *= gamePerks.producer.getBonus();
       return increase;
     },
-    updateBuyButtonText: function() { $('#btnBuyFactory').text('Factory(' + (gameData.buildings.factories) + ')'); },
+    updateBuyButtonText: function() { $('#btnBuyFactory').text('Factory'); },
     updateBuyButtonTooltip: function() { $('#btnBuyFactory').attr('title', this.tooltipForBuy()); },
     hideBuyButton: function() { $('#btnBuyFactory').addClass('hidden'); },
     showBuyButton: function() { $('#btnBuyFactory').removeClass('hidden'); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyFactory').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyFactory').removeClass('btn-danger').addClass('btn-dark');
       } else {
-        $('#btnBuyFactory').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyFactory').removeClass('btn-dark').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -1290,15 +1295,15 @@ var gameBuildings = {
       increase *= gamePerks.producer.getBonus();
       return increase;
     },
-    updateBuyButtonText: function() { $('#btnBuyRefinery').text('Refinery(' + (gameData.buildings.refineries) + ')'); },
+    updateBuyButtonText: function() { $('#btnBuyRefinery').text('Refinery'); },
     updateBuyButtonTooltip: function() { $('#btnBuyRefinery').attr('title', this.tooltipForBuy()); },
     hideBuyButton: function() { $('#btnBuyRefinery').addClass('hidden'); },
     showBuyButton: function() { $('#btnBuyRefinery').removeClass('hidden'); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyRefinery').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyRefinery').removeClass('btn-danger').addClass('btn-secondary');
       } else {
-        $('#btnBuyRefinery').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyRefinery').removeClass('btn-secondary').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -1393,9 +1398,9 @@ var gameBuildings = {
     showBuyButton: function() { $('#btnBuyShipyard').removeClass('hidden'); },
     determineShowAffordBuy: function() {
       if (this.canAffordBuy()) {
-        $('#btnBuyShipyard').removeClass('btn-danger').addClass('btn-success');
+        $('#btnBuyShipyard').removeClass('btn-danger').addClass('btn-secondary');
       } else {
-        $('#btnBuyShipyard').removeClass('btn-success').addClass('btn-danger');
+        $('#btnBuyShipyard').removeClass('btn-secondary').addClass('btn-danger');
       }
     },
     buy: function() {
@@ -2004,6 +2009,7 @@ function exportsave() { // eslint-disable-line no-unused-vars
 }
 
 function init(passedperks: perks, passedchallenges: challenges, gatewayReset: boolean = false, activeChallenge: string = '', chronoton: number = 0, passedAchievements: Achievement[] = []) {
+  debugText += '\nv0.7.2 - Another new attempt at a GUI!!! and some balance issues mainly related to research';
   debugText += '\nv0.7.1 - Another new attempt at a GUI and nerfed Shields.  Changed Tactical Labs to effect shields instead of armor and flak';
   debugText += '\nv0.7.0 - Another new attempt at a GUI and fixed the power challenge to not immediately be completed.';
   debugText += '\nv0.6.9 - New GUI and some balance changes.';
@@ -2148,8 +2154,6 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       if (typeof savegame.tacticalChoices !== 'undefined') gameData.tacticalChoices.tacticalLabsSetting = savegame.tacticalChoices.tacticalLabsSetting;
     }
   }
-
-  $('#missiontooltip').attr('title', 'Choose a destination here.  Choosing the current galaxy will continue the chase.  Choosing another option will run a mission, normally with a reward, like a new weapon prestige, or a cache of materials.  Upon completion of a mission the next mission in order will be chosen.  When there are no more missions after the completed one the current galaxy will be chosen.');
 
   $('#building').tab('show');
   $('#polymercontainer').addClass('hidden');
@@ -2334,6 +2338,10 @@ function updateGUI() {
   document.getElementById('timeElapsed').innerHTML = showTimeElapsed();
   document.getElementById('textToDisplay').innerHTML = getDisplayText();
   document.getElementById('textToDisplay2').innerHTML = debugText;
+  document.getElementById('minecount').innerHTML = prettify(gameData.buildings.mines);
+  document.getElementById('labcount').innerHTML = prettify(gameData.buildings.labs);
+  document.getElementById('factorycount').innerHTML = prettify(gameData.buildings.factories);
+  document.getElementById('refinerycount').innerHTML = prettify(gameData.buildings.refineries);
   document.getElementById('metal').innerHTML = prettify(gameData.resources.metal);
   document.getElementById('researchPoints').innerHTML = prettify(gameData.resources.researchPoints);
   document.getElementById('polymer').innerHTML = prettify(gameData.resources.polymer);
@@ -2573,16 +2581,7 @@ function updateGUI() {
     }
   }
 
-  $('#btnBuyShipyard').removeClass('btn-success').addClass('btn-danger');
-  $('#btnBuyShipyard').addClass('hidden');
-  if (gameData.buildings.shipyard < gameData.technologies.shipyardTechUnlock) {
-    $('#btnBuyShipyard').removeClass('hidden');
-    $('#btnBuyShipyard').text('Shipyard(' + (gameData.buildings.shipyard + 1) + ')');
-    if (gameBuildings.shipyard.canAffordBuy()) {
-      $('#btnBuyShipyard').removeClass('btn-danger').addClass('btn-success');
-    }
-  }
-
+  gameBuildings.shipyard.determineShowAffordBuy();
   gameBuildings.mine.determineShowAffordBuy();
   gameBuildings.panel.determineShowAffordBuy();
   gameBuildings.generator.determineShowAffordBuy();
@@ -2765,7 +2764,7 @@ function updatePower() {
   if (gameData.world.currentChallenge === 'Power') {
     powerAvailable /= 2;
   }
-  var facilities = gameBuildings.mine.powerSpent() + gameBuildings.shipyard.powerSpent() + gameBuildings.factory.powerSpent() + gameBuildings.lab.powerSpent() + gameBuildings.refinery.powerSpent();
+  var facilities = gameBuildings.tacticalLab.powerSpent() + gameBuildings.mine.powerSpent() + gameBuildings.shipyard.powerSpent() + gameBuildings.factory.powerSpent() + gameBuildings.lab.powerSpent() + gameBuildings.refinery.powerSpent();
   gameData.resources.power = powerAvailable - facilities;
 }
 
@@ -2974,10 +2973,16 @@ function updateMissionButtons() {
   while (foo.firstChild) {
     foo.removeChild(foo.firstChild);
   }
-  // var content = document.createTextNode(');
-  // foo.appendChild(content);
-  // var linebreak = document.createElement('br');
-  // foo.appendChild(linebreak);
+  var content = document.createElement('img');
+  content.src = 'images/icons8-help-16.png';
+  content.classList.add('img-fluid');
+  content.alt = 'Responsive image';
+  content.title = 'Choose a destination here.  Choosing the current galaxy will continue the chase.  Choosing another option will run a mission, normally with a reward, like a new weapon prestige, or a cache of materials.  Upon completion of a mission the next mission in order will be chosen.  When there are no more missions after the completed one the current galaxy will be chosen.';
+  content.setAttribute('data-toggle', 'tooltip');
+  content.setAttribute('data-placement', 'bottom');
+  foo.append(content);
+  var linebreak = document.createElement('br');
+  foo.appendChild(linebreak);
   for (let missionIndex = 0; missionIndex < gameData.missions.length; missionIndex++) {
     var element = document.createElement('button');
     // Assign different attributes to the element.
