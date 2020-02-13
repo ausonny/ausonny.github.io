@@ -1397,6 +1397,11 @@ var gameBuildings = {
     hideBuyButton: function() { $('#btnBuyShipyard').addClass('hidden'); },
     showBuyButton: function() { $('#btnBuyShipyard').removeClass('hidden'); },
     determineShowAffordBuy: function() {
+      if (gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard) {
+        $('#btnBuyShipyard').removeClass('hidden');
+      } else {
+        $('#btnBuyShipyard').addClass('hidden');
+      }
       if (this.canAffordBuy()) {
         $('#btnBuyShipyard').removeClass('btn-danger').addClass('btn-secondary');
       } else {
