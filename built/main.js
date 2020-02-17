@@ -8,14 +8,18 @@ const PANEL_GROWTH_FACTOR = 1.3;
 const GENERATOR_METAL_BASE_COST = 200;
 const GENERATOR_GROWTH_FACTOR = 1.3;
 const GENERATOR_POLYMER_BASE_COST = 50;
-const PLANT_METAL_BASE_COST = 500;
+const PLANT_METAL_BASE_COST = 5000;
 const PLANT_METAL_GROWTH_FACTOR = 1.3;
-const PLANT_POLYMER_BASE_COST = 125;
+const PLANT_POLYMER_BASE_COST = 1250;
 const PLANT_POLYMER_GROWTH_FACTOR = 1.3;
-const AETHER_PLANT_METAL_BASE_COST = 2000;
+const AETHER_PLANT_METAL_BASE_COST = 20000;
 const AETHER_PLANT_GROWTH_FACTOR = 1.3;
-const AETHER_PLANT_POLYMER_BASE_COST = 500;
+const AETHER_PLANT_POLYMER_BASE_COST = 5000;
 const AETHER_PLANT_AETHER_BASE_COST = 100;
+const FUSION_PLANT_METAL_BASE_COST = 5000000;
+const FUSION_PLANT_GROWTH_FACTOR = 1.3;
+const FUSION_PLANT_POLYMER_BASE_COST = 500000;
+const FUSION_PLANT_AETHER_BASE_COST = 1000;
 const MINE_BASE_COST = 10;
 const MINE_GROWTH_FACTOR = 1.1;
 const MINE_POWER_USAGE = 1;
@@ -44,6 +48,7 @@ const POWER_PER_PANEL = 10;
 const POWER_PER_GENERATOR = 15;
 const POWER_PER_PLANT = 25;
 const POWER_PER_AETHER_PLANT = 50;
+const POWER_PER_FUSION_PLANT = 100;
 const SHIPYARD_METAL_BASE_COST = 1000;
 const SHIPYARD_METAL_GROWTH_FACTOR = 1.3;
 const SHIPYARD_POLYMER_BASE_COST = 500;
@@ -82,45 +87,37 @@ const AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR = 1.3;
 const AETHER_PROFIECIENCY_RP_COST = 500000;
 const AETHER_PROFIECIENCY_RP_GROWTH_FACTOR = 1.3;
 const AETHER_PROFICIENCY_BASE_RATE = 1.5;
-const RAILGUN_UPGRADE_METAL_BASE_COST = 100;
-const RAILGUN_UPGRADE_POLYMER_BASE_COST = 0;
+const RAILGUN_UPGRADE_METAL_BASE_COST = 50;
+const RAILGUN_UPGRADE_POLYMER_BASE_COST = 25;
 const RAILGUN_UPGRADE_RP_BASE_COST = 40;
 const RAILGUN_UPGRADE_BASE_IMPROVEMENT = 4;
-const RAILGUN_UPGRADE_AETHER_BASE_COST = 90;
-const LASER_UPGRADE_METAL_BASE_COST = 50;
+const RAILGUN_UPGRADE_AETHER_BASE_COST = 60;
+const LASER_UPGRADE_METAL_BASE_COST = 100;
 const LASER_UPGRADE_POLYMER_BASE_COST = 50;
 const LASER_UPGRADE_RP_BASE_COST = 80;
 const LASER_UPGRADE_BASE_IMPROVEMENT = 8;
 const LASER_UPGRADE_AETHER_BASE_COST = 120;
-const MISSILE_UPGRADE_METAL_BASE_COST = 50;
+const MISSILE_UPGRADE_METAL_BASE_COST = 200;
 const MISSILE_UPGRADE_POLYMER_BASE_COST = 100;
-const MISSILE_UPGRADE_RP_BASE_COST = 120;
+const MISSILE_UPGRADE_RP_BASE_COST = 160;
 const MISSILE_UPGRADE_BASE_IMPROVEMENT = 16;
-const MISSILE_UPGRADE_AETHER_BASE_COST = 150;
+const MISSILE_UPGRADE_AETHER_BASE_COST = 240;
 const ARMOR_UPGRADE_METAL_BASE_COST = 100;
 const ARMOR_UPGRADE_POLYMER_BASE_COST = 0;
 const ARMOR_UPGRADE_RP_BASE_COST = 40;
 const ARMOR_UPGRADE_BASE_IMPROVEMENT = 20;
-const ARMOR_UPGRADE_AETHER_BASE_COST = 90;
+const ARMOR_UPGRADE_AETHER_BASE_COST = 60;
 const SHIELD_UPGRADE_METAL_BASE_COST = 0;
 const SHIELD_UPGRADE_POLYMER_BASE_COST = 100;
 const SHIELD_UPGRADE_RP_BASE_COST = 80;
 const SHIELD_UPGRADE_BASE_IMPROVEMENT = 10;
 const SHIELD_UPGRADE_AETHER_BASE_COST = 120;
 const FLAK_UPGRADE_METAL_BASE_COST = 100;
-const FLAK_UPGRADE_POLYMER_BASE_COST = 50;
-const FLAK_UPGRADE_RP_BASE_COST = 120;
+const FLAK_UPGRADE_POLYMER_BASE_COST = 150;
+const FLAK_UPGRADE_RP_BASE_COST = 160;
 const FLAK_UPGRADE_BASE_IMPROVEMENT = 60;
-const FLAK_UPGRADE_AETHER_BASE_COST = 150;
+const FLAK_UPGRADE_AETHER_BASE_COST = 240;
 var notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
-class PossibleEnemies {
-    constructor(name, attackMod, hitPointMod, shmod) {
-        this.name = name;
-        this.attackMod = attackMod;
-        this.hitPointMod = hitPointMod;
-        this.shmod = shmod;
-    }
-}
 var possibleEnemies;
 var lastSaveGameTime = new Date();
 var textToDisplay;
@@ -132,19 +129,35 @@ var textMissions;
 var debugText = '';
 var initted = false;
 var gameData;
+var achievementlist;
+var achievementMultiplier = 0;
+var Achievementcompleted = '';
+var Achievementuncompleted = '';
+class PossibleEnemies {
+    constructor(name, attackMod, hitPointMod, shmod) {
+        this.name = name;
+        this.attackMod = attackMod;
+        this.hitPointMod = hitPointMod;
+        this.shmod = shmod;
+    }
+}
 // Date.prototype.toJSON = function () {
 //   return moment(this).format();
 // };
 class challenge {
-    constructor() {
+    constructor(description, galaxyUnlocked, galaxyCompleted) {
         this.unlocked = false;
         this.completed = false;
+        this.description = description;
+        this.galaxyCompleted = galaxyCompleted;
+        this.galaxyUnlocked = galaxyUnlocked;
     }
 }
 class challenges {
     constructor() {
-        this.consistency = new challenge();
-        this.power = new challenge();
+        this.consistency = new challenge('Your drones damage maximum will be lowered to the drones minimum damage for the duration of this challenge.  Upon completion you will unlock the Consistency ability which will improve your drones minimum damage and damage will return to normal.', 25, 25);
+        this.power = new challenge('Power production will be halved for the duration of this challenge.  Upon completion the Power ability will be unlocked. and power production will return to normal', 30, 30);
+        this.criticality = new challenge('The enemy has gained the ability to unleash massive amounts of critical damage from time to time. Learning this ability will be incredibly helpful.', 40, 40);
     }
 }
 class perks {
@@ -156,6 +169,7 @@ class perks {
         this.speed = 0;
         this.consistency = 0;
         this.power = 0;
+        this.criticality = 0;
     }
 }
 class saveGameData {
@@ -175,7 +189,9 @@ class saveGameData {
             refineryunlocked: false,
             shipyardUnlocked: false,
             consistencyunlocked: false,
-            powerunlocked: false
+            powerunlocked: false,
+            criticalityunlocked: false,
+            fusionplantunlocked: false
         };
         this.perks = new perks();
         this.options = {
@@ -201,7 +217,8 @@ class saveGameData {
             plants: 0,
             refineries: 0,
             shipyard: 0,
-            tacticalLabs: 0
+            tacticalLabs: 0,
+            fusionPlants: 0
         };
         this.missions = [];
         this.enemyship = new Ship('dummy');
@@ -214,7 +231,7 @@ class saveGameData {
             dronesCreated: 0,
             currentChallenge: ''
         };
-        this.achievements = [];
+        this.achievementids = [];
         this.technologies = {
             armorPrestigeLevelBought: 1,
             armorPrestigeLevelUnlocked: 1,
@@ -248,7 +265,10 @@ class saveGameData {
             panelUpgrade: 0,
             aetherProficiencyBought: 0,
             aetherProficiencyUnlocked: 0,
-            generatorUpgrade: 0
+            generatorUpgrade: 0,
+            plantupgrade: 0,
+            aetherplantupgrade: 0,
+            fusionplantupgrade: 0
         };
         this.lastResourceProcessTime = new Date();
         this.lastRailgunCombatProcessTime = new Date();
@@ -261,7 +281,8 @@ class saveGameData {
     }
 }
 class Achievement {
-    constructor(name, bonus) {
+    constructor(id, name, bonus) {
+        this.id = id;
         this.name = name;
         this.bonus = bonus;
     }
@@ -288,7 +309,11 @@ class Mission {
             var newEnemymods = possibleEnemies[Math.floor(Math.random() * possibleEnemies.length)]; // this will efventually need to be redone when we add advanced enemies
             var newEnemy = new Ship(newEnemymods.name);
             var loot = checkForCreateLoot(this, index);
-            newEnemy.createEnemy(1, this.level, index, loot.lootType, loot.lootAmount, newEnemymods.attackMod, newEnemymods.hitPointMod, newEnemymods.shmod, this.difficulty);
+            var Boss = false;
+            if (index === this.zones - 1) {
+                Boss = true;
+            }
+            newEnemy.createEnemy(1, this.level, index, loot.lootType, loot.lootAmount, newEnemymods.attackMod, newEnemymods.hitPointMod, newEnemymods.shmod, this.difficulty, Boss);
             if (index === this.zones - 1) {
                 newEnemy.attributes.push(new ShipAttribute(ELITE_ENEMY_ATTRIBUTES[Math.floor(Math.random() * ELITE_ENEMY_ATTRIBUTES.length)]));
                 while (newEnemy.lootType === '') {
@@ -331,18 +356,28 @@ class Ship {
         this.lootType = '';
         this.lootAmount = 0;
         this.attributes = [];
+        this.criticalChance = 0;
+        this.criticalMultiplier = 1.0;
     }
-    createEnemy(size, galaxy, zone, lootType, lootAmount, attackMod, hpMod, shmod, difficulty) {
+    createEnemy(size, galaxy, zone, lootType, lootAmount, attackMod, hpMod, shmod, difficulty, ImABoss = false) {
         this.lootType = lootType;
         this.lootAmount = lootAmount;
         this.size = size;
-        this.hitPoints = difficulty * hpMod * size * 30 * Math.pow(2.1, galaxy - 1) * Math.pow(1.007, zone - 1);
+        this.hitPoints = difficulty * hpMod * size * 60 * Math.pow(2.1, galaxy - 1) * Math.pow(1.007, zone - 1);
         this.hitPointsMax = this.hitPoints;
         var baseEnemyAttack = difficulty * attackMod * 15 * Math.pow(2.1, galaxy - 1) * Math.pow(1.007, zone - 1);
         this.minDamage = size * baseEnemyAttack / 1.25;
         this.maxDamage = size * baseEnemyAttack * 1.25;
-        this.shieldMax = this.hitPoints * shmod;
-        this.shield = this.shieldMax;
+        if (ImABoss) {
+            this.hitPointsMax *= 0.75;
+            this.hitPoints = this.hitPointsMax;
+            this.shieldMax = this.hitPoints * shmod;
+            this.shield = this.shieldMax;
+        }
+        if (gameData.world.currentChallenge === 'Criticality') {
+            this.criticalMultiplier = 3.5;
+            this.criticalChance = 25;
+        }
     }
     createPlayerShip() {
         if (this.hitPoints > 0) {
@@ -364,7 +399,7 @@ class Ship {
             var baseRailgunAttack = (gameData.technologies.railgunUpgrade * RAILGUN_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1));
             var baseLaserAttack = (gameData.technologies.laserUpgrade * LASER_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1));
             var baseMissileAttack = (gameData.technologies.missileUpgrade * MISSILE_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1));
-            var baseAttack = this.size * (baseRailgunAttack + baseLaserAttack + baseMissileAttack) * getAchievementBonus() * gamePerks.damager.getBonus();
+            var baseAttack = this.size * (baseRailgunAttack + baseLaserAttack + baseMissileAttack) * achievementMultiplier * gamePerks.damager.getBonus();
             this.minDamage = baseAttack * (0.75 + (gameData.perks.consistency / 100));
             if (gameData.world.currentChallenge === 'Consistency') {
                 this.maxDamage = this.minDamage;
@@ -372,23 +407,28 @@ class Ship {
             else {
                 this.maxDamage = baseAttack * 1.25;
             }
+            this.criticalChance = 0 + (gameData.perks.criticality * 5);
+            this.criticalMultiplier = 1 + (gameData.perks.criticality * 0.5);
+            if (this.minDamage > 10) {
+                addAchievement(61);
+            }
             if (this.minDamage > 100) {
-                addAchievement('100 Damage Reached!', 1);
+                addAchievement(62);
             }
             if (this.minDamage > 1000) {
-                addAchievement('1000 Damage Reached!', 1);
+                addAchievement(63);
             }
             if (this.minDamage > 1000000) {
-                addAchievement('1000000 Damage Reached!', 1);
+                addAchievement(64);
             }
             if (this.size >= 2) {
-                addAchievement('Ship Size 2!', 1);
+                addAchievement(65);
             }
             if (this.size >= 10) {
-                addAchievement('Ship Size 10!', 1);
+                addAchievement(66);
             }
             if (this.size >= 100) {
-                addAchievement('Ship Size 100!', 5);
+                addAchievement(67);
             }
             gtag('event', 'Send Ship', {
                 event_category: 'event',
@@ -479,6 +519,16 @@ function giveMissionReward(mission) {
         addToDisplay('I have more power now.  Generators are twice as effective.', 'story');
         gameBuildings.generator.updateBuyButtonTooltip();
     }
+    else if (mission.name === 'Plant Improvement') {
+        gameData.technologies.plantupgrade++;
+        addToDisplay('I have more power now.  Plants are twice as effective.', 'story');
+        gameBuildings.plant.updateBuyButtonTooltip();
+    }
+    else if (mission.name === 'Aether Plant Improvement') {
+        gameData.technologies.aetherplantupgrade++;
+        addToDisplay('I have more power now.  Aether Plants are twice as effective.', 'story');
+        gameBuildings.aetherPlant.updateBuyButtonTooltip();
+    }
     else if (mission.name === 'The Gateway') {
         gameData.story.gatewayUnlocked = true;
         addToDisplay('This location contains a large, prestigious, circular structure.  I can easily travel there and step through it, but what will I find?  I have also discovered some chronoton fragments.  I don\'t see a use for them but they may come in handy later', 'story');
@@ -523,12 +573,14 @@ function gatewayClick(challengeChosen = '') {
     savedperks.damager = gameData.perks.damager;
     savedperks.speed = gameData.perks.speed;
     savedperks.thickskin = gameData.perks.thickskin;
-    var savedachievements = gameData.achievements;
+    var savedachievements = gameData.achievementids;
     var savedChallenges = new challenges();
     savedChallenges.consistency.completed = gameData.challenges.consistency.completed;
-    savedChallenges.power.completed = gameData.challenges.power.completed;
     savedChallenges.consistency.unlocked = gameData.challenges.consistency.unlocked;
+    savedChallenges.power.completed = gameData.challenges.power.completed;
     savedChallenges.power.unlocked = gameData.challenges.power.unlocked;
+    savedChallenges.criticality.completed = gameData.challenges.criticality.completed;
+    savedChallenges.criticality.unlocked = gameData.challenges.criticality.unlocked;
     init(savedperks, savedChallenges, true, challengeChosen, gameData.resources.chronoton, savedachievements);
     $('#GatewayModal').modal('hide');
     gtag('event', 'gateway', {
@@ -543,6 +595,10 @@ function attack(attacker, defender) {
         return;
     }
     var damageToEnemy = Math.max(chooseRandom(attacker.minDamage, attacker.maxDamage), 0);
+    if (chooseRandom(0, 100) < attacker.criticalChance) {
+        damageToEnemy *= attacker.criticalMultiplier;
+        addToDisplay(attacker.name + ' scores a critical hit ' + prettify(attacker.criticalChance), 'combat');
+    }
     var originalDamage = damageToEnemy;
     damageToEnemy -= defender.shield;
     damageToEnemy = Math.max(0, damageToEnemy); // THIS SHOULD MAYBE CHANGE WHEN OVERKILL IS INTRODUCED
@@ -753,7 +809,7 @@ var gamePerks = {
     },
     power: {
         chronotonforBuy: function () { return 25 * Math.pow(1.3, gameData.perks.power); },
-        chronotonSpent: function () { return sumOfExponents(gameData.perks.power, 1, 1.3); },
+        chronotonSpent: function () { return sumOfExponents(gameData.perks.power, 25, 1.3); },
         canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
         updateBuyButtonText: function () { $('#btnPower').text('Power(' + (gameData.perks.power) + ')'); },
         updateBuyButtonTooltip: function () { $('#btnPower').attr('title', 'Each level bought will add increase power creation by 10% additively\n\nChronoton Cost:' + prettify(this.chronotonforBuy())); },
@@ -786,6 +842,41 @@ var gamePerks = {
                 });
             }
         }
+    },
+    criticality: {
+        chronotonforBuy: function () { return 100 * Math.pow(1.3, gameData.perks.criticality); },
+        chronotonSpent: function () { return sumOfExponents(gameData.perks.criticality, 100, 1.3); },
+        canAfford: function () { return chronotonAvailable() > this.chronotonforBuy(); },
+        updateBuyButtonText: function () { $('#btnCriticality').text('criticality(' + (gameData.perks.criticality) + ')'); },
+        updateBuyButtonTooltip: function () { $('#btnCriticality').attr('title', 'Each level increases the chance for a critical kit by 5% additively and the damage from a critical hit by 50% additively\n\nChronoton Cost:' + prettify(this.chronotonforBuy())); },
+        determineShowBuyButton: function () {
+            if (gameData.challenges.criticality.completed) {
+                $('#btnCriticality').removeClass('hidden');
+            }
+            else {
+                $('#btnCriticality').addClass('hidden');
+            }
+        },
+        determineShowAffordUpgrade: function () {
+            if (this.canAfford() && gameData.perks.criticality < 10) {
+                $('#btnCriticality').removeClass('btn-danger').addClass('btn-primary');
+            }
+            else {
+                $('#btnCriticality').removeClass('btn-primary').addClass('btn-danger');
+            }
+        },
+        add: function () {
+            if (this.canAfford()) {
+                gameData.perks.criticality++;
+                this.updateBuyButtonText();
+                this.updateBuyButtonTooltip();
+                gtag('event', 'buy criticality', {
+                    event_category: 'click',
+                    event_label: 'label',
+                    value: 'value'
+                });
+            }
+        }
     }
 };
 var gameBuildings = {
@@ -795,7 +886,7 @@ var gameBuildings = {
         canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy()); },
         totalPowerCreated: function () { return (gameData.buildings.panels * this.powerPer()); },
         powerPer: function () { return (POWER_PER_PANEL * Math.pow(2, gameData.technologies.panelUpgrade) * gamePerks.power.getBonus()); },
-        updateBuyButtonText: function () { $('#btnBuyPanel').text('Solar Panel'); },
+        updateBuyButtonText: function () { $('#btnBuyPanel').text('Solar Panels: ' + prettify(gameData.buildings.panels)); },
         updateBuyButtonTooltip: function () { $('#btnBuyPanel').attr('title', this.tooltipForBuy()); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -811,6 +902,18 @@ var gameBuildings = {
                 gameData.buildings.panels++;
                 this.updateBuyButtonText();
                 this.updateBuyButtonTooltip();
+                if (gameData.buildings.panels >= 5)
+                    addAchievement(34);
+                if (gameData.buildings.panels >= 10)
+                    addAchievement(35);
+                if (gameData.buildings.panels >= 25)
+                    addAchievement(36);
+                if (gameData.buildings.panels >= 50)
+                    addAchievement(37);
+                if (gameData.buildings.panels >= 100)
+                    addAchievement(38);
+                if (gameData.buildings.panels >= 1000)
+                    addAchievement(39);
                 gtag('event', 'buy panel', {
                     event_category: 'click',
                     event_label: 'label',
@@ -826,9 +929,8 @@ var gameBuildings = {
         canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy()); },
         totalPowerCreated: function () { return (gameData.buildings.generators * this.powerPer()); },
         powerPer: function () { return (POWER_PER_GENERATOR * Math.pow(2, gameData.technologies.generatorUpgrade) * gamePerks.power.getBonus()); },
-        updateBuyButtonText: function () { $('#btnBuyGenerator').text('Generator'); },
+        updateBuyButtonText: function () { $('#btnBuyGenerator').text('Generators: ' + prettify(gameData.buildings.generators)); },
         updateBuyButtonTooltip: function () { $('#btnBuyGenerator').attr('title', this.tooltipForBuy()); },
-        hideBuyButton: function () { $('#btnBuyGenerator').addClass('hidden'); },
         showBuyButton: function () { $('#btnBuyGenerator').removeClass('hidden'); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -845,6 +947,20 @@ var gameBuildings = {
                 gameData.buildings.generators++;
                 this.updateBuyButtonText();
                 this.updateBuyButtonTooltip();
+                if (gameData.buildings.generators >= 1)
+                    addAchievement(47);
+                if (gameData.buildings.generators >= 5)
+                    addAchievement(48);
+                if (gameData.buildings.generators >= 10)
+                    addAchievement(49);
+                if (gameData.buildings.generators >= 25)
+                    addAchievement(50);
+                if (gameData.buildings.generators >= 50)
+                    addAchievement(51);
+                if (gameData.buildings.generators >= 100)
+                    addAchievement(52);
+                if (gameData.buildings.generators >= 1000)
+                    addAchievement(53);
                 gtag('event', 'buy generator', {
                     event_category: 'click',
                     event_label: 'label',
@@ -859,10 +975,9 @@ var gameBuildings = {
         tooltipForBuy: function () { return ((gameData.buildings.plants) + ' Plant\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy())); },
         canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy()); },
         totalPowerCreated: function () { return (gameData.buildings.plants * this.powerPer()); },
-        powerPer: function () { return POWER_PER_PLANT * gamePerks.power.getBonus(); },
-        updateBuyButtonText: function () { $('#btnBuyPlant').text('Plant'); },
+        powerPer: function () { return POWER_PER_PLANT * Math.pow(2, gameData.technologies.plantupgrade) * gamePerks.power.getBonus(); },
+        updateBuyButtonText: function () { $('#btnBuyPlant').text('Plants: ' + prettify(gameData.buildings.plants)); },
         updateBuyButtonTooltip: function () { $('#btnBuyPlant').attr('title', this.tooltipForBuy()); },
-        hideBuyButton: function () { $('#btnBuyPlant').addClass('hidden'); },
         showBuyButton: function () { $('#btnBuyPlant').removeClass('hidden'); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -879,6 +994,20 @@ var gameBuildings = {
                 gameData.buildings.plants++;
                 this.updateBuyButtonText();
                 this.updateBuyButtonTooltip();
+                if (gameData.buildings.plants >= 1)
+                    addAchievement(40);
+                if (gameData.buildings.plants >= 5)
+                    addAchievement(41);
+                if (gameData.buildings.plants >= 10)
+                    addAchievement(42);
+                if (gameData.buildings.plants >= 25)
+                    addAchievement(43);
+                if (gameData.buildings.plants >= 50)
+                    addAchievement(44);
+                if (gameData.buildings.plants >= 100)
+                    addAchievement(45);
+                if (gameData.buildings.plants >= 1000)
+                    addAchievement(46);
                 gtag('event', 'buy plant', {
                     event_category: 'click',
                     event_label: 'label',
@@ -894,10 +1023,9 @@ var gameBuildings = {
         tooltipForBuy: function () { return ((gameData.buildings.aetherPlants) + ' Aether Plant\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy()) + '\nAether Cost:' + prettify(this.aetherForBuy())); },
         canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy() && gameData.resources.aether >= this.aetherForBuy()); },
         totalPowerCreated: function () { return (gameData.buildings.aetherPlants * this.powerPer()); },
-        powerPer: function () { return POWER_PER_AETHER_PLANT * gamePerks.power.getBonus(); },
-        updateBuyButtonText: function () { $('#btnBuyAetherPlant').text('Aether Plant'); },
+        powerPer: function () { return POWER_PER_AETHER_PLANT * Math.pow(2, gameData.technologies.aetherplantupgrade) * gamePerks.power.getBonus(); },
+        updateBuyButtonText: function () { $('#btnBuyAetherPlant').text('Aether Plants: ' + prettify(gameData.buildings.aetherPlants)); },
         updateBuyButtonTooltip: function () { $('#btnBuyAetherPlant').attr('title', this.tooltipForBuy()); },
-        hideBuyButton: function () { $('#btnBuyAetherPlant').addClass('hidden'); },
         showBuyButton: function () { $('#btnBuyAetherPlant').removeClass('hidden'); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -915,6 +1043,69 @@ var gameBuildings = {
                 gameData.buildings.aetherPlants++;
                 this.updateBuyButtonText();
                 this.updateBuyButtonTooltip();
+                if (gameData.buildings.aetherPlants >= 1)
+                    addAchievement(54);
+                if (gameData.buildings.aetherPlants >= 5)
+                    addAchievement(55);
+                if (gameData.buildings.aetherPlants >= 10)
+                    addAchievement(56);
+                if (gameData.buildings.aetherPlants >= 25)
+                    addAchievement(57);
+                if (gameData.buildings.aetherPlants >= 50)
+                    addAchievement(58);
+                if (gameData.buildings.aetherPlants >= 100)
+                    addAchievement(59);
+                if (gameData.buildings.aetherPlants >= 1000)
+                    addAchievement(60);
+                gtag('event', 'buy aether plant', {
+                    event_category: 'click',
+                    event_label: 'label',
+                    value: 'value'
+                });
+            }
+        }
+    },
+    fusionPlant: {
+        metalForBuy: function () { return (FUSION_PLANT_METAL_BASE_COST * Math.pow(FUSION_PLANT_GROWTH_FACTOR, gameData.buildings.fusionPlants)); },
+        polymerForBuy: function () { return (FUSION_PLANT_POLYMER_BASE_COST * Math.pow(FUSION_PLANT_GROWTH_FACTOR, gameData.buildings.fusionPlants)); },
+        aetherForBuy: function () { return (FUSION_PLANT_AETHER_BASE_COST * Math.pow(FUSION_PLANT_GROWTH_FACTOR, gameData.buildings.fusionPlants)); },
+        tooltipForBuy: function () { return ((gameData.buildings.fusionPlants) + ' Fusion Plant\nCreates ' + prettify(this.powerPer()) + ' power\nMetal Cost:' + prettify(this.metalForBuy()) + '\nPolymer Cost:' + prettify(this.polymerForBuy()) + '\nAether Cost:' + prettify(this.aetherForBuy())); },
+        canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy() && gameData.resources.aether >= this.aetherForBuy()); },
+        totalPowerCreated: function () { return (gameData.buildings.fusionPlants * this.powerPer()); },
+        powerPer: function () { return POWER_PER_FUSION_PLANT * Math.pow(2, gameData.technologies.fusionplantupgrade) * gamePerks.power.getBonus(); },
+        updateBuyButtonText: function () { $('#btnBuyFusionPlant').text('Fusion Plants: ' + prettify(gameData.buildings.fusionPlants)); },
+        updateBuyButtonTooltip: function () { $('#btnBuyFusionPlant').attr('title', this.tooltipForBuy()); },
+        showBuyButton: function () { $('#btnBuyFusionPlant').removeClass('hidden'); },
+        determineShowAffordBuy: function () {
+            if (this.canAffordBuy()) {
+                $('#btnBuyFusionPlant').removeClass('btn-danger').addClass('btn-light');
+            }
+            else {
+                $('#btnBuyFusionPlant').removeClass('btn-light').addClass('btn-danger');
+            }
+        },
+        buy: function () {
+            if (this.canAffordBuy()) {
+                gameData.resources.metal -= this.metalForBuy();
+                gameData.resources.polymer -= this.polymerForBuy();
+                gameData.resources.aether -= this.aetherForBuy();
+                gameData.buildings.fusionPlants++;
+                this.updateBuyButtonText();
+                this.updateBuyButtonTooltip();
+                if (gameData.buildings.fusionPlants >= 1)
+                    addAchievement(74);
+                if (gameData.buildings.fusionPlants >= 5)
+                    addAchievement(75);
+                if (gameData.buildings.fusionPlants >= 10)
+                    addAchievement(76);
+                if (gameData.buildings.fusionPlants >= 25)
+                    addAchievement(77);
+                if (gameData.buildings.fusionPlants >= 50)
+                    addAchievement(78);
+                if (gameData.buildings.fusionPlants >= 100)
+                    addAchievement(79);
+                if (gameData.buildings.fusionPlants >= 1000)
+                    addAchievement(80);
                 gtag('event', 'buy aether plant', {
                     event_category: 'click',
                     event_label: 'label',
@@ -935,7 +1126,7 @@ var gameBuildings = {
             increase *= gamePerks.producer.getBonus();
             return increase;
         },
-        updateBuyButtonText: function () { $('#btnBuyMine').text('Mine'); },
+        updateBuyButtonText: function () { $('#btnBuyMine').text('Mines: ' + gameData.buildings.mines); },
         updateBuyButtonTooltip: function () { $('#btnBuyMine').attr('title', this.tooltipForBuy()); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -956,12 +1147,18 @@ var gameBuildings = {
                     event_label: 'label',
                     value: 'value'
                 });
-                if (gameData.buildings.mines >= 10) {
-                    addAchievement('10 Mines!', 1);
-                }
-                if (gameData.buildings.mines >= 100) {
-                    addAchievement('100 Mines!', 1);
-                }
+                if (gameData.buildings.mines >= 5)
+                    addAchievement(0);
+                if (gameData.buildings.mines >= 10)
+                    addAchievement(1);
+                if (gameData.buildings.mines >= 25)
+                    addAchievement(2);
+                if (gameData.buildings.mines >= 50)
+                    addAchievement(3);
+                if (gameData.buildings.mines >= 100)
+                    addAchievement(4);
+                if (gameData.buildings.mines >= 1000)
+                    addAchievement(5);
             }
         }
     },
@@ -978,9 +1175,8 @@ var gameBuildings = {
             increase *= gamePerks.producer.getBonus();
             return increase * 0.25;
         },
-        updateBuyButtonText: function () { $('#btnBuyLab').text('Lab'); },
+        updateBuyButtonText: function () { $('#btnBuyLab').text('Labs: ' + gameData.buildings.labs); },
         updateBuyButtonTooltip: function () { $('#btnBuyLab').attr('title', this.tooltipForBuy()); },
-        hideBuyButton: function () { $('#btnBuyLab').addClass('hidden'); },
         showBuyButton: function () { $('#btnBuyLab').removeClass('hidden'); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -997,15 +1193,20 @@ var gameBuildings = {
                 gameData.buildings.labs++;
                 this.updateBuyButtonText();
                 this.updateBuyButtonTooltip();
-                if (gameData.buildings.labs >= 1) {
-                    addAchievement('1 Lab!', 1);
-                }
-                if (gameData.buildings.labs >= 10) {
-                    addAchievement('10 Labs!', 1);
-                }
-                if (gameData.buildings.labs >= 25) {
-                    addAchievement('25 Labs!', 1);
-                }
+                if (gameData.buildings.labs >= 1)
+                    addAchievement(20);
+                if (gameData.buildings.labs >= 5)
+                    addAchievement(21);
+                if (gameData.buildings.labs >= 10)
+                    addAchievement(22);
+                if (gameData.buildings.labs >= 25)
+                    addAchievement(23);
+                if (gameData.buildings.labs >= 50)
+                    addAchievement(24);
+                if (gameData.buildings.labs >= 100)
+                    addAchievement(25);
+                if (gameData.buildings.labs >= 1000)
+                    addAchievement(26);
                 gtag('event', 'buy lab', {
                     event_category: 'click',
                     event_label: 'label',
@@ -1026,9 +1227,8 @@ var gameBuildings = {
             increase *= gamePerks.producer.getBonus();
             return increase;
         },
-        updateBuyButtonText: function () { $('#btnBuyFactory').text('Factory'); },
+        updateBuyButtonText: function () { $('#btnBuyFactory').text('Factories: ' + gameData.buildings.factories); },
         updateBuyButtonTooltip: function () { $('#btnBuyFactory').attr('title', this.tooltipForBuy()); },
-        hideBuyButton: function () { $('#btnBuyFactory').addClass('hidden'); },
         showBuyButton: function () { $('#btnBuyFactory').removeClass('hidden'); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -1044,20 +1244,25 @@ var gameBuildings = {
                 gameData.buildings.factories++;
                 this.updateBuyButtonText();
                 this.updateBuyButtonTooltip();
-                if (gameData.buildings.factories >= 1) {
-                    addAchievement('1 Factory!', 1);
-                }
-                if (gameData.buildings.factories >= 10) {
-                    addAchievement('10 Factories!', 1);
-                }
-                if (gameData.buildings.factories >= 100) {
-                    addAchievement('100 Factories!', 1);
-                    gtag('event', 'buy factory', {
-                        event_category: 'click',
-                        event_label: 'label',
-                        value: 'value'
-                    });
-                }
+                if (gameData.buildings.factories >= 1)
+                    addAchievement(6);
+                if (gameData.buildings.factories >= 5)
+                    addAchievement(7);
+                if (gameData.buildings.factories >= 10)
+                    addAchievement(8);
+                if (gameData.buildings.factories >= 25)
+                    addAchievement(9);
+                if (gameData.buildings.factories >= 50)
+                    addAchievement(10);
+                if (gameData.buildings.factories >= 100)
+                    addAchievement(11);
+                if (gameData.buildings.factories >= 1000)
+                    addAchievement(12);
+                gtag('event', 'buy factory', {
+                    event_category: 'click',
+                    event_label: 'label',
+                    value: 'value'
+                });
             }
         }
     },
@@ -1074,9 +1279,8 @@ var gameBuildings = {
             increase *= gamePerks.producer.getBonus();
             return increase;
         },
-        updateBuyButtonText: function () { $('#btnBuyRefinery').text('Refinery'); },
+        updateBuyButtonText: function () { $('#btnBuyRefinery').text('Refineries: ' + gameData.buildings.refineries); },
         updateBuyButtonTooltip: function () { $('#btnBuyRefinery').attr('title', this.tooltipForBuy()); },
-        hideBuyButton: function () { $('#btnBuyRefinery').addClass('hidden'); },
         showBuyButton: function () { $('#btnBuyRefinery').removeClass('hidden'); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -1093,15 +1297,20 @@ var gameBuildings = {
                 gameData.buildings.refineries++;
                 this.updateBuyButtonText();
                 this.updateBuyButtonTooltip();
-                if (gameData.buildings.refineries >= 1) {
-                    addAchievement('1 Refinery!', 1);
-                }
-                if (gameData.buildings.refineries >= 10) {
-                    addAchievement('10 Refineries!', 1);
-                }
-                if (gameData.buildings.refineries >= 100) {
-                    addAchievement('100 Refineries!', 1);
-                }
+                if (gameData.buildings.refineries >= 1)
+                    addAchievement(13);
+                if (gameData.buildings.refineries >= 5)
+                    addAchievement(14);
+                if (gameData.buildings.refineries >= 10)
+                    addAchievement(15);
+                if (gameData.buildings.refineries >= 25)
+                    addAchievement(16);
+                if (gameData.buildings.refineries >= 50)
+                    addAchievement(17);
+                if (gameData.buildings.refineries >= 100)
+                    addAchievement(18);
+                if (gameData.buildings.refineries >= 1000)
+                    addAchievement(19);
                 gtag('event', 'buy refinery', {
                     event_category: 'click',
                     event_label: 'label',
@@ -1130,9 +1339,8 @@ var gameBuildings = {
             }
             return (Math.pow(1.05, count));
         },
-        updateBuyButtonText: function () { $('#btnBuyTacticalLab').text('Tactical Lab(' + (gameData.buildings.tacticalLabs) + ')'); },
+        updateBuyButtonText: function () { $('#btnBuyTacticalLab').text('Tactical Labs: ' + (gameData.buildings.tacticalLabs)); },
         updateBuyButtonTooltip: function () { $('#btnBuyTacticalLab').attr('title', this.tooltipForBuy()); },
-        hideBuyButton: function () { $('#btnBuyTacticalLab').addClass('hidden'); },
         showBuyButton: function () { $('#btnBuyTacticalLab').removeClass('hidden'); },
         determineShowAffordBuy: function () {
             if (this.canAffordBuy()) {
@@ -1149,15 +1357,20 @@ var gameBuildings = {
                 gameData.buildings.tacticalLabs++;
                 this.updateBuyButtonText();
                 this.updateBuyButtonTooltip();
-                if (gameData.buildings.tacticalLabs >= 1) {
-                    addAchievement('1 Tactical Lab!', 1);
-                }
-                if (gameData.buildings.tacticalLabs >= 10) {
-                    addAchievement('10 Tactical Labs!', 1);
-                }
-                if (gameData.buildings.tacticalLabs >= 25) {
-                    addAchievement('25 Tactical Labs!', 1);
-                }
+                if (gameData.buildings.tacticalLabs >= 1)
+                    addAchievement(27);
+                if (gameData.buildings.tacticalLabs >= 5)
+                    addAchievement(28);
+                if (gameData.buildings.tacticalLabs >= 10)
+                    addAchievement(29);
+                if (gameData.buildings.tacticalLabs >= 25)
+                    addAchievement(30);
+                if (gameData.buildings.tacticalLabs >= 50)
+                    addAchievement(31);
+                if (gameData.buildings.tacticalLabs >= 100)
+                    addAchievement(32);
+                if (gameData.buildings.tacticalLabs >= 1000)
+                    addAchievement(33);
                 gtag('event', 'buy tactical lab', {
                     event_category: 'click',
                     event_label: 'label',
@@ -1176,7 +1389,6 @@ var gameBuildings = {
         canAffordBuy: function () { return (gameData.resources.metal >= this.metalForBuy() && gameData.resources.polymer >= this.polymerForBuy() && gameData.resources.researchPoints >= this.rpForBuy() && CheckPower(this.powerForBuy())); },
         updateBuyButtonText: function () { $('#btnBuyShipyard').text('Shipyard(' + (gameData.buildings.shipyard) + ')'); },
         updateBuyButtonTooltip: function () { $('#btnBuyShipyard').attr('title', this.tooltipForBuy()); },
-        hideBuyButton: function () { $('#btnBuyShipyard').addClass('hidden'); },
         showBuyButton: function () { $('#btnBuyShipyard').removeClass('hidden'); },
         determineShowAffordBuy: function () {
             if (gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard) {
@@ -1231,7 +1443,7 @@ var gameEquipment = {
         updatePrestigeTooltip: function () { $('#btnRailgunPrestige').attr('title', this.tooltipForPrestige()); },
         canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
         canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-        getDamagePerUpgrade: function () { return (RAILGUN_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1)) * gameData.playership.size * getAchievementBonus() * gamePerks.damager.getBonus(); },
+        getDamagePerUpgrade: function () { return (RAILGUN_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1)) * gameData.playership.size * achievementMultiplier * gamePerks.damager.getBonus(); },
         getDamage: function () { return (gameData.technologies.railgunUpgrade * this.getDamagePerUpgrade()); },
         determineShowUpgradeButton: function () {
             if (gameData.technologies.railgunPrestigeLevelBought > 0) {
@@ -1315,7 +1527,7 @@ var gameEquipment = {
         updatePrestigeTooltip: function () { $('#btnLaserPrestige').attr('title', this.tooltipForPrestige()); },
         canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
         canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-        getDamagePerUpgrade: function () { return (LASER_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1)) * gameData.playership.size * getAchievementBonus() * gamePerks.damager.getBonus(); },
+        getDamagePerUpgrade: function () { return (LASER_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1)) * gameData.playership.size * achievementMultiplier * gamePerks.damager.getBonus(); },
         getDamage: function () { return (gameData.technologies.laserUpgrade * this.getDamagePerUpgrade()); },
         determineShowUpgradeButton: function () {
             if (gameData.technologies.laserPrestigeLevelBought > 0) {
@@ -1399,7 +1611,7 @@ var gameEquipment = {
         updatePrestigeTooltip: function () { $('#btnMissilePrestige').attr('title', this.tooltipForPrestige()); },
         canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
         canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-        getDamagePerUpgrade: function () { return (MISSILE_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1)) * gameData.playership.size * getAchievementBonus() * gamePerks.damager.getBonus(); },
+        getDamagePerUpgrade: function () { return (MISSILE_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1)) * gameData.playership.size * achievementMultiplier * gamePerks.damager.getBonus(); },
         getDamage: function () { return (gameData.technologies.missileUpgrade * this.getDamagePerUpgrade()); },
         determineShowUpgradeButton: function () {
             if (gameData.technologies.missilePrestigeLevelBought > 0) {
@@ -1483,7 +1695,7 @@ var gameEquipment = {
         updatePrestigeTooltip: function () { $('#btnArmorPrestige').attr('title', this.tooltipForPrestige()); },
         canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
         canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-        getDamagePerUpgrade: function () { return (ARMOR_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)) * gameData.playership.size * getAchievementBonus() * gamePerks.thickskin.getBonus(); },
+        getDamagePerUpgrade: function () { return (ARMOR_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)) * gameData.playership.size * gamePerks.thickskin.getBonus(); },
         getDamage: function () { return (gameData.technologies.armorUpgrade * this.getDamagePerUpgrade()); },
         determineShowUpgradeButton: function () {
             if (gameData.technologies.armorPrestigeLevelBought > 0) {
@@ -1567,7 +1779,7 @@ var gameEquipment = {
         updatePrestigeTooltip: function () { $('#btnShieldPrestige').attr('title', this.tooltipForPrestige()); },
         canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
         canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-        getDamagePerUpgrade: function () { return (SHIELD_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought - 1)) * gameData.playership.size * getAchievementBonus() * gamePerks.thickskin.getBonus() * gameBuildings.tacticalLab.getBonus(); },
+        getDamagePerUpgrade: function () { return (SHIELD_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought - 1)) * gameData.playership.size * gamePerks.thickskin.getBonus() * gameBuildings.tacticalLab.getBonus(); },
         getDamage: function () { return (gameData.technologies.shieldUpgrade * this.getDamagePerUpgrade()); },
         determineShowUpgradeButton: function () {
             if (gameData.technologies.shieldPrestigeLevelBought > 0) {
@@ -1651,7 +1863,7 @@ var gameEquipment = {
         updatePrestigeTooltip: function () { $('#btnFlakPrestige').attr('title', this.tooltipForPrestige()); },
         canAffordUpgrade: function () { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
         canAffordPrestige: function () { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-        getDamagePerUpgrade: function () { return (FLAK_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought - 1)) * gameData.playership.size * getAchievementBonus() * gamePerks.thickskin.getBonus(); },
+        getDamagePerUpgrade: function () { return (FLAK_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought - 1)) * gameData.playership.size * gamePerks.thickskin.getBonus(); },
         getDamage: function () { return (gameData.technologies.flakUpgrade * this.getDamagePerUpgrade()); },
         determineShowUpgradeButton: function () {
             if (gameData.technologies.flakPrestigeLevelBought > 0) {
@@ -1820,6 +2032,7 @@ function exportsave() {
     debugText = JSON.stringify(gameData);
 }
 function init(passedperks, passedchallenges, gatewayReset = false, activeChallenge = '', chronoton = 0, passedAchievements = []) {
+    debugText += '\nv0.7.3 - New challenge, new power techs, new power building, new gui, most things have been rebalanced';
     debugText += '\nv0.7.2 - Another new attempt at a GUI!!! and some balance issues mainly related to research';
     debugText += '\nv0.7.1 - Another new attempt at a GUI and nerfed Shields.  Changed Tactical Labs to effect shields instead of armor and flak';
     debugText += '\nv0.7.0 - Another new attempt at a GUI and fixed the power challenge to not immediately be completed.';
@@ -1852,7 +2065,7 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     if (gatewayReset) {
         gameData.resources.chronoton = chronoton;
         gameData.perks = passedperks;
-        gameData.achievements = passedAchievements;
+        gameData.achievementids = passedAchievements;
         gameData.challenges = passedchallenges;
         gameData.world.currentChallenge = activeChallenge;
     }
@@ -1873,6 +2086,8 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
                 gameData.buildings.plants = savegame.buildings.plants;
             if (typeof savegame.buildings.aetherPlants !== 'undefined')
                 gameData.buildings.aetherPlants = savegame.buildings.aetherPlants;
+            if (typeof savegame.buildings.fusionPlants !== 'undefined')
+                gameData.buildings.fusionPlants = savegame.buildings.fusionPlants;
             if (typeof savegame.buildings.labs !== 'undefined')
                 gameData.buildings.labs = savegame.buildings.labs;
             if (typeof savegame.buildings.tacticalLabs !== 'undefined')
@@ -2003,6 +2218,12 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
                 gameData.technologies.panelUpgrade = savegame.technologies.panelUpgrade;
             if (typeof savegame.technologies.generatorUpgrade !== 'undefined')
                 gameData.technologies.generatorUpgrade = savegame.technologies.generatorUpgrade;
+            if (typeof savegame.technologies.plantupgrade !== 'undefined')
+                gameData.technologies.plantupgrade = savegame.technologies.plantupgrade;
+            if (typeof savegame.technologies.aetherplantupgrade !== 'undefined')
+                gameData.technologies.aetherplantupgrade = savegame.technologies.aetherplantupgrade;
+            if (typeof savegame.technologies.fusionplantupgrade !== 'undefined')
+                gameData.technologies.fusionplantupgrade = savegame.technologies.fusionplantupgrade;
             if (typeof savegame.missions !== 'undefined')
                 gameData.missions = savegame.missions;
             if (typeof savegame.world.currentMission !== 'undefined')
@@ -2019,8 +2240,8 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
                 gameData.options.standardNotation = savegame.options.standardNotation;
             if (typeof savegame.options.logNotBase !== 'undefined')
                 gameData.options.logNotBase = savegame.options.logNotBase;
-            if (typeof savegame.achievements !== 'undefined')
-                gameData.achievements = savegame.achievements;
+            if (typeof savegame.achievementids !== 'undefined')
+                gameData.achievementids = savegame.achievementids;
             if (typeof savegame.perks.damager !== 'undefined')
                 gameData.perks.damager = savegame.perks.damager;
             if (typeof savegame.perks.looter !== 'undefined')
@@ -2059,10 +2280,14 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
                 gameData.story.consistencyunlocked = savegame.story.consistencyunlocked;
             if (typeof savegame.story.powerunlocked !== 'undefined')
                 gameData.story.powerunlocked = savegame.story.powerunlocked;
+            if (typeof savegame.story.criticalityunlocked !== 'undefined')
+                gameData.story.criticalityunlocked = savegame.story.criticalityunlocked;
             if (typeof savegame.challenges.consistency !== 'undefined')
                 gameData.challenges.consistency = savegame.challenges.consistency;
             if (typeof savegame.challenges.power !== 'undefined')
                 gameData.challenges.power = savegame.challenges.power;
+            if (typeof savegame.challenges.criticality !== 'undefined')
+                gameData.challenges.criticality = savegame.challenges.criticality;
             if (typeof savegame.tacticalChoices !== 'undefined')
                 gameData.tacticalChoices.tacticalLabsSetting = savegame.tacticalChoices.tacticalLabsSetting;
         }
@@ -2077,6 +2302,7 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     $('#btnBuyPlant').addClass('hidden');
     $('#btnBuyRefinery').addClass('hidden');
     $('#btnBuyAetherPlant').addClass('hidden');
+    $('#btnBuyFusionPlant').addClass('hidden');
     $('#fightcontrols').addClass('hidden');
     $('#fightdisplay').addClass('hidden');
     $('#missionvisible').addClass('hidden');
@@ -2104,6 +2330,10 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     if (gameData.challenges.power.unlocked && !gameData.challenges.power.completed) {
         $('#btnConfirmPower').removeClass('hidden');
     }
+    $('#btnConfirmCriticality').addClass('hidden');
+    if (gameData.challenges.criticality.unlocked && !gameData.challenges.criticality.completed) {
+        $('#btnConfirmCriticality').removeClass('hidden');
+    }
     $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
     $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
     $('#btnMetalTech').attr('title', 'Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiencyBought))) +
@@ -2116,26 +2346,6 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     $('#btnAetherTech').attr('title', 'Metal Cost:' + prettify(AETHER_PROFIECIENCY_METAL_COST * Math.pow(AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)) +
         '\nPolymer Cost:' + prettify(AETHER_PROFIECIENCY_POLYMER_COST * Math.pow(AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)) +
         '\nResearch Cost:' + prettify(AETHER_PROFIECIENCY_RP_COST * Math.pow(AETHER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.aetherProficiencyBought)));
-    gameBuildings.shipyard.updateBuyButtonText();
-    gameBuildings.lab.updateBuyButtonText();
-    gameBuildings.tacticalLab.updateBuyButtonText();
-    gameBuildings.refinery.updateBuyButtonText();
-    gameBuildings.plant.updateBuyButtonText();
-    gameBuildings.panel.updateBuyButtonText();
-    gameBuildings.mine.updateBuyButtonText();
-    gameBuildings.generator.updateBuyButtonText();
-    gameBuildings.factory.updateBuyButtonText();
-    gameBuildings.aetherPlant.updateBuyButtonText();
-    gameBuildings.shipyard.updateBuyButtonTooltip();
-    gameBuildings.lab.updateBuyButtonTooltip();
-    gameBuildings.tacticalLab.updateBuyButtonTooltip();
-    gameBuildings.refinery.updateBuyButtonTooltip();
-    gameBuildings.plant.updateBuyButtonTooltip();
-    gameBuildings.panel.updateBuyButtonTooltip();
-    gameBuildings.mine.updateBuyButtonTooltip();
-    gameBuildings.generator.updateBuyButtonTooltip();
-    gameBuildings.factory.updateBuyButtonTooltip();
-    gameBuildings.aetherPlant.updateBuyButtonTooltip();
     gameEquipment.railgun.updateUpgradeText();
     gameEquipment.railgun.updatePrestigeText();
     gameEquipment.railgun.updateUpgradeTooltip();
@@ -2206,6 +2416,97 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     gameBuildings.plant.updateBuyButtonTooltip();
     gameBuildings.aetherPlant.updateBuyButtonText();
     gameBuildings.aetherPlant.updateBuyButtonTooltip();
+    gameBuildings.fusionPlant.updateBuyButtonText();
+    gameBuildings.fusionPlant.updateBuyButtonTooltip();
+    gameBuildings.tacticalLab.updateBuyButtonText();
+    gameBuildings.tacticalLab.updateBuyButtonTooltip();
+    achievementlist = [];
+    achievementlist.push(new Achievement(0, '5 Mines', 1));
+    achievementlist.push(new Achievement(1, '10 Mines', 2));
+    achievementlist.push(new Achievement(2, '25 Mines', 3));
+    achievementlist.push(new Achievement(3, '50 Mines', 4));
+    achievementlist.push(new Achievement(4, '100 Mines', 5));
+    achievementlist.push(new Achievement(5, '1000 Mines', 20));
+    achievementlist.push(new Achievement(6, '1 Factory', 1));
+    achievementlist.push(new Achievement(7, '5 Factories', 1));
+    achievementlist.push(new Achievement(8, '10 Factories', 2));
+    achievementlist.push(new Achievement(9, '25 Factories', 3));
+    achievementlist.push(new Achievement(10, '50 Factories', 4));
+    achievementlist.push(new Achievement(11, '100 Factories', 5));
+    achievementlist.push(new Achievement(12, '1000 Factories', 20));
+    achievementlist.push(new Achievement(13, '1 Refinery', 1));
+    achievementlist.push(new Achievement(14, '5 Refineries', 1));
+    achievementlist.push(new Achievement(15, '10 Refineries', 2));
+    achievementlist.push(new Achievement(16, '25 Refineries', 3));
+    achievementlist.push(new Achievement(17, '50 Refineries', 4));
+    achievementlist.push(new Achievement(18, '100 Refineries', 5));
+    achievementlist.push(new Achievement(19, '1000 Refineries', 20));
+    achievementlist.push(new Achievement(20, '1 Lab', 1));
+    achievementlist.push(new Achievement(21, '5 Labs', 1));
+    achievementlist.push(new Achievement(22, '10 Labs', 2));
+    achievementlist.push(new Achievement(23, '25 Labs', 3));
+    achievementlist.push(new Achievement(24, '50 Labs', 4));
+    achievementlist.push(new Achievement(25, '100 Labs', 5));
+    achievementlist.push(new Achievement(26, '1000 Labs', 20));
+    achievementlist.push(new Achievement(27, '1 Tactical Lab', 1));
+    achievementlist.push(new Achievement(28, '5 Tactical Labs', 2));
+    achievementlist.push(new Achievement(29, '10 Tactical Labs', 5));
+    achievementlist.push(new Achievement(30, '25 Tactical Labs', 10));
+    achievementlist.push(new Achievement(31, '50 Tactical Labs', 25));
+    achievementlist.push(new Achievement(32, '100 Tactical Labs', 50));
+    achievementlist.push(new Achievement(33, '1000 Tactical Labs', 100));
+    achievementlist.push(new Achievement(34, '5 Panels', 1));
+    achievementlist.push(new Achievement(35, '10 Panels', 2));
+    achievementlist.push(new Achievement(36, '25 Panels', 3));
+    achievementlist.push(new Achievement(37, '50 Panels', 4));
+    achievementlist.push(new Achievement(38, '100 Panels', 5));
+    achievementlist.push(new Achievement(39, '1000 Panels', 20));
+    achievementlist.push(new Achievement(40, '1 Plant', 1));
+    achievementlist.push(new Achievement(41, '5 Plants', 1));
+    achievementlist.push(new Achievement(42, '10 Plants', 2));
+    achievementlist.push(new Achievement(43, '25 Plants', 3));
+    achievementlist.push(new Achievement(44, '50 Plants', 4));
+    achievementlist.push(new Achievement(45, '100 Plants', 5));
+    achievementlist.push(new Achievement(46, '1000 Plants', 20));
+    achievementlist.push(new Achievement(47, '1 Generator', 1));
+    achievementlist.push(new Achievement(48, '5 Generators', 1));
+    achievementlist.push(new Achievement(49, '10 Generators', 2));
+    achievementlist.push(new Achievement(50, '25 Generators', 3));
+    achievementlist.push(new Achievement(51, '50 Generators', 4));
+    achievementlist.push(new Achievement(52, '100 Generators', 5));
+    achievementlist.push(new Achievement(53, '1000 Generators', 20));
+    achievementlist.push(new Achievement(54, '1 Aether Plant', 1));
+    achievementlist.push(new Achievement(55, '5 Aether Plants', 1));
+    achievementlist.push(new Achievement(56, '10 Aether Plants', 2));
+    achievementlist.push(new Achievement(57, '25 Aether Plants', 3));
+    achievementlist.push(new Achievement(58, '50 Aether Plants', 4));
+    achievementlist.push(new Achievement(59, '100 Aether Plants', 5));
+    achievementlist.push(new Achievement(60, '1000 Aether Plants', 20));
+    achievementlist.push(new Achievement(61, '10 Damage Reached!', 1));
+    achievementlist.push(new Achievement(62, '100 Damage Reached!', 1));
+    achievementlist.push(new Achievement(63, '1000 Damage Reached!', 5));
+    achievementlist.push(new Achievement(64, '1000000 Damage Reached!', 20));
+    achievementlist.push(new Achievement(65, 'Ship Size 2!', 1));
+    achievementlist.push(new Achievement(66, 'Ship Size 10!', 5));
+    achievementlist.push(new Achievement(67, 'Ship Size 100!', 20));
+    achievementlist.push(new Achievement(68, 'First Galaxy Completed!', 1));
+    achievementlist.push(new Achievement(69, 'Second Galaxy Completed!', 2));
+    achievementlist.push(new Achievement(70, 'Fifth Galaxy Completed!', 5));
+    achievementlist.push(new Achievement(71, 'Tenth Galaxy Completed!', 10));
+    achievementlist.push(new Achievement(72, 'Twentieth Galaxy Completed!', 20));
+    achievementlist.push(new Achievement(73, 'Fortieth Galaxy Completed!', 40));
+    achievementlist.push(new Achievement(74, '1 Fusion Plant', 1));
+    achievementlist.push(new Achievement(75, '5 Fusion Plants', 1));
+    achievementlist.push(new Achievement(76, '10 Fusion Plants', 2));
+    achievementlist.push(new Achievement(77, '25 Fusion Plants', 3));
+    achievementlist.push(new Achievement(78, '50 Fusion Plants', 4));
+    achievementlist.push(new Achievement(79, '100 Fusion Plants', 5));
+    achievementlist.push(new Achievement(80, '1000 Fusion Plants', 20));
+    $('#btnConfirmGateway').attr('title', 'Standard Run');
+    $('#btnConfirmConsistency').attr('title', gameData.challenges.consistency.description);
+    $('#btnConfirmPower').attr('title', gameData.challenges.power.description);
+    $('#btnConfirmCriticality').attr('title', gameData.challenges.criticality.description);
+    getAchievementBonus();
     if (gameData.missions.length < 1) {
         var newMission = new Mission('Galaxy 1', 'Galaxy', 1, true, 1, 1, 1, 100, true);
         gameData.missions.unshift(newMission);
@@ -2218,10 +2519,19 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
 }
 function getAchievementBonus() {
     var rtn = 100;
-    for (var i = 0; i < gameData.achievements.length; i++) {
-        rtn += gameData.achievements[i].bonus;
+    Achievementcompleted = '';
+    Achievementuncompleted = '';
+    for (let index = 0; index < achievementlist.length; index++) {
+        const element = achievementlist[index];
+        if (gameData.achievementids.includes(element.id)) {
+            rtn += element.bonus;
+            Achievementcompleted += element.name + '; ';
+        }
+        else {
+            Achievementuncompleted += element.name + '; ';
+        }
     }
-    return rtn / 100;
+    achievementMultiplier = rtn / 100;
 }
 function changeLocation(mission) {
     gameData.world.paused = true;
@@ -2235,25 +2545,35 @@ function updateGUI() {
         return; // still waiting on pageload
     }
     updatePower();
+    var sceninfo = 'You are continung the chase.';
+    if (gameData.world.currentChallenge === 'Consistency') {
+        sceninfo = gameData.challenges.consistency.description;
+    }
+    else if (gameData.world.currentChallenge === 'Power') {
+        sceninfo = gameData.challenges.power.description;
+    }
+    else if (gameData.world.currentChallenge === 'Criticality') {
+        sceninfo = gameData.challenges.criticality.description;
+    }
+    document.getElementById('scenarioinfo').innerHTML = sceninfo;
+    document.getElementById('achievementbonus').innerHTML = prettify(achievementMultiplier);
+    document.getElementById('achievementcompleted').innerHTML = Achievementcompleted;
+    document.getElementById('achievementuncompleted').innerHTML = Achievementuncompleted;
     document.getElementById('timeElapsed').innerHTML = showTimeElapsed();
     document.getElementById('textToDisplay').innerHTML = getDisplayText();
     document.getElementById('textToDisplay2').innerHTML = debugText;
-    document.getElementById('minecount').innerHTML = prettify(gameData.buildings.mines);
-    document.getElementById('labcount').innerHTML = prettify(gameData.buildings.labs);
-    document.getElementById('factorycount').innerHTML = prettify(gameData.buildings.factories);
-    document.getElementById('refinerycount').innerHTML = prettify(gameData.buildings.refineries);
     document.getElementById('metal').innerHTML = prettify(gameData.resources.metal);
     document.getElementById('researchPoints').innerHTML = prettify(gameData.resources.researchPoints);
     document.getElementById('polymer').innerHTML = prettify(gameData.resources.polymer);
     document.getElementById('aether').innerHTML = prettify(gameData.resources.aether);
+    document.getElementById('metalpersec').innerHTML = prettify(gameBuildings.mine.productionPerSecond());
+    document.getElementById('polymerpersec').innerHTML = prettify(gameBuildings.factory.productionPerSecond());
+    document.getElementById('researchpersec').innerHTML = prettify(gameBuildings.lab.productionPerSecond());
+    document.getElementById('aetherpersec').innerHTML = prettify(gameBuildings.refinery.productionPerSecond());
     document.getElementById('chronoton').innerHTML = prettify(chronotonAvailable());
     document.getElementById('chronotonspent').innerHTML = prettify(gameData.resources.chronoton - chronotonAvailable());
     document.getElementById('chronoton2').innerHTML = prettify(chronotonAvailable());
     document.getElementById('chronotonfragments').innerHTML = prettify(gameData.resources.chronotonfragments);
-    document.getElementById('metalpersec').innerHTML = prettify(gameBuildings.mine.productionPerSecond());
-    document.getElementById('polymerpersec').innerHTML = prettify(gameBuildings.factory.productionPerSecond());
-    document.getElementById('aetherpersec').innerHTML = prettify(gameBuildings.refinery.productionPerSecond());
-    document.getElementById('researchpersec').innerHTML = prettify(gameBuildings.lab.productionPerSecond());
     document.getElementById('power').innerHTML = prettify(gameData.resources.power);
     document.getElementById('enemyName').innerHTML = gameData.enemyship.name;
     document.getElementById('enemyShipSize').innerHTML = prettify(gameData.enemyship.size);
@@ -2273,19 +2593,27 @@ function updateGUI() {
         width = 0;
         if (gameData.playership.shieldMax > 0) {
             width = 100 * gameData.playership.shield / gameData.playership.shieldMax;
+            $('#PlayerShields').removeClass('hidden');
+            $('#PlayerHullShieldBar').css('width', prettify(width) + '%');
+            $('#PlayerShieldText').text('Shield:' + prettify(gameData.playership.shield) + '/' + prettify(gameData.playership.shieldMax));
         }
-        $('#PlayerHullShieldBar').css('width', prettify(width) + '%');
-        $('#PlayerShieldText').text('Shield:' + prettify(gameData.playership.shield) + '/' + prettify(gameData.playership.shieldMax));
+        else {
+            $('#PlayerShields').addClass('hidden');
+        }
         width = 0;
         if (gameData.enemyship.shieldMax > 0) {
             width = 100 * gameData.enemyship.shield / gameData.enemyship.shieldMax;
+            $('#EnemyShields').removeClass('hidden');
+            $('#EnemyHullShieldBar').css('width', prettify(width) + '%');
+            $('#EnemyShieldText').text('Shield:' + prettify(gameData.enemyship.shield) + '/' + prettify(gameData.enemyship.shieldMax));
         }
-        $('#EnemyHullShieldBar').css('width', prettify(width) + '%');
-        $('#EnemyShieldText').text('Shield:' + prettify(gameData.enemyship.shield) + '/' + prettify(gameData.enemyship.shieldMax));
-        document.getElementById('enemyDamage').innerHTML = 'Damage: ' + prettify(gameData.enemyship.minDamage) + '-' + prettify(gameData.enemyship.maxDamage);
+        else {
+            $('#EnemyShields').addClass('hidden');
+        }
+        document.getElementById('enemyDamage').innerHTML = 'Attack: ' + prettify(gameData.enemyship.minDamage) + '-' + prettify(gameData.enemyship.maxDamage);
         document.getElementById('shipSize').innerHTML = prettify(gameData.playership.size);
         document.getElementById('shipName').innerHTML = gameData.playership.name;
-        document.getElementById('shipDamage').innerHTML = 'Damage: ' + prettify(gameData.playership.minDamage) + '-' + prettify(gameData.playership.maxDamage);
+        document.getElementById('shipDamage').innerHTML = 'Attack: ' + prettify(gameData.playership.minDamage) + '-' + prettify(gameData.playership.maxDamage);
         document.getElementById('MissionName').innerHTML = gameData.missions[gameData.world.currentMission].name;
         document.getElementById('zone').innerHTML = prettify(gameData.missions[gameData.world.currentMission].zone + 1);
         document.getElementById('zonemax').innerHTML = prettify(gameData.missions[gameData.world.currentMission].enemies.length);
@@ -2338,6 +2666,14 @@ function updateGUI() {
             sortBuildings($('#buildingvisible'), false);
         }
     }
+    if (gameData.missions[0].galaxy >= 25) {
+        gameBuildings.fusionPlant.showBuyButton();
+        if (!gameData.story.fusionplantunlocked) {
+            addToDisplay('Placeholder', 'story');
+            gameData.story.fusionplantunlocked = true;
+            sortBuildings($('#buildingvisible'), false);
+        }
+    }
     if (gameData.missions[0].galaxy >= 15) {
         gameBuildings.refinery.showBuyButton();
         if (!gameData.story.refineryunlocked) {
@@ -2385,6 +2721,12 @@ function updateGUI() {
     }
     if (gameData.resources.chronoton > 0) {
         $('#chronotoncontainer').removeClass('hidden');
+        $('#btnAbilities').removeClass('hidden');
+        $('#fightcontrols').removeClass('hidden');
+    }
+    else {
+        $('#chronotoncontainer').addClass('hidden');
+        $('#btnAbilities').addClass('hidden');
     }
     if (gameData.resources.aether > 0) {
         $('#aethercontainer').removeClass('hidden');
@@ -2466,6 +2808,7 @@ function updateGUI() {
     gameBuildings.generator.determineShowAffordBuy();
     gameBuildings.plant.determineShowAffordBuy();
     gameBuildings.aetherPlant.determineShowAffordBuy();
+    gameBuildings.fusionPlant.determineShowAffordBuy();
     gameBuildings.factory.determineShowAffordBuy();
     gameBuildings.refinery.determineShowAffordBuy();
     gameBuildings.lab.determineShowAffordBuy();
@@ -2517,6 +2860,10 @@ function updateGUI() {
     if (gameData.challenges.power.unlocked && !gameData.challenges.power.completed) {
         $('#btnConfirmPower').removeClass('hidden');
     }
+    $('#btnConfirmCriticality').addClass('hidden');
+    if (gameData.challenges.criticality.unlocked && !gameData.challenges.criticality.completed) {
+        $('#btnConfirmCriticality').removeClass('hidden');
+    }
 }
 function resetAbilities() {
     gameData.perks.damager = 0;
@@ -2526,6 +2873,7 @@ function resetAbilities() {
     gameData.perks.speed = 0;
     gameData.perks.consistency = 0;
     gameData.perks.power = 0;
+    gameData.perks.criticality = 0;
     gamePerks.looter.updateBuyButtonText();
     gamePerks.looter.updateBuyButtonTooltip();
     gamePerks.producer.updateBuyButtonText();
@@ -2540,6 +2888,8 @@ function resetAbilities() {
     gamePerks.consistency.updateBuyButtonTooltip();
     gamePerks.power.updateBuyButtonText();
     gamePerks.power.updateBuyButtonTooltip();
+    gamePerks.criticality.updateBuyButtonText();
+    gamePerks.criticality.updateBuyButtonTooltip();
     gtag('event', 'resetAbilities()', {
         event_category: 'click',
         event_label: 'label',
@@ -2618,7 +2968,8 @@ function updatePower() {
     var p2 = gameBuildings.plant.totalPowerCreated();
     var p3 = gameBuildings.panel.totalPowerCreated();
     var p4 = gameBuildings.aetherPlant.totalPowerCreated();
-    var powerAvailable = p1 + p2 + p3 + p4;
+    var p5 = gameBuildings.fusionPlant.totalPowerCreated();
+    var powerAvailable = p1 + p2 + p3 + p4 + p5;
     if (gameData.world.currentChallenge === 'Power') {
         powerAvailable /= 2;
     }
@@ -2794,7 +3145,7 @@ function addToDisplay(newline, category = 'whoops') {
     else if (category === 'story') {
         newItem.txt = addColor('yellow', getPrettyTime(new Date()) + ': ' + newline);
         textStory.unshift(newItem);
-        textStory = textStory.slice(0, 50);
+        textStory = textStory.slice(0, 5000);
     }
     else if (category === 'orange') {
         newItem.txt = addColor('grey', getPrettyTime(new Date()) + ': ' + newline);
@@ -2908,16 +3259,22 @@ function checkForUnlocks() {
         addToDisplay('An upgrade to the shipyard would allow for bigger drones', 'mission');
         sortBuildings($('#buildingvisible'));
         if (gameData.missions[0].galaxy === 1) {
-            addAchievement('First Galaxy Completed!', 1);
+            addAchievement(68);
+        }
+        if (gameData.missions[0].galaxy === 2) {
+            addAchievement(69);
         }
         if (gameData.missions[0].galaxy === 5) {
-            addAchievement('Fifth Galaxy Completed!', 1);
+            addAchievement(70);
         }
         if (gameData.missions[0].galaxy === 10) {
-            addAchievement('Ten Galaxy Completed!', 1);
+            addAchievement(71);
         }
         if (gameData.missions[0].galaxy === 20) {
-            addAchievement('Twentieth Galaxy Completed!', 1);
+            addAchievement(72);
+        }
+        if (gameData.missions[0].galaxy === 40) {
+            addAchievement(73);
         }
     }
     if (gameData.missions[0].galaxy > 3) {
@@ -2955,6 +3312,16 @@ function checkForUnlocks() {
         gameData.missions.push(new Mission('Generator Improvement', 'GeneratorImprovement', 1, true, 2, 1, gameData.missions[0].galaxy, 100, false));
         updateMissionButtons();
         addToDisplay('I have found the location of plans that will improve the efficiency of our generators.', 'story');
+    }
+    if (lvlsCleared === 4050) {
+        gameData.missions.push(new Mission('Plant Improvement', 'PlantImprovement', 1, true, 2, 1, gameData.missions[0].galaxy, 100, false));
+        updateMissionButtons();
+        addToDisplay('I have found the location of plans that will improve the efficiency of our panels.', 'story');
+    }
+    if (lvlsCleared === 5050) {
+        gameData.missions.push(new Mission('Aether Plant Improvement', 'AetherPlantImprovement', 1, true, 2, 1, gameData.missions[0].galaxy, 100, false));
+        updateMissionButtons();
+        addToDisplay('I have found the location of plans that will improve the efficiency of our panels.', 'story');
     }
     if (lvlsCleared === 2599) {
         gameData.missions.push(new Mission('The Gateway', 'Gateway', 1, true, 2, 1, 25, 100, false));
@@ -3030,29 +3397,41 @@ function checkForUnlocks() {
     if (gameData.missions[0].galaxy > 25 && gameData.missions[0].zone === 99) {
         giveChronotonFragments((gameData.missions[0].galaxy - 16) * Math.pow(1.01, (gameData.missions[0].galaxy - 25)));
     }
-    if (gameData.missions[0].galaxy > 40) {
+    if (gameData.missions[0].galaxy > gameData.challenges.consistency.galaxyUnlocked) {
         if (!gameData.story.consistencyunlocked && !gameData.challenges.consistency.unlocked) {
             addToDisplay('I have discovered a new address for the Gateway.  It will allow a new challenge to be attempted.  And there should be a nice reward.  Probably even a new ability!', 'story');
             gameData.story.consistencyunlocked = true;
         }
         gameData.challenges.consistency.unlocked = true;
     }
-    if (gameData.missions[0].galaxy > 40 && gameData.world.currentChallenge === 'Consistency') {
+    if (gameData.missions[0].galaxy > gameData.challenges.consistency.galaxyCompleted && gameData.world.currentChallenge === 'Consistency') {
         gameData.world.currentChallenge = '';
         gameData.challenges.consistency.completed = true;
         $('#btnConfirmConsistency').addClass('hidden');
     }
-    if (gameData.missions[0].galaxy > 30) {
+    if (gameData.missions[0].galaxy > gameData.challenges.power.galaxyUnlocked) {
         if (!gameData.story.powerunlocked && !gameData.challenges.power.unlocked) {
             addToDisplay('I have discovered a new address for the Gateway.  It will allow a new challenge to be attempted.  And there should be a nice reward.  Probably even a new ability!', 'story');
             gameData.story.powerunlocked = true;
         }
         gameData.challenges.power.unlocked = true;
     }
-    if (gameData.missions[0].galaxy > 30 && gameData.world.currentChallenge === 'Power') {
+    if (gameData.missions[0].galaxy > gameData.challenges.power.galaxyCompleted && gameData.world.currentChallenge === 'Power') {
         gameData.world.currentChallenge = '';
         gameData.challenges.power.completed = true;
         $('#btnConfirmPower').addClass('hidden');
+    }
+    if (gameData.missions[0].galaxy > gameData.challenges.criticality.galaxyUnlocked) {
+        if (!gameData.story.criticalityunlocked && !gameData.challenges.criticality.unlocked) {
+            addToDisplay('I have discovered a new address for the Gateway.  It will allow a new challenge to be attempted.  And there should be a nice reward.  Probably even a new ability!', 'story');
+            gameData.story.criticalityunlocked = true;
+        }
+        gameData.challenges.criticality.unlocked = true;
+    }
+    if (gameData.missions[0].galaxy > gameData.challenges.criticality.galaxyCompleted && gameData.world.currentChallenge === 'Power') {
+        gameData.world.currentChallenge = '';
+        gameData.challenges.criticality.completed = true;
+        $('#btnConfirmCriticality').addClass('hidden');
     }
 }
 function convertToRoman(num) {
@@ -3155,12 +3534,12 @@ function showTimeElapsed() {
     dseconds = ('0' + seconds.toString()).slice(-2);
     return ddays + ':' + dhours + ':' + dminutes + ':' + dseconds;
 }
-function addAchievement(name, bonus) {
-    if (!gameData.achievements.some((e) => e.name === name)) {
-        var newAchievement = new Achievement(name, bonus);
-        gameData.achievements.push(newAchievement);
-        addToDisplay('New Achievement - ' + newAchievement.name, 'story');
+function addAchievement(id) {
+    if (!gameData.achievementids.includes(id)) {
+        gameData.achievementids.push(id);
+        addToDisplay('New Achievement - ' + achievementlist[achievementlist.findIndex((x) => x.id === id)].name, 'story');
     }
+    getAchievementBonus();
 }
 window.setInterval(function () {
     if (!initted) {
