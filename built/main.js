@@ -3258,22 +3258,22 @@ function checkForUnlocks() {
         gameData.technologies.shipyardTechUnlock = gameData.missions[0].galaxy + 1;
         addToDisplay('An upgrade to the shipyard would allow for bigger drones', 'mission');
         sortBuildings($('#buildingvisible'));
-        if (gameData.missions[0].galaxy === 1) {
+        if (gameData.missions[0].galaxy >= 1) {
             addAchievement(68);
         }
-        if (gameData.missions[0].galaxy === 2) {
+        if (gameData.missions[0].galaxy >= 2) {
             addAchievement(69);
         }
-        if (gameData.missions[0].galaxy === 5) {
+        if (gameData.missions[0].galaxy >= 5) {
             addAchievement(70);
         }
-        if (gameData.missions[0].galaxy === 10) {
+        if (gameData.missions[0].galaxy >= 10) {
             addAchievement(71);
         }
-        if (gameData.missions[0].galaxy === 20) {
+        if (gameData.missions[0].galaxy >= 20) {
             addAchievement(72);
         }
-        if (gameData.missions[0].galaxy === 40) {
+        if (gameData.missions[0].galaxy >= 40) {
             addAchievement(73);
         }
     }
