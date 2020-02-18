@@ -135,11 +135,11 @@
             </div>
             <div class="row text-xsmall">
               <div class="col border border-secondary rounded text-left p-0">
-                <button class="btn btn-sm powerbutton text-left" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy()">Solar</button>
-                <button class="btn btn-sm hidden powerbutton text-right" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Generator</button>
-                <button class="btn btn-sm hidden powerbutton text-left" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
-                <button class="btn btn-sm hidden powerbutton text-right" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
-                <button class="btn btn-sm hidden powerbutton text-left" type="button" id="btnBuyFusionPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.fusionPlant.buy()">Fusion Plant</button><br />
+                <button class="btn btn-sm powerbutton text-right" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy()">Solar</button>
+                <button class="btn btn-sm hidden powerbutton text-left" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Generator</button>
+                <button class="btn btn-sm hidden powerbutton text-right" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
+                <button class="btn btn-sm hidden powerbutton text-left" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
+                <button class="btn btn-sm hidden powerbutton text-right" type="button" id="btnBuyFusionPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.fusionPlant.buy()">Fusion Plant</button><br />
                 <button class="btn btn-sm powerbutton text-right" type="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy()">Buy Mine</button>
                 <button class="btn btn-sm hidden powerbutton text-left border border-secondary" type="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.factory.buy()">Buy Factory</button>
                 <button class="btn btn-sm hidden powerbutton text-right" type="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
@@ -169,7 +169,7 @@
                       <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
                       <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
                       <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnAetherTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAetherProficiency()">Send Ships</button>
-                      <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Send ships automatically</button>
+                      <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Deploy ships automatically</button>
                       <button class="btn btn-sm btn-success upgradebutton hidden" type="button" id="btnFastTacticalLab" data-toggle="tooltip" data-placement="bottom" title="Sets the tactical lab to increase linearly, growing faster at first and slower later" onclick="chooseSlowOrFastTactical(1)">Choose Fast Tactical Labs</button>
                       <button class="btn btn-sm btn-success upgradebutton hidden" type="button" id="btnSlowTacticalLab" data-toggle="tooltip" data-placement="bottom" title="Sets the tactical lab to increase exponentially, growing slower at first and faster later" onclick="chooseSlowOrFastTactical(2)">Choose Slow Tactical Labs</button>
                   </div>
@@ -178,23 +178,22 @@
               <div class="tab-pane fade" id="nav-upgrades" role="tabpanel" aria-labelledby="nav-upgrades-tab" id="equipmentcontainer">
                 <div class="row p-1 m-1 border border-secondary rounded">
                   <div class="border border-secondary rounded col-xl-12 bg-dark text-center text-light rounded shadow hidden" id="equipmentContainer">
-                    <button data-sort='23' class="btn btn-sm btn-success hidden prestigebutton" type="button" id="placeholder" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">I</button>
                     <button data-sort='03' class="btn btn-sm btn-success upgradebutton" type="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
                     <br data-sort="25" />
                     <button data-sort='23' class="btn btn-sm btn-success prestigebutton" type="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">I</button>
-                    <button data-sort='24' class="btn btn-sm btn-success upgradebutton" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
+                    <button data-sort='24' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
+                    <button data-sort='27' class="btn btn-sm btn-success upgradebutton text-left" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
                     <button data-sort='26' class="btn btn-sm btn-success prestigebutton" type="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyPrestige()">I</button>
-                    <button data-sort='27' class="btn btn-sm btn-success upgradebutton" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
                     <br data-sort="25" />
                     <button data-sort='29' class="btn btn-sm btn-success prestigebutton" type="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">I</button>
-                    <button data-sort='30' class="btn btn-sm btn-success upgradebutton" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
+                    <button data-sort='30' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
+                    <button data-sort='33' class="btn btn-sm btn-primary upgradebutton text-left" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
                     <button data-sort='32' class="btn btn-sm btn-primary prestigebutton" type="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">I</button>
-                    <button data-sort='33' class="btn btn-sm btn-primary upgradebutton" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
                     <br data-sort="25" />
                     <button data-sort='35' class="btn btn-sm btn-success prestigebutton" type="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">I</button>
-                    <button data-sort='36' class="btn btn-sm btn-success upgradebutton" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
+                    <button data-sort='36' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
+                    <button data-sort='39' class="btn btn-sm btn-success upgradebutton text-left" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
                     <button data-sort='38' class="btn btn-sm btn-success prestigebutton" type="button" id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">I</button>
-                    <button data-sort='39' class="btn btn-sm btn-success upgradebutton" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
                   </div>
                 </div>
               </div>
@@ -206,7 +205,7 @@
         <div class="row">
           <div class="overflow-auto border border-secondary rounded col-12 text-light bg-dark text-center hidden" id="fightcontrols" style="height:340px;">
             <span id="MissionName">Galaxy 1</span><br />Zone: <span id="zone">1</span>/<span id="zonemax">100</span><br />
-            <button class="btn btn-sm btn-success hidden fightbutton" type="button" id="btnFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="sendShip()">Fight</button><br />
+            <button class="btn btn-sm btn-success hidden fightbutton" type="button" id="btnFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="sendShip()">Deploy</button><br />
             <button class="btn btn-sm btn-warning hidden fightbutton" type="button" id="btnSuicide" onclick="suicideShip()">Self Destruct</button><br />
             <button class="btn btn-sm btn-primary hidden fightbutton" type="button" id="btnAutoFightOn" onclick="switchAutoFight()">autofight</button><br />
             <button class="btn btn-sm btn-primary hidden fightbutton" id="btnGateway" type="button" data-toggle="modal" data-target="#GatewayModal">Gateway</button>

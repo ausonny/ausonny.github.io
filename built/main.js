@@ -155,9 +155,9 @@ class challenge {
 }
 class challenges {
     constructor() {
-        this.consistency = new challenge('Your drones damage maximum will be lowered to the drones minimum damage for the duration of this challenge.  Upon completion you will unlock the Consistency ability which will improve your drones minimum damage and damage will return to normal.', 25, 25);
-        this.power = new challenge('Power production will be halved for the duration of this challenge.  Upon completion the Power ability will be unlocked. and power production will return to normal', 30, 30);
-        this.criticality = new challenge('The enemy has gained the ability to unleash massive amounts of critical damage from time to time. Learning this ability will be incredibly helpful.', 40, 40);
+        this.consistency = new challenge('Your drones damage maximum will be lowered to the drones minimum damage for the duration of this challenge.  Reaching Galaxy 25 will complete the challenge and unlock the Consistency ability which will improve your drones minimum damage and damage will return to normal.', 25, 25);
+        this.power = new challenge('Power production will be halved for the duration of this challenge. Reaching Galaxy 30 will complete the challenge and unlock the Power ability.  And power production will return to normal', 30, 30);
+        this.criticality = new challenge('The enemy has gained the ability to unleash massive amounts of critical damage from time to time.  Reaching Galaxy 40 will complete the challenge and unlock the criticality ability.  Learning this ability will be incredibly helpful.', 40, 40);
     }
 }
 class perks {
@@ -2066,7 +2066,12 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
         gameData.resources.chronoton = chronoton;
         gameData.perks = passedperks;
         gameData.achievementids = passedAchievements;
-        gameData.challenges = passedchallenges;
+        gameData.challenges.consistency.completed = passedchallenges.consistency.completed;
+        gameData.challenges.consistency.unlocked = passedchallenges.consistency.unlocked;
+        gameData.challenges.power.completed = passedchallenges.power.completed;
+        gameData.challenges.power.unlocked = passedchallenges.power.unlocked;
+        gameData.challenges.criticality.completed = passedchallenges.criticality.completed;
+        gameData.challenges.criticality.unlocked = passedchallenges.criticality.unlocked;
         gameData.world.currentChallenge = activeChallenge;
     }
     else {
@@ -2282,12 +2287,18 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
                 gameData.story.powerunlocked = savegame.story.powerunlocked;
             if (typeof savegame.story.criticalityunlocked !== 'undefined')
                 gameData.story.criticalityunlocked = savegame.story.criticalityunlocked;
-            if (typeof savegame.challenges.consistency !== 'undefined')
-                gameData.challenges.consistency = savegame.challenges.consistency;
-            if (typeof savegame.challenges.power !== 'undefined')
-                gameData.challenges.power = savegame.challenges.power;
-            if (typeof savegame.challenges.criticality !== 'undefined')
-                gameData.challenges.criticality = savegame.challenges.criticality;
+            if (typeof savegame.challenges.consistency.unlocked !== 'undefined')
+                gameData.challenges.consistency.unlocked = savegame.challenges.consistency.unlocked;
+            if (typeof savegame.challenges.power.unlocked !== 'undefined')
+                gameData.challenges.power.unlocked = savegame.challenges.power.unlocked;
+            if (typeof savegame.challenges.criticality.unlocked !== 'undefined')
+                gameData.challenges.criticality.unlocked = savegame.challenges.criticality.unlocked;
+            if (typeof savegame.challenges.consistency.completed !== 'undefined')
+                gameData.challenges.consistency.completed = savegame.challenges.consistency.completed;
+            if (typeof savegame.challenges.power.completed !== 'undefined')
+                gameData.challenges.power.completed = savegame.challenges.power.completed;
+            if (typeof savegame.challenges.criticality.completed !== 'undefined')
+                gameData.challenges.criticality.completed = savegame.challenges.criticality.completed;
             if (typeof savegame.tacticalChoices !== 'undefined')
                 gameData.tacticalChoices.tacticalLabsSetting = savegame.tacticalChoices.tacticalLabsSetting;
         }
@@ -2752,10 +2763,10 @@ function updateGUI() {
     if ((gameData.technologies.autofightBought === 1)) {
         $('#btnAutoFightOn').removeClass('hidden');
         if (gameData.technologies.autofightOn === 1) {
-            $('#btnAutoFightOn').text('Turn AutoFight Off');
+            $('#btnAutoFightOn').text('Turn AutoDeploy Off');
         }
         else {
-            $('#btnAutoFightOn').text('Turn AutoFight On');
+            $('#btnAutoFightOn').text('Turn AutoDeploy On');
         }
     }
     $('#btnAutoFight').removeClass('btn-success').addClass('btn-danger');
@@ -3391,7 +3402,7 @@ function checkForUnlocks() {
     }
     if ((gameData.missions[0].galaxy >= 1) && (gameData.missions[0].zone >= 5) && gameData.technologies.autofightUnlock < 1) {
         gameData.technologies.autofightUnlock = 1;
-        addToDisplay('Your boffins have figured out how to send a ship when it is ready', 'mission');
+        addToDisplay('Automating drone deployment will free up resources.', 'mission');
         sortBuildings($('#buildingvisible'));
     }
     if (gameData.missions[0].galaxy > 25 && gameData.missions[0].zone === 99) {
