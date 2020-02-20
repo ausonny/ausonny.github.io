@@ -81,7 +81,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               </div>
               <div class="modal-body bg-secondary">
-                Achievement Bonus:<span id="achievementbonus">0</span><br /><br />
+                Damage Multiplier from achievements:<span id="achievementbonus">0</span><br /><br />
                 Achievements Completed:<span id="achievementcompleted">0</span><br /><br />
                 Achievements Uncompleted:<span id="achievementuncompleted">0</span>
               </div>
@@ -290,7 +290,8 @@
     <div class="row p-1 m-1 border border-secondary rounded bg-dark text-light" id="contactcontainer">
       Email: <span class="myemail">(need JavaScript for email link)</span>&nbsp
       latest version:<label class="myemail text-center" id="result">0.7.3</label>
-  </div>
+      <button class="btn btn-sm btn-dark text-dark" id="btnCheats" type="button" data-toggle="tooltip" data-placement="bottom" title="Resets all abilities to 0" onclick="CHEAT()">Cheat</button>
+    </div>
     <div class="row p-1 m-1 border border-secondary rounded" id="debugContainer">
       <div class="border border-secondary rounded col text-light text-left bg-dark">
         <textarea class="form-control noresize nopadding" readonly id="textToDisplay2" rows="5"></textarea>
