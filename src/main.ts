@@ -372,7 +372,7 @@ class saveGameData {
 
   constructor(name: string) {
     this.name = name;
-    this.version = '0.7.3';
+    this.version = '0.7.4';
     this.challenges = new challenges();
     this.story = {
       aetherplantunlocked: false,
@@ -2172,6 +2172,7 @@ function exportsave() { // eslint-disable-line no-unused-vars
 }
 
 function init(passedperks: perks, passedchallenges: challenges, gatewayReset: boolean = false, activeChallenge: string = '', chronoton: number = 0, passedAchievements: number[] = []) {
+  debugText += '\nv0.7.4 - Fix to criticality challenge and numerous balance changes';
   debugText += '\nv0.7.3 - New challenge, new power techs, new power building, new gui, most things have been rebalanced';
   debugText += '\nv0.7.2 - Another new attempt at a GUI!!! and some balance issues mainly related to research';
   debugText += '\nv0.7.1 - Another new attempt at a GUI and nerfed Shields.  Changed Tactical Labs to effect shields instead of armor and flak';
@@ -2929,6 +2930,8 @@ function updateGUI() {
   gamePerks.consistency.determineShowBuyButton();
   gamePerks.power.determineShowAffordUpgrade();
   gamePerks.power.determineShowBuyButton();
+  gamePerks.criticality.determineShowAffordUpgrade();
+  gamePerks.criticality.determineShowBuyButton();
 
   if (debugText.length > 0) {
     $('#debugContainer').removeClass('hidden');
