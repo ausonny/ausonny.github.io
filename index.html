@@ -99,7 +99,7 @@
     <div class="row m-1 border border-secondary rounded bg-dark">
       <div class="col-9">
         <div class="row text-light">
-          <div class="col-4 bg-dark">
+          <div class="col-xl-4 col-lg-5 bg-dark">
             <div class="row border border-secondary rounded">
               <div class="col bg-light text-dark">
                 Power: <span id="power">9</span>
@@ -125,7 +125,7 @@
                 /sec: <span id="aetherpersec">0</span><br />
              </div>
             </div>
-            <div class="row border border-secondary rounded text-xsmall">
+            <div class="row text-xsmall resourceborder">
               <div class="col-6" id="fragmentcontainer">
                 Fragments: <span id="chronotonfragments">0</span>
               </div>
@@ -148,7 +148,7 @@
               </div>
             </div>
           </div>
-          <div class="col-8 bg-dark">
+          <div class="col-xl-8 col-lg-7 bg-dark">
             <div class="border border-secondary rounded container text-small overflow-auto" style="height:320px;" id="textToDisplay">
             </div>
           </div>
@@ -180,20 +180,26 @@
                   <div class="border border-secondary rounded col-xl-12 bg-dark text-center text-light rounded shadow hidden" id="equipmentContainer">
                     <button data-sort='03' class="btn btn-sm btn-success upgradebutton" type="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
                     <br data-sort="25" />
+                    <button data-sort='24' class="btn btn-sm btn-success multiplebuybutton text-right" type="button" id="btnRailgunUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyUpgrade(10)">10</button>
+                    <button data-sort='24' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnRailgunUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyUpgrade(1)">Upgrade Railgun</button>
                     <button data-sort='23' class="btn btn-sm btn-success prestigebutton" type="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">I</button>
-                    <button data-sort='24' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade()">Upgrade Railgun</button>
-                    <button data-sort='27' class="btn btn-sm btn-success upgradebutton text-left" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
                     <button data-sort='26' class="btn btn-sm btn-success prestigebutton" type="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyPrestige()">I</button>
+                    <button data-sort='27' class="btn btn-sm btn-success upgradebutton text-left" type="button" id="btnArmorUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
+                    <button data-sort='24' class="btn btn-sm btn-success multiplebuybutton text-right" type="button" id="btnArmorUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyUpgrade(10)">10</button>
                     <br data-sort="25" />
+                    <button data-sort='24' class="btn btn-sm btn-success multiplebuybutton text-right" type="button" id="btnLaserUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyUpgrade(10)">10</button>
+                    <button data-sort='30' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnLaserUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
                     <button data-sort='29' class="btn btn-sm btn-success prestigebutton" type="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">I</button>
-                    <button data-sort='30' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
-                    <button data-sort='33' class="btn btn-sm btn-primary upgradebutton text-left" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
                     <button data-sort='32' class="btn btn-sm btn-primary prestigebutton" type="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">I</button>
+                    <button data-sort='33' class="btn btn-sm btn-primary upgradebutton text-left" type="button" id="btnShieldUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
+                    <button data-sort='24' class="btn btn-sm btn-success multiplebuybutton text-right" type="button" id="btnShieldUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyUpgrade(10)">10</button>
                     <br data-sort="25" />
+                    <button data-sort='24' class="btn btn-sm btn-success multiplebuybutton text-right" type="button" id="btnMissileUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyUpgrade(10)">10</button>
+                    <button data-sort='36' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnMissileUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
                     <button data-sort='35' class="btn btn-sm btn-success prestigebutton" type="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">I</button>
-                    <button data-sort='36' class="btn btn-sm btn-success upgradebutton text-right" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
-                    <button data-sort='39' class="btn btn-sm btn-success upgradebutton text-left" type="button" id="btnFlakUpgrade" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
                     <button data-sort='38' class="btn btn-sm btn-success prestigebutton" type="button" id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">I</button>
+                    <button data-sort='39' class="btn btn-sm btn-success upgradebutton text-left" type="button" id="btnFlakUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
+                    <button data-sort='24' class="btn btn-sm btn-success multiplebuybutton text-right" type="button" id="btnFlakUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyUpgrade(10)">10</button>
                   </div>
                 </div>
               </div>

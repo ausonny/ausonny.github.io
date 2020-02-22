@@ -76,12 +76,24 @@ button {
   width: 20px;
 }
 
+.multiplebuybutton {
+  width: 30px;
+  margin: 1px;
+  font-size: 80%;
+}
+
 .upgradebutton {
   width: 160px;
   margin: 1px;
   font-size: 80%;
 }
 
+.resourceborder{
+  border: 1px solid #6c757d;
+  border-top:1px solid #6c757d;
+  border-bottom:25px solid #6c757d;
+  padding:3px 2px;
+}
 
 .timer {
   width: 120px;

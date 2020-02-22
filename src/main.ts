@@ -110,37 +110,37 @@ const AETHER_PROFICIENCY_BASE_RATE = 1.5;
 
 const RAILGUN_UPGRADE_METAL_BASE_COST = 50;
 const RAILGUN_UPGRADE_POLYMER_BASE_COST = 25;
-const RAILGUN_UPGRADE_RP_BASE_COST = 100;
+const RAILGUN_UPGRADE_RP_BASE_COST = 50;
 const RAILGUN_UPGRADE_BASE_IMPROVEMENT = 4;
 const RAILGUN_UPGRADE_AETHER_BASE_COST = 150;
 
 const LASER_UPGRADE_METAL_BASE_COST = 50;
 const LASER_UPGRADE_POLYMER_BASE_COST = 50;
-const LASER_UPGRADE_RP_BASE_COST = 150;
+const LASER_UPGRADE_RP_BASE_COST = 75;
 const LASER_UPGRADE_BASE_IMPROVEMENT = 6;
 const LASER_UPGRADE_AETHER_BASE_COST = 225;
 
 const MISSILE_UPGRADE_METAL_BASE_COST = 75;
 const MISSILE_UPGRADE_POLYMER_BASE_COST = 75;
-const MISSILE_UPGRADE_RP_BASE_COST = 225;
+const MISSILE_UPGRADE_RP_BASE_COST = 110;
 const MISSILE_UPGRADE_BASE_IMPROVEMENT = 9;
 const MISSILE_UPGRADE_AETHER_BASE_COST = 350;
 
 const ARMOR_UPGRADE_METAL_BASE_COST = 100;
 const ARMOR_UPGRADE_POLYMER_BASE_COST = 0;
-const ARMOR_UPGRADE_RP_BASE_COST = 100;
+const ARMOR_UPGRADE_RP_BASE_COST = 50;
 const ARMOR_UPGRADE_BASE_IMPROVEMENT = 20;
 const ARMOR_UPGRADE_AETHER_BASE_COST = 150;
 
 const SHIELD_UPGRADE_METAL_BASE_COST = 0;
 const SHIELD_UPGRADE_POLYMER_BASE_COST = 75;
-const SHIELD_UPGRADE_RP_BASE_COST = 150;
+const SHIELD_UPGRADE_RP_BASE_COST = 75;
 const SHIELD_UPGRADE_BASE_IMPROVEMENT = 10;
 const SHIELD_UPGRADE_AETHER_BASE_COST = 225;
 
 const FLAK_UPGRADE_METAL_BASE_COST = 75;
 const FLAK_UPGRADE_POLYMER_BASE_COST = 75;
-const FLAK_UPGRADE_RP_BASE_COST = 225;
+const FLAK_UPGRADE_RP_BASE_COST = 110;
 const FLAK_UPGRADE_BASE_IMPROVEMENT = 40;
 const FLAK_UPGRADE_AETHER_BASE_COST = 350;
 
@@ -179,9 +179,6 @@ class PossibleEnemies {
   }
 }
 
-// Date.prototype.toJSON = function () {
-//   return moment(this).format();
-// };
 class challenge {
   unlocked: boolean
 
@@ -242,6 +239,20 @@ class perks {
     this.consistency = 0;
     this.power = 0;
     this.criticality = 0;
+  }
+}
+
+class EquipmentTechnology {
+  upgrade:number
+
+  prestigeUnlocked: number
+
+  prestigeBought: number
+
+  constructor(upgrade:number, prestigeunlocked:number, prestigebought:number) {
+    this.upgrade = upgrade;
+    this.prestigeUnlocked = prestigeunlocked;
+    this.prestigeBought = prestigebought;
   }
 }
 
@@ -330,24 +341,12 @@ class saveGameData {
     aetherProficiencyUnlocked: number
     aetherProficiencyBought: number
     shipyardTechUnlock: number
-    railgunPrestigeLevelUnlocked: number
-    railgunPrestigeLevelBought: number
-    railgunUpgrade: number
-    laserPrestigeLevelUnlocked: number
-    laserPrestigeLevelBought: number
-    laserUpgrade: number
-    missilePrestigeLevelUnlocked: number
-    missilePrestigeLevelBought: number
-    missileUpgrade: number
-    armorPrestigeLevelUnlocked: number
-    armorPrestigeLevelBought: number
-    armorUpgrade: number
-    shieldPrestigeLevelUnlocked: number
-    shieldPrestigeLevelBought: number
-    shieldUpgrade: number
-    flakPrestigeLevelUnlocked: number
-    flakPrestigeLevelBought: number
-    flakUpgrade: number
+    railgun: EquipmentTechnology
+    laser: EquipmentTechnology
+    missile: EquipmentTechnology
+    armor: EquipmentTechnology
+    shield: EquipmentTechnology
+    flak: EquipmentTechnology
     goldMine: number
     panelUpgrade: number
     generatorUpgrade: number
@@ -430,34 +429,22 @@ class saveGameData {
     };
     this.achievementids = [];
     this.technologies = {
-      armorPrestigeLevelBought: 1,
-      armorPrestigeLevelUnlocked: 1,
-      armorUpgrade: 1,
       autofightBought: 0,
       autofightOn: 0,
       autofightUnlock: 0,
-      flakPrestigeLevelBought: 0,
-      flakPrestigeLevelUnlocked: 0,
-      flakUpgrade: 0,
       goldMine: 0,
-      laserPrestigeLevelBought: 0,
-      laserPrestigeLevelUnlocked: 0,
-      laserUpgrade: 0,
       metalProficiencyBought: 0,
       metalProficiencyUnlocked: 0,
-      missilePrestigeLevelBought: 0,
-      missilePrestigeLevelUnlocked: 0,
-      missileUpgrade: 0,
       polymerProficiencyBought: 0,
       polymerProficiencyUnlocked: 0,
-      railgunPrestigeLevelBought: 1,
-      railgunPrestigeLevelUnlocked: 1,
-      railgunUpgrade: 1,
+      railgun: new EquipmentTechnology(1, 1, 1),
+      laser: new EquipmentTechnology(0, 0, 0),
+      missile: new EquipmentTechnology(0, 0, 0),
+      armor: new EquipmentTechnology(1, 1, 1),
+      shield: new EquipmentTechnology(0, 0, 0),
+      flak: new EquipmentTechnology(0, 0, 0),
       researchProficiency: 0,
       researchProficiencyBought: 0,
-      shieldPrestigeLevelBought: 0,
-      shieldPrestigeLevelUnlocked: 0,
-      shieldUpgrade: 0,
       shipyardTechUnlock: 1,
       panelUpgrade: 0,
       aetherProficiencyBought: 0,
@@ -592,10 +579,10 @@ class Ship {
     this.lootType = loot.lootType;
     this.lootAmount = loot.lootAmount;
 
-    this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 40 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
+    this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 60 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
     this.hitPointsMax = this.hitPoints;
 
-    var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 10 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
+    var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 20 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
     this.minDamage = this.size * baseEnemyAttack / 1.25;
     this.maxDamage = this.size * baseEnemyAttack * 1.25;
 
@@ -645,14 +632,14 @@ class Ship {
       gameData.world.dronesCreated++;
       this.name = 'Drone ' + convertToRoman(gameData.world.dronesCreated);
       this.size = 1 * Math.pow(1.25, gameData.buildings.shipyard - 1);
-      this.hitPointsMax = gameEquipment.armor.getDamage() + gameEquipment.flak.getDamage();
+      this.hitPointsMax = gameEquipment.armor.getValue() + gameEquipment.flak.getValue();
       this.hitPoints = this.hitPointsMax;
-      this.shieldMax = gameEquipment.shield.getDamage();
+      this.shieldMax = gameEquipment.shield.getValue();
       this.shieldMax *= gamePerks.thickskin.getBonus();
       this.shield = gameData.playership.shieldMax;
-      var baseRailgunAttack = (gameData.technologies.railgunUpgrade * RAILGUN_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1));
-      var baseLaserAttack = (gameData.technologies.laserUpgrade * LASER_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1));
-      var baseMissileAttack = (gameData.technologies.missileUpgrade * MISSILE_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1));
+      var baseRailgunAttack = gameEquipment.railgun.getValue();
+      var baseLaserAttack = gameEquipment.laser.getValue();
+      var baseMissileAttack = gameEquipment.missile.getValue();
       var baseAttack = this.size * (baseRailgunAttack + baseLaserAttack + baseMissileAttack) * achievementMultiplier * gamePerks.damager.getBonus();
       this.minDamage = baseAttack * (0.75 + (gameData.perks.consistency / 100));
       if (gameData.world.currentChallenge === 'Consistency') {
@@ -1434,528 +1421,236 @@ var gameBuildings = {
   }
 };
 
-var gameEquipment = {
-  railgun: {
-    metalForShip: function() { return (RAILGUN_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought)); },
-    polymerForShip: function() { return (RAILGUN_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought)); },
-    rpForShip: function() { return (0 * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought)); },
-    metalForUpgrade: function() { return (RAILGUN_UPGRADE_METAL_BASE_COST * (gameData.technologies.railgunUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1)); },
-    polymerForUpgrade: function() { return (RAILGUN_UPGRADE_POLYMER_BASE_COST * (gameData.technologies.railgunUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1)); },
-    rpForUpgrade: function() { return 0 * (RAILGUN_UPGRADE_RP_BASE_COST * (gameData.technologies.railgunUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1)); },
-    metalForPrestige: function() { return (RAILGUN_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought + 1)); },
-    polymerForPrestige: function() { return (RAILGUN_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought + 1)); },
-    aetherForPrestige: function() { return (RAILGUN_UPGRADE_AETHER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1)); },
-    rpForPrestige: function() { return (RAILGUN_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought + 1)); },
-    tooltipForUpgrade: function() { return ('Adds ' + prettify(this.getDamagePerUpgrade()) + ' damage per level\nMetal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
-    tooltipForPrestige: function() { return ('This will improve our Railguns, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function() { $('#btnRailgunUpgrade').text('Railgun ' + convertToRoman(gameData.technologies.railgunPrestigeLevelBought) + ' (' + (gameData.technologies.railgunUpgrade) + ')'); },
-    updateUpgradeTooltip: function() { $('#btnRailgunUpgrade').attr('title', this.tooltipForUpgrade()); },
-    updatePrestigeText: function() { $('#btnRailgunPrestige').text('I'); }, //   'Infuse Railgun ' + (gameData.technologies.railgunPrestigeLevelBought + 1)); },
-    updatePrestigeTooltip: function() { $('#btnRailgunPrestige').attr('title', this.tooltipForPrestige()); },
-    canAffordUpgrade: function() { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
-    canAffordPrestige: function() { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-    getDamagePerUpgrade: function() { return (RAILGUN_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.railgunPrestigeLevelBought - 1)) * gameData.playership.size * achievementMultiplier * gamePerks.damager.getBonus(); },
-    getDamage: function() { return (gameData.technologies.railgunUpgrade * this.getDamagePerUpgrade()); },
-    determineShowUpgradeButton: function() {
-      if (gameData.technologies.railgunPrestigeLevelBought > 0) {
-        $('#btnRailgunUpgrade').removeClass('hidden');
-      } else {
-        $('#btnRailgunUpgrade').addClass('hidden');
-      }
-    },
-    determineShowPrestigeButton: function() {
-      if (gameData.technologies.railgunPrestigeLevelUnlocked > gameData.technologies.railgunPrestigeLevelBought) {
-        $('#btnRailgunPrestige').removeClass('hidden');
-      } else {
-        $('#btnRailgunPrestige').addClass('hidden');
-      }
-    },
-    determineShowAffordUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        $('#btnRailgunUpgrade').removeClass('btn-danger').addClass('btn-warning');
-      } else {
-        $('#btnRailgunUpgrade').removeClass('btn-warning').addClass('btn-danger');
-      }
-    },
-    determineShowAffordPrestige: function() {
-      if (this.canAffordPrestige()) {
-        $('#btnRailgunPrestige').removeClass('btn-danger').addClass('btn-warning');
-      } else {
-        $('#btnRailgunPrestige').removeClass('btn-warning').addClass('btn-danger');
-      }
-    },
-    buyUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        gameData.resources.metal -= this.metalForUpgrade();
-        gameData.resources.polymer -= this.polymerForUpgrade();
-        gameData.resources.researchPoints -= this.rpForUpgrade();
-        gameData.technologies.railgunUpgrade++;
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        gtag('event', 'buy railgun upgrade', {
-          event_category: 'click',
-          event_label: 'label',
-          value: gameData.technologies.railgunUpgrade
-        });
-      }
-    },
-    buyPrestige: function() {
-      if (this.canAffordPrestige()) {
-        gameData.resources.metal -= this.metalForPrestige();
-        gameData.resources.polymer -= this.polymerForPrestige();
-        gameData.resources.researchPoints -= this.rpForPrestige();
-        gameData.resources.aether -= this.aetherForPrestige();
-        gameData.technologies.railgunPrestigeLevelBought++;
-        gameData.technologies.railgunUpgrade = 1;
-        this.updatePrestigeTooltip();
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        this.updatePrestigeText();
-        sortBuildings($('#buildingvisible'));
-        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
-      }
-    }
-  },
-  laser: {
-    metalForShip: function() { return (LASER_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought)); },
-    polymerForShip: function() { return (LASER_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought)); },
-    metalForUpgrade: function() { return (LASER_UPGRADE_METAL_BASE_COST * (gameData.technologies.laserUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1)); },
-    polymerForUpgrade: function() { return (LASER_UPGRADE_POLYMER_BASE_COST * (gameData.technologies.laserUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1)); },
-    rpForUpgrade: function() { return 0 * (LASER_UPGRADE_RP_BASE_COST * (gameData.technologies.laserUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1)); },
-    metalForPrestige: function() { return (LASER_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought + 1)); },
-    polymerForPrestige: function() { return (LASER_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought + 1)); },
-    aetherForPrestige: function() { return (LASER_UPGRADE_AETHER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1)); },
-    rpForPrestige: function() { return (LASER_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought + 1)); },
-    tooltipForUpgrade: function() { return ('Adds ' + prettify(this.getDamagePerUpgrade()) + ' damage per level\nMetal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
-    tooltipForPrestige: function() { return ('This will improve our Lasers, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function() { $('#btnLaserUpgrade').text('Laser ' + convertToRoman(gameData.technologies.laserPrestigeLevelBought) + ' (' + (gameData.technologies.laserUpgrade) + ')'); },
-    updateUpgradeTooltip: function() { $('#btnLaserUpgrade').attr('title', this.tooltipForUpgrade()); },
-    updatePrestigeText: function() { $('#btnLaserPrestige').text('I'); }, //   'Infuse Laser ' + (gameData.technologies.laserPrestigeLevelBought + 1)); },
-    updatePrestigeTooltip: function() { $('#btnLaserPrestige').attr('title', this.tooltipForPrestige()); },
-    canAffordUpgrade: function() { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
-    canAffordPrestige: function() { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-    getDamagePerUpgrade: function() { return (LASER_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.laserPrestigeLevelBought - 1)) * gameData.playership.size * achievementMultiplier * gamePerks.damager.getBonus(); },
-    getDamage: function() { return (gameData.technologies.laserUpgrade * this.getDamagePerUpgrade()); },
-    determineShowUpgradeButton: function() {
-      if (gameData.technologies.laserPrestigeLevelBought > 0) {
-        $('#btnLaserUpgrade').removeClass('hidden');
-      } else {
-        $('#btnLaserUpgrade').addClass('hidden');
-      }
-    },
-    determineShowPrestigeButton: function() {
-      if (gameData.technologies.laserPrestigeLevelUnlocked > gameData.technologies.laserPrestigeLevelBought) {
-        $('#btnLaserPrestige').removeClass('hidden');
-      } else {
-        $('#btnLaserPrestige').addClass('hidden');
-      }
-    },
-    determineShowAffordUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        $('#btnLaserUpgrade').removeClass('btn-danger').addClass('btn-warning');
-      } else {
-        $('#btnLaserUpgrade').removeClass('btn-warning').addClass('btn-danger');
-      }
-    },
-    determineShowAffordPrestige: function() {
-      if (this.canAffordPrestige()) {
-        $('#btnLaserPrestige').removeClass('btn-danger').addClass('btn-warning');
-      } else {
-        $('#btnLaserPrestige').removeClass('btn-warning').addClass('btn-danger');
-      }
-    },
-    buyUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        gameData.resources.metal -= this.metalForUpgrade();
-        gameData.resources.polymer -= this.polymerForUpgrade();
-        gameData.resources.researchPoints -= this.rpForUpgrade();
-        gameData.technologies.laserUpgrade++;
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        gtag('event', 'buy laser upgrade', {
-          event_category: 'click',
-          event_label: 'label',
-          value: gameData.technologies.laserUpgrade
-        });
-      }
-    },
-    buyPrestige: function() {
-      if (this.canAffordPrestige()) {
-        gameData.resources.metal -= this.metalForPrestige();
-        gameData.resources.polymer -= this.polymerForPrestige();
-        gameData.resources.researchPoints -= this.rpForPrestige();
-        gameData.resources.aether -= this.aetherForPrestige();
-        gameData.technologies.laserPrestigeLevelBought++;
-        gameData.technologies.laserUpgrade = 1;
-        this.updatePrestigeTooltip();
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        this.updatePrestigeText();
-        sortBuildings($('#buildingvisible'));
-        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
-      }
-    }
-  },
-  missile: {
-    metalForShip: function() { return (MISSILE_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought)); },
-    polymerForShip: function() { return (MISSILE_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought)); },
-    metalForUpgrade: function() { return (MISSILE_UPGRADE_METAL_BASE_COST * (gameData.technologies.missileUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1)); },
-    polymerForUpgrade: function() { return (MISSILE_UPGRADE_POLYMER_BASE_COST * (gameData.technologies.missileUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1)); },
-    rpForUpgrade: function() { return 0 * (MISSILE_UPGRADE_RP_BASE_COST * (gameData.technologies.missileUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1)); },
-    metalForPrestige: function() { return (MISSILE_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought + 1)); },
-    polymerForPrestige: function() { return (MISSILE_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought + 1)); },
-    aetherForPrestige: function() { return (MISSILE_UPGRADE_AETHER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1)); },
-    rpForPrestige: function() { return (MISSILE_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought + 1)); },
-    tooltipForUpgrade: function() { return ('Adds ' + prettify(this.getDamagePerUpgrade()) + ' damage per level\nMetal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
-    tooltipForPrestige: function() { return ('This will improve our Missiles, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function() { $('#btnMissileUpgrade').text('Missile ' + convertToRoman(gameData.technologies.missilePrestigeLevelBought) + ' (' + (gameData.technologies.missileUpgrade) + ')'); },
-    updateUpgradeTooltip: function() { $('#btnMissileUpgrade').attr('title', this.tooltipForUpgrade()); },
-    updatePrestigeText: function() { $('#btnMissilePrestige').text('I'); }, //   'Infuse Missile ' + (gameData.technologies.missilePrestigeLevelBought + 1)); },
-    updatePrestigeTooltip: function() { $('#btnMissilePrestige').attr('title', this.tooltipForPrestige()); },
-    canAffordUpgrade: function() { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
-    canAffordPrestige: function() { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-    getDamagePerUpgrade: function() { return (MISSILE_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.missilePrestigeLevelBought - 1)) * gameData.playership.size * achievementMultiplier * gamePerks.damager.getBonus(); },
-    getDamage: function() { return (gameData.technologies.missileUpgrade * this.getDamagePerUpgrade()); },
-    determineShowUpgradeButton: function() {
-      if (gameData.technologies.missilePrestigeLevelBought > 0) {
-        $('#btnMissileUpgrade').removeClass('hidden');
-      } else {
-        $('#btnMissileUpgrade').addClass('hidden');
-      }
-    },
-    determineShowPrestigeButton: function() {
-      if (gameData.technologies.missilePrestigeLevelUnlocked > gameData.technologies.missilePrestigeLevelBought) {
-        $('#btnMissilePrestige').removeClass('hidden');
-      } else {
-        $('#btnMissilePrestige').addClass('hidden');
-      }
-    },
-    determineShowAffordUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        $('#btnMissileUpgrade').removeClass('btn-danger').addClass('btn-warning');
-      } else {
-        $('#btnMissileUpgrade').removeClass('btn-warning').addClass('btn-danger');
-      }
-    },
-    determineShowAffordPrestige: function() {
-      if (this.canAffordPrestige()) {
-        $('#btnMissilePrestige').removeClass('btn-danger').addClass('btn-warning');
-      } else {
-        $('#btnMissilePrestige').removeClass('btn-warning').addClass('btn-danger');
-      }
-    },
-    buyUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        gameData.resources.metal -= this.metalForUpgrade();
-        gameData.resources.polymer -= this.polymerForUpgrade();
-        gameData.resources.researchPoints -= this.rpForUpgrade();
-        gameData.technologies.missileUpgrade++;
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        gtag('event', 'buy missile upgrade', {
-          event_category: 'click',
-          event_label: 'label',
-          value: gameData.technologies.missileUpgrade
-        });
-      }
-    },
-    buyPrestige: function() {
-      if (this.canAffordPrestige()) {
-        gameData.resources.metal -= this.metalForPrestige();
-        gameData.resources.polymer -= this.polymerForPrestige();
-        gameData.resources.researchPoints -= this.rpForPrestige();
-        gameData.resources.aether -= this.aetherForPrestige();
-        gameData.technologies.missilePrestigeLevelBought++;
-        gameData.technologies.missileUpgrade = 1;
-        this.updatePrestigeTooltip();
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        this.updatePrestigeText();
-        sortBuildings($('#buildingvisible'));
-        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
-      }
-    }
-  },
-  armor: {
-    metalForShip: function() { return (ARMOR_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought)); },
-    polymerForShip: function() { return (ARMOR_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought)); },
-    metalForUpgrade: function() { return (ARMOR_UPGRADE_METAL_BASE_COST * (gameData.technologies.armorUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)); },
-    polymerForUpgrade: function() { return (ARMOR_UPGRADE_POLYMER_BASE_COST * (gameData.technologies.armorUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)); },
-    rpForUpgrade: function() { return 0 * (ARMOR_UPGRADE_RP_BASE_COST * (gameData.technologies.armorUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)); },
-    metalForPrestige: function() { return (ARMOR_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought + 1)); },
-    polymerForPrestige: function() { return (ARMOR_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought + 1)); },
-    aetherForPrestige: function() { return (ARMOR_UPGRADE_AETHER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)); },
-    rpForPrestige: function() { return (ARMOR_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought + 1)); },
-    tooltipForUpgrade: function() { return ('Adds ' + prettify(this.getDamagePerUpgrade()) + ' Hit Points per level\nMetal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
-    tooltipForPrestige: function() { return ('This will improve our Armor, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function() { $('#btnArmorUpgrade').text('Armor ' + convertToRoman(gameData.technologies.armorPrestigeLevelBought) + ' (' + (gameData.technologies.armorUpgrade) + ')'); },
-    updateUpgradeTooltip: function() { $('#btnArmorUpgrade').attr('title', this.tooltipForUpgrade()); },
-    updatePrestigeText: function() { $('#btnArmorPrestige').text('I'); }, //   'Infuse Armor ' + (gameData.technologies.armorPrestigeLevelBought + 1)); },
-    updatePrestigeTooltip: function() { $('#btnArmorPrestige').attr('title', this.tooltipForPrestige()); },
-    canAffordUpgrade: function() { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
-    canAffordPrestige: function() { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-    getDamagePerUpgrade: function() { return (ARMOR_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.armorPrestigeLevelBought - 1)) * gameData.playership.size * gamePerks.thickskin.getBonus(); },
-    getDamage: function() { return (gameData.technologies.armorUpgrade * this.getDamagePerUpgrade()); },
-    determineShowUpgradeButton: function() {
-      if (gameData.technologies.armorPrestigeLevelBought > 0) {
-        $('#btnArmorUpgrade').removeClass('hidden');
-      } else {
-        $('#btnArmorUpgrade').addClass('hidden');
-      }
-    },
-    determineShowPrestigeButton: function() {
-      if (gameData.technologies.armorPrestigeLevelUnlocked > gameData.technologies.armorPrestigeLevelBought) {
-        $('#btnArmorPrestige').removeClass('hidden');
-      } else {
-        $('#btnArmorPrestige').addClass('hidden');
-      }
-    },
-    determineShowAffordUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        $('#btnArmorUpgrade').removeClass('btn-danger').addClass('btn-info');
-      } else {
-        $('#btnArmorUpgrade').removeClass('btn-info').addClass('btn-danger');
-      }
-    },
-    determineShowAffordPrestige: function() {
-      if (this.canAffordPrestige()) {
-        $('#btnArmorPrestige').removeClass('btn-danger').addClass('btn-info');
-      } else {
-        $('#btnArmorPrestige').removeClass('btn-info').addClass('btn-danger');
-      }
-    },
-    buyUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        gameData.resources.metal -= this.metalForUpgrade();
-        gameData.resources.polymer -= this.polymerForUpgrade();
-        gameData.resources.researchPoints -= this.rpForUpgrade();
-        gameData.technologies.armorUpgrade++;
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        gtag('event', 'buy armor upgrade', {
-          event_category: 'click',
-          event_label: 'label',
-          value: gameData.technologies.armorUpgrade
-        });
-      }
-    },
-    buyPrestige: function() {
-      if (this.canAffordPrestige()) {
-        gameData.resources.metal -= this.metalForPrestige();
-        gameData.resources.polymer -= this.polymerForPrestige();
-        gameData.resources.researchPoints -= this.rpForPrestige();
-        gameData.resources.aether -= this.aetherForPrestige();
-        gameData.technologies.armorPrestigeLevelBought++;
-        gameData.technologies.armorUpgrade = 1;
-        this.updatePrestigeTooltip();
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        this.updatePrestigeText();
-        sortBuildings($('#buildingvisible'));
-        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
-      }
-    }
-  },
-  shield: {
-    metalForShip: function() { return (SHIELD_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought)); },
-    polymerForShip: function() { return (SHIELD_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought)); },
-    metalForUpgrade: function() { return (SHIELD_UPGRADE_METAL_BASE_COST * (gameData.technologies.shieldUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought - 1)); },
-    polymerForUpgrade: function() { return (SHIELD_UPGRADE_POLYMER_BASE_COST * (gameData.technologies.shieldUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought - 1)); },
-    rpForUpgrade: function() { return 0 * (SHIELD_UPGRADE_RP_BASE_COST * (gameData.technologies.shieldUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought - 1)); },
-    metalForPrestige: function() { return (SHIELD_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought + 1)); },
-    polymerForPrestige: function() { return (SHIELD_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought + 1)); },
-    aetherForPrestige: function() { return (SHIELD_UPGRADE_AETHER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought - 1)); },
-    rpForPrestige: function() { return (SHIELD_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought + 1)); },
-    tooltipForUpgrade: function() { return ('Adds ' + prettify(this.getDamagePerUpgrade()) + ' Shield per level\nMetal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
-    tooltipForPrestige: function() { return ('This will improve our Shields, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function() { $('#btnShieldUpgrade').text('Shield ' + convertToRoman(gameData.technologies.shieldPrestigeLevelBought) + ' (' + (gameData.technologies.shieldUpgrade) + ')'); },
-    updateUpgradeTooltip: function() { $('#btnShieldUpgrade').attr('title', this.tooltipForUpgrade()); },
-    updatePrestigeText: function() { $('#btnShieldPrestige').text('I'); }, //   'Infuse Shield ' + (gameData.technologies.shieldPrestigeLevelBought + 1)); },
-    updatePrestigeTooltip: function() { $('#btnShieldPrestige').attr('title', this.tooltipForPrestige()); },
-    canAffordUpgrade: function() { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
-    canAffordPrestige: function() { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-    getDamagePerUpgrade: function() { return (SHIELD_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.shieldPrestigeLevelBought - 1)) * gameData.playership.size * gamePerks.thickskin.getBonus() * gameBuildings.tacticalLab.getBonus(); },
-    getDamage: function() { return (gameData.technologies.shieldUpgrade * this.getDamagePerUpgrade()); },
-    determineShowUpgradeButton: function() {
-      if (gameData.technologies.shieldPrestigeLevelBought > 0) {
-        $('#btnShieldUpgrade').removeClass('hidden');
-      } else {
-        $('#btnShieldUpgrade').addClass('hidden');
-      }
-    },
-    determineShowPrestigeButton: function() {
-      if (gameData.technologies.shieldPrestigeLevelUnlocked > gameData.technologies.shieldPrestigeLevelBought) {
-        $('#btnShieldPrestige').removeClass('hidden');
-      } else {
-        $('#btnShieldPrestige').addClass('hidden');
-      }
-    },
-    determineShowAffordUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        $('#btnShieldUpgrade').removeClass('btn-danger').addClass('btn-primary');
-      } else {
-        $('#btnShieldUpgrade').removeClass('btn-primary').addClass('btn-danger');
-      }
-    },
-    determineShowAffordPrestige: function() {
-      if (this.canAffordPrestige()) {
-        $('#btnShieldPrestige').removeClass('btn-danger').addClass('btn-primary');
-      } else {
-        $('#btnShieldPrestige').removeClass('btn-primary').addClass('btn-danger');
-      }
-    },
-    buyUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        gameData.resources.metal -= this.metalForUpgrade();
-        gameData.resources.polymer -= this.polymerForUpgrade();
-        gameData.resources.researchPoints -= this.rpForUpgrade();
-        gameData.technologies.shieldUpgrade++;
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        gtag('event', 'buy shield upgrade', {
-          event_category: 'click',
-          event_label: 'label',
-          value: gameData.technologies.shieldUpgrade
-        });
-      }
-    },
-    buyPrestige: function() {
-      if (this.canAffordPrestige()) {
-        gameData.resources.metal -= this.metalForPrestige();
-        gameData.resources.polymer -= this.polymerForPrestige();
-        gameData.resources.researchPoints -= this.rpForPrestige();
-        gameData.resources.aether -= this.aetherForPrestige();
-        gameData.technologies.shieldPrestigeLevelBought++;
-        gameData.technologies.shieldUpgrade = 1;
-        this.updatePrestigeTooltip();
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        this.updatePrestigeText();
-        sortBuildings($('#buildingvisible'));
-        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
-      }
-    }
-  },
-  flak: {
-    metalForShip: function() { return (FLAK_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought)); },
-    polymerForShip: function() { return (FLAK_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought)); },
-    metalForUpgrade: function() { return (FLAK_UPGRADE_METAL_BASE_COST * (gameData.technologies.flakUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought - 1)); },
-    polymerForUpgrade: function() { return (FLAK_UPGRADE_POLYMER_BASE_COST * (gameData.technologies.flakUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought - 1)); },
-    rpForUpgrade: function() { return 0 * (FLAK_UPGRADE_RP_BASE_COST * (gameData.technologies.flakUpgrade + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought - 1)); },
-    metalForPrestige: function() { return (FLAK_UPGRADE_METAL_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought + 1)); },
-    polymerForPrestige: function() { return (FLAK_UPGRADE_POLYMER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought + 1)); },
-    aetherForPrestige: function() { return (FLAK_UPGRADE_AETHER_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought - 1)); },
-    rpForPrestige: function() { return (FLAK_UPGRADE_RP_BASE_COST * Math.pow(PRESTIGE_COST_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought + 1)); },
-    tooltipForUpgrade: function() { return ('Adds ' + prettify(this.getDamagePerUpgrade()) + ' Hit Points per level\nMetal Cost:' + prettify(this.metalForUpgrade()) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade()) + '\nRP Cost:' + prettify(this.rpForUpgrade())); },
-    tooltipForPrestige: function() { return ('This will improve our Flak, but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); },
-    updateUpgradeText: function() { $('#btnFlakUpgrade').text('Flak ' + convertToRoman(gameData.technologies.flakPrestigeLevelBought) + ' (' + (gameData.technologies.flakUpgrade) + ')'); },
-    updateUpgradeTooltip: function() { $('#btnFlakUpgrade').attr('title', this.tooltipForUpgrade()); },
-    updatePrestigeText: function() { $('#btnFlakPrestige').text('I'); }, //   'Infuse Flak ' + (gameData.technologies.flakPrestigeLevelBought + 1)); },
-    updatePrestigeTooltip: function() { $('#btnFlakPrestige').attr('title', this.tooltipForPrestige()); },
-    canAffordUpgrade: function() { return (gameData.resources.metal >= this.metalForUpgrade()) && (gameData.resources.polymer >= this.polymerForUpgrade()) && (gameData.resources.researchPoints >= this.rpForUpgrade()); },
-    canAffordPrestige: function() { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); },
-    getDamagePerUpgrade: function() { return (FLAK_UPGRADE_BASE_IMPROVEMENT * Math.pow(PRESTIGE_BASE_MULTIPLIER, gameData.technologies.flakPrestigeLevelBought - 1)) * gameData.playership.size * gamePerks.thickskin.getBonus(); },
-    getDamage: function() { return (gameData.technologies.flakUpgrade * this.getDamagePerUpgrade()); },
-    determineShowUpgradeButton: function() {
-      if (gameData.technologies.flakPrestigeLevelBought > 0) {
-        $('#btnFlakUpgrade').removeClass('hidden');
-      } else {
-        $('#btnFlakUpgrade').addClass('hidden');
-      }
-    },
-    determineShowPrestigeButton: function() {
-      if (gameData.technologies.flakPrestigeLevelUnlocked > gameData.technologies.flakPrestigeLevelBought) {
-        $('#btnFlakPrestige').removeClass('hidden');
-      } else {
-        $('#btnFlakPrestige').addClass('hidden');
-      }
-    },
-    determineShowAffordUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        $('#btnFlakUpgrade').removeClass('btn-danger').addClass('btn-info');
-      } else {
-        $('#btnFlakUpgrade').removeClass('btn-info').addClass('btn-danger');
-      }
-    },
-    determineShowAffordPrestige: function() {
-      if (this.canAffordPrestige()) {
-        $('#btnFlakPrestige').removeClass('btn-danger').addClass('btn-info');
-      } else {
-        $('#btnFlakPrestige').removeClass('btn-info').addClass('btn-danger');
-      }
-    },
-    buyUpgrade: function() {
-      if (this.canAffordUpgrade()) {
-        gameData.resources.metal -= this.metalForUpgrade();
-        gameData.resources.polymer -= this.polymerForUpgrade();
-        gameData.resources.researchPoints -= this.rpForUpgrade();
-        gameData.technologies.flakUpgrade++;
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        gtag('event', 'buy flak upgrade', {
-          event_category: 'click',
-          event_label: 'label',
-          value: gameData.technologies.flakUpgrade
-        });
-      }
-    },
-    buyPrestige: function() {
-      if (this.canAffordPrestige()) {
-        gameData.resources.metal -= this.metalForPrestige();
-        gameData.resources.polymer -= this.polymerForPrestige();
-        gameData.resources.researchPoints -= this.rpForPrestige();
-        gameData.resources.aether -= this.aetherForPrestige();
-        gameData.technologies.flakPrestigeLevelBought++;
-        gameData.technologies.flakUpgrade = 1;
-        this.updatePrestigeTooltip();
-        this.updateUpgradeText();
-        this.updateUpgradeTooltip();
-        this.updatePrestigeText();
-        sortBuildings($('#buildingvisible'));
-        $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
-      }
+class EquipmentBase {
+  name: string
+
+  weapon: boolean
+
+  valuePerLevel: number
+
+  upgradeMetalBaseCost: number
+
+  upgradePolymerBaseCost: number
+
+  upgradeRPBaseCost: number
+
+  upgradeAetherBaseCost: number
+
+  technology: EquipmentTechnology
+
+  upgradeButton: HTMLElement
+
+  upgrade10Button: HTMLElement
+
+  prestigeButton: HTMLElement
+
+  buttonclass: string
+
+  constructor(name: string, weapon: boolean, valueperlevel:number, upgradeMetalBaseCost: number, upgradePolymerBaseCost:number, upgradeRPBaseCost:number, upgradeAetherBaseCost:number, tech:EquipmentTechnology, upgradeButton:HTMLElement, upgrade10Button:HTMLElement, prestigeButton:HTMLElement) {
+    this.name = name;
+    this.weapon = weapon;
+    this.valuePerLevel = valueperlevel;
+    this.upgradeMetalBaseCost = upgradeMetalBaseCost;
+    this.upgradePolymerBaseCost = upgradePolymerBaseCost;
+    this.upgradeRPBaseCost = upgradeRPBaseCost;
+    this.upgradeAetherBaseCost = upgradeAetherBaseCost;
+    this.technology = tech;
+    this.upgradeButton = upgradeButton;
+    this.upgrade10Button = upgrade10Button;
+    this.prestigeButton = prestigeButton;
+    if (weapon) {
+      this.buttonclass = 'btn-warning';
+    } else {
+      this.buttonclass = 'btn-info';
     }
   }
+
+  metalForShip() { return (this.upgradeMetalBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought)); }
+
+  polymerForShip() { return (this.upgradePolymerBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought)); }
+
+  RPForShip() { return (this.upgradeRPBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought)); }
+
+  metalForUpgrade(amt:number = 1) {
+    var cost = 0;
+    for (let index = 0; index < amt; index++) {
+      cost += this.upgradeMetalBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1);
+    }
+    return cost;
+  }
+
+  polymerForUpgrade(amt:number = 1) {
+    var cost = 0;
+    for (let index = 0; index < amt; index++) {
+      cost += this.upgradePolymerBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1);
+    }
+    return cost;
+  }
+
+  rpForUpgrade(amt:number = 1) {
+  //  return 0 * amt * this.upgradeRPBaseCost;
+    var cost = 0;
+    for (let index = 0; index < amt; index++) {
+      cost += this.upgradeRPBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1);
+    }
+    return cost;
+  }
+
+  metalForPrestige() { return (this.upgradeMetalBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1)); }
+
+  polymerForPrestige() { return (this.upgradePolymerBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1)); }
+
+  rpForPrestige() { return (this.upgradeRPBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1)); }
+
+  aetherForPrestige() { return (this.upgradeAetherBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1)); }
+
+  tooltipForUpgrade(amt:number = 1) { return ('Adds ' + prettify(this.getValuePerUpgrade() * amt) + ' damage per level\nMetal Cost:' + prettify(this.metalForUpgrade(amt)) + '\nPolymer Cost:' + prettify(this.polymerForUpgrade(amt)) + '\nRP Cost:' + prettify(this.rpForUpgrade(amt))); }
+
+  tooltipForPrestige() { return ('This will improve our ' + this.name + ', but reset the upgrade level to 1, which may lower the overall ability if you have upgraded it several times\nMetal Cost:' + prettify(this.metalForPrestige()) + '\nPolymer Cost:' + prettify(this.polymerForPrestige()) + '\nRP Cost:' + prettify(this.rpForPrestige()) + '\nAether Cost:' + prettify(this.aetherForPrestige())); }
+
+  updateUpgradeText() { this.upgradeButton.innerHTML = (this.name + ' ' + convertToRoman(this.technology.prestigeBought) + ' (' + (this.technology.upgrade) + ')'); }
+
+  updateUpgradeTooltip() {
+    this.upgradeButton.attributes.getNamedItem('title').value = this.tooltipForUpgrade();
+    this.upgrade10Button.attributes.getNamedItem('title').value = this.tooltipForUpgrade(10);
+  }
+
+  updatePrestigeText() { this.prestigeButton.innerHTML = 'I'; } //   'Infuse Railgun ' + (gameData.technologies.railgunPrestigeLevelBought + 1)); },
+
+  updatePrestigeTooltip() { this.prestigeButton.attributes.getNamedItem('title').value = this.tooltipForPrestige(); }
+
+  canAffordUpgrade(amt:number = 1) { return (gameData.resources.metal >= this.metalForUpgrade(amt)) && (gameData.resources.polymer >= this.polymerForUpgrade(amt)) && (gameData.resources.researchPoints >= this.rpForUpgrade(amt)); }
+
+  canAffordPrestige() { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); }
+
+  getValuePerUpgrade() { return (this.valuePerLevel * Math.pow(PRESTIGE_BASE_MULTIPLIER, this.technology.prestigeBought - 1)) * gameData.playership.size * achievementMultiplier * gamePerks.damager.getBonus(); }
+
+  getValue() { return (this.technology.upgrade * this.getValuePerUpgrade()); }
+
+  determineShowUpgradeButton() {
+    if (this.technology.prestigeBought > 0) {
+      this.upgradeButton.classList.remove('hidden');
+      this.upgrade10Button.classList.remove('hidden');
+    } else {
+      this.upgradeButton.classList.add('hidden');
+      this.upgrade10Button.classList.add('hidden');
+    }
+  }
+
+  determineShowPrestigeButton() {
+    if (this.technology.prestigeUnlocked > this.technology.prestigeBought) {
+      this.prestigeButton.classList.remove('hidden');
+    } else {
+      this.prestigeButton.classList.add('hidden');
+    }
+  }
+
+  determineShowAffordUpgrade() {
+    if (this.canAffordUpgrade()) {
+      this.upgradeButton.classList.remove('btn-danger');
+      this.upgradeButton.classList.add(this.buttonclass);
+    } else {
+      this.upgradeButton.classList.add('btn-danger');
+      this.upgradeButton.classList.remove(this.buttonclass);
+    }
+    if (this.canAffordUpgrade(10)) {
+      this.upgrade10Button.classList.remove('btn-danger');
+      this.upgrade10Button.classList.add(this.buttonclass);
+    } else {
+      this.upgrade10Button.classList.add('btn-danger');
+      this.upgrade10Button.classList.remove(this.buttonclass);
+    }
+  }
+
+  determineShowAffordPrestige() {
+    if (this.canAffordPrestige()) {
+      this.prestigeButton.classList.remove('btn-danger');
+      this.prestigeButton.classList.add(this.buttonclass);
+    } else {
+      this.prestigeButton.classList.add('btn-danger');
+      this.prestigeButton.classList.remove(this.buttonclass);
+    }
+  }
+
+  buyUpgrade(amt:number = 1) {
+    for (let index = 0; index < amt; index++) {
+      if (this.canAffordUpgrade()) {
+        gameData.resources.metal -= this.metalForUpgrade();
+        gameData.resources.polymer -= this.polymerForUpgrade();
+        gameData.resources.researchPoints -= this.rpForUpgrade();
+        this.technology.upgrade++;
+      }
+      this.updateUpgradeText();
+      this.updateUpgradeTooltip();
+    }
+  }
+
+  buyPrestige() {
+    if (this.canAffordPrestige()) {
+      gameData.resources.metal -= this.metalForPrestige();
+      gameData.resources.polymer -= this.polymerForPrestige();
+      gameData.resources.researchPoints -= this.rpForPrestige();
+      gameData.resources.aether -= this.aetherForPrestige();
+      this.technology.prestigeBought++;
+      this.technology.upgrade = 1;
+      this.updatePrestigeTooltip();
+      this.updateUpgradeText();
+      this.updateUpgradeTooltip();
+      this.updatePrestigeText();
+      sortBuildings($('#buildingvisible'));
+      $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
+    }
+  }
+}
+
+
+var gameEquipment = {
+  railgun: new EquipmentBase('Railgun', true, RAILGUN_UPGRADE_BASE_IMPROVEMENT, RAILGUN_UPGRADE_METAL_BASE_COST, RAILGUN_UPGRADE_POLYMER_BASE_COST, RAILGUN_UPGRADE_RP_BASE_COST, RAILGUN_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnRailgunUpgrade'), document.getElementById('btnRailgunUpgrade10'), document.getElementById('btnRailgunPrestige')),
+  laser: new EquipmentBase('Laser', true, LASER_UPGRADE_BASE_IMPROVEMENT, LASER_UPGRADE_METAL_BASE_COST, LASER_UPGRADE_POLYMER_BASE_COST, LASER_UPGRADE_RP_BASE_COST, LASER_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnLaserUpgrade'), document.getElementById('btnLaserUpgrade10'), document.getElementById('btnLaserPrestige')),
+  missile: new EquipmentBase('Missile', true, MISSILE_UPGRADE_BASE_IMPROVEMENT, MISSILE_UPGRADE_METAL_BASE_COST, MISSILE_UPGRADE_POLYMER_BASE_COST, MISSILE_UPGRADE_RP_BASE_COST, MISSILE_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnMissileUpgrade'), document.getElementById('btnMissileUpgrade10'), document.getElementById('btnMissilePrestige')),
+  armor: new EquipmentBase('Armor', false, ARMOR_UPGRADE_BASE_IMPROVEMENT, ARMOR_UPGRADE_METAL_BASE_COST, ARMOR_UPGRADE_POLYMER_BASE_COST, ARMOR_UPGRADE_RP_BASE_COST, ARMOR_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnArmorUpgrade'), document.getElementById('btnArmorUpgrade10'), document.getElementById('btnArmorPrestige')),
+  shield: new EquipmentBase('Shield', false, SHIELD_UPGRADE_BASE_IMPROVEMENT, SHIELD_UPGRADE_METAL_BASE_COST, SHIELD_UPGRADE_POLYMER_BASE_COST, SHIELD_UPGRADE_RP_BASE_COST, SHIELD_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnShieldUpgrade'), document.getElementById('btnShieldUpgrade10'), document.getElementById('btnShieldPrestige')),
+  flak: new EquipmentBase('Flak', false, FLAK_UPGRADE_BASE_IMPROVEMENT, FLAK_UPGRADE_METAL_BASE_COST, FLAK_UPGRADE_POLYMER_BASE_COST, FLAK_UPGRADE_RP_BASE_COST, FLAK_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnFlakUpgrade'), document.getElementById('btnFlakUpgrade10'), document.getElementById('btnFlakPrestige'))
 };
 
 function giveMissionReward(mission:Mission) {
   if (mission.name === 'Railgun Plans') {
-    gameData.technologies.railgunPrestigeLevelUnlocked++;
+    gameData.technologies.railgun.prestigeUnlocked++;
     gameEquipment.railgun.updateUpgradeText();
     gameEquipment.railgun.updatePrestigeText();
     gameEquipment.railgun.updateUpgradeTooltip();
     gameEquipment.railgun.updatePrestigeTooltip();
     addToDisplay('I have discovered plans that will allow me to infuse railguns with aether!', 'mission');
   } else if (mission.name === 'Laser Plans') {
-    gameData.technologies.laserPrestigeLevelUnlocked++;
+    gameData.technologies.laser.prestigeUnlocked++;
     gameEquipment.laser.updateUpgradeText();
     gameEquipment.laser.updatePrestigeText();
     gameEquipment.laser.updateUpgradeTooltip();
     gameEquipment.laser.updatePrestigeTooltip();
     addToDisplay('I have discovered plans that will allow me to infuse lasers with aether', 'mission');
   } else if (mission.name === 'Missile Plans') {
-    gameData.technologies.missilePrestigeLevelUnlocked++;
+    gameData.technologies.missile.prestigeUnlocked++;
     gameEquipment.missile.updateUpgradeText();
     gameEquipment.missile.updatePrestigeText();
     gameEquipment.missile.updateUpgradeTooltip();
     gameEquipment.missile.updatePrestigeTooltip();
     addToDisplay('Missiles can be even more missiley!', 'mission');
   } else if (mission.name === 'Armor Plans') {
-    gameData.technologies.armorPrestigeLevelUnlocked++;
+    gameData.technologies.armor.prestigeUnlocked++;
     gameEquipment.armor.updateUpgradeText();
     gameEquipment.armor.updatePrestigeText();
     gameEquipment.armor.updateUpgradeTooltip();
     gameEquipment.armor.updatePrestigeTooltip();
     addToDisplay('Aether will really help out our Armor!', 'mission');
   } else if (mission.name === 'Shield Plans') {
-    gameData.technologies.shieldPrestigeLevelUnlocked++;
+    gameData.technologies.shield.prestigeUnlocked++;
     gameEquipment.shield.updateUpgradeText();
     gameEquipment.shield.updatePrestigeText();
     gameEquipment.shield.updateUpgradeTooltip();
     gameEquipment.shield.updatePrestigeTooltip();
     addToDisplay('Shields.  Now with 8 times the shieldiness!', 'mission');
   } else if (mission.name === 'Flak Plans') {
-    gameData.technologies.flakPrestigeLevelUnlocked++;
+    gameData.technologies.flak.prestigeUnlocked++;
     gameEquipment.flak.updateUpgradeText();
     gameEquipment.flak.updatePrestigeText();
     gameEquipment.flak.updateUpgradeTooltip();
@@ -2273,24 +1968,12 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       if (typeof savegame.technologies.aetherProficiencyUnlocked !== 'undefined') gameData.technologies.aetherProficiencyUnlocked = savegame.technologies.aetherProficiencyUnlocked;
       if (typeof savegame.technologies.aetherProficiencyBought !== 'undefined') gameData.technologies.aetherProficiencyBought = savegame.technologies.aetherProficiencyBought;
       if (typeof savegame.technologies.shipyardTechUnlock !== 'undefined') gameData.technologies.shipyardTechUnlock = savegame.technologies.shipyardTechUnlock;
-      if (typeof savegame.technologies.railgunPrestigeLevelUnlocked !== 'undefined') gameData.technologies.railgunPrestigeLevelUnlocked = savegame.technologies.railgunPrestigeLevelUnlocked;
-      if (typeof savegame.technologies.railgunPrestigeLevelBought !== 'undefined') gameData.technologies.railgunPrestigeLevelBought = savegame.technologies.railgunPrestigeLevelBought;
-      if (typeof savegame.technologies.railgunUpgrade !== 'undefined') gameData.technologies.railgunUpgrade = savegame.technologies.railgunUpgrade;
-      if (typeof savegame.technologies.laserPrestigeLevelUnlocked !== 'undefined') gameData.technologies.laserPrestigeLevelUnlocked = savegame.technologies.laserPrestigeLevelUnlocked;
-      if (typeof savegame.technologies.laserPrestigeLevelBought !== 'undefined') gameData.technologies.laserPrestigeLevelBought = savegame.technologies.laserPrestigeLevelBought;
-      if (typeof savegame.technologies.laserUpgrade !== 'undefined') gameData.technologies.laserUpgrade = savegame.technologies.laserUpgrade;
-      if (typeof savegame.technologies.missilePrestigeLevelUnlocked !== 'undefined') gameData.technologies.missilePrestigeLevelUnlocked = savegame.technologies.missilePrestigeLevelUnlocked;
-      if (typeof savegame.technologies.missilePrestigeLevelBought !== 'undefined') gameData.technologies.missilePrestigeLevelBought = savegame.technologies.missilePrestigeLevelBought;
-      if (typeof savegame.technologies.missileUpgrade !== 'undefined') gameData.technologies.missileUpgrade = savegame.technologies.missileUpgrade;
-      if (typeof savegame.technologies.armorPrestigeLevelUnlocked !== 'undefined') gameData.technologies.armorPrestigeLevelUnlocked = savegame.technologies.armorPrestigeLevelUnlocked;
-      if (typeof savegame.technologies.armorPrestigeLevelBought !== 'undefined') gameData.technologies.armorPrestigeLevelBought = savegame.technologies.armorPrestigeLevelBought;
-      if (typeof savegame.technologies.armorUpgrade !== 'undefined') gameData.technologies.armorUpgrade = savegame.technologies.armorUpgrade;
-      if (typeof savegame.technologies.shieldPrestigeLevelUnlocked !== 'undefined') gameData.technologies.shieldPrestigeLevelUnlocked = savegame.technologies.shieldPrestigeLevelUnlocked;
-      if (typeof savegame.technologies.shieldPrestigeLevelBought !== 'undefined') gameData.technologies.shieldPrestigeLevelBought = savegame.technologies.shieldPrestigeLevelBought;
-      if (typeof savegame.technologies.shieldUpgrade !== 'undefined') gameData.technologies.shieldUpgrade = savegame.technologies.shieldUpgrade;
-      if (typeof savegame.technologies.flakPrestigeLevelUnlocked !== 'undefined') gameData.technologies.flakPrestigeLevelUnlocked = savegame.technologies.flakPrestigeLevelUnlocked;
-      if (typeof savegame.technologies.flakPrestigeLevelBought !== 'undefined') gameData.technologies.flakPrestigeLevelBought = savegame.technologies.flakPrestigeLevelBought;
-      if (typeof savegame.technologies.flakUpgrade !== 'undefined') gameData.technologies.flakUpgrade = savegame.technologies.flakUpgrade;
+      if (typeof savegame.technologies.railgun !== 'undefined') gameData.technologies.railgun = savegame.technologies.railgun;
+      if (typeof savegame.technologies.laser !== 'undefined') gameData.technologies.laser = savegame.technologies.laser;
+      if (typeof savegame.technologies.missile !== 'undefined') gameData.technologies.missile = savegame.technologies.missile;
+      if (typeof savegame.technologies.armor !== 'undefined') gameData.technologies.armor = savegame.technologies.armor;
+      if (typeof savegame.technologies.shield !== 'undefined') gameData.technologies.shield = savegame.technologies.shield;
+      if (typeof savegame.technologies.flak !== 'undefined') gameData.technologies.flak = savegame.technologies.flak;
       if (typeof savegame.technologies.goldMine !== 'undefined') gameData.technologies.goldMine = savegame.technologies.goldMine;
       if (typeof savegame.technologies.panelUpgrade !== 'undefined') gameData.technologies.panelUpgrade = savegame.technologies.panelUpgrade;
       if (typeof savegame.technologies.generatorUpgrade !== 'undefined') gameData.technologies.generatorUpgrade = savegame.technologies.generatorUpgrade;
@@ -2343,6 +2026,13 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       }
     }
   }
+
+  gameEquipment.railgun.technology = gameData.technologies.railgun;
+  gameEquipment.laser.technology = gameData.technologies.laser;
+  gameEquipment.missile.technology = gameData.technologies.missile;
+  gameEquipment.armor.technology = gameData.technologies.armor;
+  gameEquipment.shield.technology = gameData.technologies.shield;
+  gameEquipment.flak.technology = gameData.technologies.flak;
 
   $('#building').tab('show');
   $('#polymercontainer').addClass('hidden');
@@ -3394,20 +3084,20 @@ function checkForUnlocks() {
   }
   if (gameData.missions[0].level > 3) {
     var prestigelvl = (Math.floor((gameData.missions[0].level - 1) / 3));
-    if (prestigelvl >= (GetMissionNameCount('Railgun Plans') + gameData.technologies.railgunPrestigeLevelUnlocked)) {
+    if (prestigelvl >= (GetMissionNameCount('Railgun Plans') + gameData.technologies.railgun.prestigeUnlocked)) {
       gameData.missions.push(new Mission('Railgun Plans', true, 1.5, 1, gameData.missions[0].level, 100, false));
       gameData.missions.push(new Mission('Armor Plans', true, 1.5, 1, gameData.missions[0].level, 100, false));
       updateMissionButtons();
       sortBuildings($('#buildingvisible'));
     }
     prestigelvl = (Math.floor((gameData.missions[0].level - 2) / 3));
-    if (prestigelvl >= (GetMissionNameCount('Laser Plans') + gameData.technologies.laserPrestigeLevelUnlocked)) {
+    if (prestigelvl >= (GetMissionNameCount('Laser Plans') + gameData.technologies.laser.prestigeUnlocked)) {
       gameData.missions.push(new Mission('Laser Plans', true, 1.5, 1, gameData.missions[0].level, 100, false));
       gameData.missions.push(new Mission('Shield Plans', true, 1.5, 1, gameData.missions[0].level, 100, false));
       updateMissionButtons();
     }
     prestigelvl = (Math.floor((gameData.missions[0].level - 3) / 3));
-    if (prestigelvl >= (GetMissionNameCount('Missile Plans') + gameData.technologies.missilePrestigeLevelUnlocked)) {
+    if (prestigelvl >= (GetMissionNameCount('Missile Plans') + gameData.technologies.missile.prestigeUnlocked)) {
       gameData.missions.push(new Mission('Missile Plans', true, 1.5, 1, gameData.missions[0].level, 100, false));
       gameData.missions.push(new Mission('Flak Plans', true, 1.5, 1, gameData.missions[0].level, 100, false));
       updateMissionButtons();
@@ -3444,36 +3134,36 @@ function checkForUnlocks() {
     addToDisplay('This site is putting off unusual power readings.  I don\'t know what it is, perhaps exploration is in order.', 'story');
   }
   if (lvlsCleared === 207) {
-    gameData.technologies.laserPrestigeLevelUnlocked = 1;
-    gameData.technologies.laserPrestigeLevelBought = 1;
-    gameData.technologies.laserUpgrade = 1;
+    gameData.technologies.laser.prestigeUnlocked = 1;
+    gameData.technologies.laser.prestigeBought = 1;
+    gameData.technologies.laser.upgrade = 1;
     gameEquipment.laser.updateUpgradeText();
     gameEquipment.laser.updateUpgradeTooltip();
     addToDisplay('As more capabilities come online I am finding new ways to take enemies offline.  I have rediscovered lasers.', 'story');
     sortBuildings($('#buildingvisible'));
   }
   if (lvlsCleared === 274) {
-    gameData.technologies.shieldPrestigeLevelUnlocked = 1;
-    gameData.technologies.shieldPrestigeLevelBought = 1;
-    gameData.technologies.shieldUpgrade = 1;
+    gameData.technologies.shield.prestigeUnlocked = 1;
+    gameData.technologies.shield.prestigeBought = 1;
+    gameData.technologies.shield.upgrade = 1;
     gameEquipment.shield.updateUpgradeText();
     gameEquipment.shield.updateUpgradeTooltip();
     addToDisplay('I have found the plans to allow us to add shields to drones.  This should increase their survivability.', 'story');
     sortBuildings($('#buildingvisible'));
   }
   if (lvlsCleared === 327) {
-    gameData.technologies.missilePrestigeLevelUnlocked = 1;
-    gameData.technologies.missilePrestigeLevelBought = 1;
-    gameData.technologies.missileUpgrade = 1;
+    gameData.technologies.missile.prestigeUnlocked = 1;
+    gameData.technologies.missile.prestigeBought = 1;
+    gameData.technologies.missile.upgrade = 1;
     gameEquipment.missile.updateUpgradeText();
     gameEquipment.missile.updateUpgradeTooltip();
     addToDisplay('Missiles.  Maybe this will force them to talk.', 'story');
     sortBuildings($('#buildingvisible'));
   }
   if (lvlsCleared === 371) {
-    gameData.technologies.flakPrestigeLevelUnlocked = 1;
-    gameData.technologies.flakPrestigeLevelBought = 1;
-    gameData.technologies.flakUpgrade = 1;
+    gameData.technologies.flak.prestigeUnlocked = 1;
+    gameData.technologies.flak.prestigeBought = 1;
+    gameData.technologies.flak.upgrade = 1;
     gameEquipment.flak.updateUpgradeText();
     gameEquipment.flak.updateUpgradeTooltip();
     addToDisplay('Rudimentary plans for a new defense system have been found. Flak is online.', 'story');
