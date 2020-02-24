@@ -82,6 +82,15 @@ button {
   font-size: 80%;
 }
 
+<<<<<<< HEAD
+@media (min-width: 1200px) {
+  .modal-xlg {
+     width: 90%;
+  }
+}
+
+=======
+>>>>>>> ae16b8823738cd3657cdf8e94a4d80c3212489b0
 .upgradebutton {
   width: 160px;
   margin: 1px;
