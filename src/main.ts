@@ -400,7 +400,7 @@ class saveGameData {
   lastSentShipTime: Date
 
   tacticalChoices: {
-    tacticalLabsSetting: number
+    tacticalLabsSetting: CountInfo
   }
 
   constructor(name: string) {
@@ -490,7 +490,7 @@ class saveGameData {
     this.nextProcessTime = new Date();
     this.lastSentShipTime = new Date();
     this.tacticalChoices = {
-      tacticalLabsSetting: 0
+      tacticalLabsSetting: new CountInfo(0)
     };
   }
 }
@@ -1123,6 +1123,39 @@ class ResourceBuilding extends BuildingBase {
   }
 }
 
+class TacticBuilding extends BuildingBase {
+
+  tacticalChoices: CountInfo
+
+  constructor (name: string, metalBaseCost: number, metalGrowthFactor: number, polymerBaseCost: number, polymerGrowthFactor: number, aetherBaseCost: number, aetherGrowthFactor: number, buildinginfo: CountInfo, buyButton: HTMLElement, buyButtonClass: string, powerUsage: number, powerGrowth: number, tacticalChoice: CountInfo) {
+    super(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, buildinginfo, buyButton, buyButtonClass, powerGrowth, powerUsage);
+    this.tacticalChoices = tacticalChoice;
+  }
+
+  tooltipCost() { return ('Buying will set Shields to ' + prettify(this.getBonus(true) * 100) + '% efficiency') + super.tooltipCost(); }
+
+  updateBuyButtonTooltip() { this.buyButton.attributes.getNamedItem('title').value = this.tooltipCost(); }
+
+  getBonus(future:boolean = false) {
+    var count = this.buildinginfo.count + 0;
+    if (future) {
+      count++;
+    }
+    if (this.tacticalChoices.count === 0) {
+      return 1;
+    } else if (this.tacticalChoices.count === 1) {
+      return (1 + (count * 0.1));
+    }
+    return (Math.pow(1.05, count));
+  }
+
+  buy() {
+    super.buy();
+    this.updateBuyButtonTooltip();
+  }
+
+}
+
 var gameBuildings = {
   panel: new PowerBuilding('Solar Panel', PANEL_BASE_COST, PANEL_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), POWER_PER_PANEL, new CountInfo(0), document.getElementById('btnBuyPanel'), 'btn-light'),
   generator: new PowerBuilding('Generator', GENERATOR_METAL_BASE_COST, GENERATOR_GROWTH_FACTOR, GENERATOR_POLYMER_BASE_COST, GENERATOR_GROWTH_FACTOR, 0, 0, new CountInfo(0), POWER_PER_GENERATOR, new CountInfo(0), document.getElementById('btnBuyGenerator'), 'btn-light'),
@@ -1133,54 +1166,8 @@ var gameBuildings = {
   lab: new ResourceBuilding('Lab', LAB_METAL_BASE_COST, LAB_METAL_GROWTH_FACTOR, LAB_POLYMER_BASE_COST, LAB_POLYMER_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.25, new ResourceTechnology(0, 0), document.getElementById('btnBuyLab'), 'btn-info', LAB_POWER_USAGE, LAB_POWER_GROWTH_USAGE, RESEARCH_PROFICIENCY_BASE_RATE),
   factory: new ResourceBuilding('Factory', FACTORY_BASE_COST, FACTORY_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyFactory'), 'btn-dark', FACTORY_POWER_USAGE, FACTORY_POWER_GROWTH_USAGE, POLYMER_PROFICIENCY_BASE_RATE),
   refinery: new ResourceBuilding('Refinery', REFINERY_METAL_BASE_COST, REFINERY_GROWTH_FACTOR, REFINERY_POLYMER_BASE_COST, REFINERY_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.5, new ResourceTechnology(0, 0), document.getElementById('btnBuyRefinery'), 'btn-secondary', REFINERY_POWER_USAGE, REFINERY_POWER_GROWTH_USAGE, AETHER_PROFICIENCY_BASE_RATE),
+  tacticalLab: new TacticBuilding('Tactical Lab', TACTICAL_LAB_METAL_BASE_COST, TACTICAL_LAB_GROWTH_FACTOR, TACTICAL_LAB_POLYMER_BASE_COST, TACTICAL_LAB_GROWTH_FACTOR, TACTICAL_LAB_AETHER_BASE_COST, TACTICAL_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyTacticalLab'), 'btn-success', TACTICAL_LAB_POWER_USAGE, TACTICAL_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
 
-  tacticalLab: {
-    metalCost: function() { return (TACTICAL_LAB_METAL_BASE_COST * Math.pow(TACTICAL_LAB_GROWTH_FACTOR, gameData.buildings.tacticalLabs.count)); },
-    polymerCost: function() { return (TACTICAL_LAB_POLYMER_BASE_COST * Math.pow(TACTICAL_LAB_GROWTH_FACTOR, gameData.buildings.tacticalLabs.count)); },
-    aetherCost: function() { return (TACTICAL_LAB_AETHER_BASE_COST * Math.pow(TACTICAL_LAB_GROWTH_FACTOR, gameData.buildings.tacticalLabs.count)); },
-    powerCost: function() { return (TACTICAL_LAB_POWER_USAGE * Math.pow(TACTICAL_LAB_POWER_GROWTH_USAGE, gameData.buildings.tacticalLabs.count)); },
-    powerSpent: function() { return sumOfExponents(gameData.buildings.tacticalLabs.count, TACTICAL_LAB_POWER_USAGE, TACTICAL_LAB_POWER_GROWTH_USAGE); },
-    tooltipCost: function() { return ('Buying will set Shields to ' + prettify(this.getBonus(true) * 100) + '% efficiency\nMetal Cost:' + prettify(this.metalCost()) + '\nPolymer Cost:' + prettify(this.polymerCost()) + '\nAether Cost:' + prettify(this.aetherCost()) + '\nPower Cost: ' + prettify(this.powerCost())); },
-    canAffordBuy: function() { return (gameData.resources.metal >= this.metalCost() && gameData.resources.polymer >= this.polymerCost() && gameData.resources.aether >= this.aetherCost() && CheckPower(this.powerCost())); },
-    getBonus: function(future:boolean = false) {
-      var count = gameData.buildings.tacticalLabs.count + 0;
-      if (future) {
-        count++;
-      }
-      if (gameData.tacticalChoices.tacticalLabsSetting === 0) {
-        return 1;
-      } else if (gameData.tacticalChoices.tacticalLabsSetting === 1) {
-        return (1 + (count * 0.1));
-      }
-      return (Math.pow(1.05, count));
-    },
-    updateBuyButtonText: function() { $('#btnBuyTacticalLab').text('Tactical Labs: ' + (gameData.buildings.tacticalLabs.count)); },
-    updateBuyButtonTooltip: function() { $('#btnBuyTacticalLab').attr('title', this.tooltipCost()); },
-    showBuyButton: function() { $('#btnBuyTacticalLab').removeClass('hidden'); },
-    determineShowAffordBuy: function() {
-      if (this.canAffordBuy()) {
-        $('#btnBuyTacticalLab').removeClass('btn-danger').addClass('btn-success');
-      } else {
-        $('#btnBuyTacticalLab').removeClass('btn-success').addClass('btn-danger');
-      }
-    },
-    buy: function() {
-      if (this.canAffordBuy()) {
-        gameData.resources.metal -= this.metalCost();
-        gameData.resources.polymer -= this.polymerCost();
-        gameData.resources.aether -= this.aetherCost();
-        gameData.buildings.tacticalLabs.count++;
-        this.updateBuyButtonText();
-        this.updateBuyButtonTooltip();
-        checkForCompletedAchievements();
-        gtag('event', 'buy tactical lab', {
-          event_category: 'click',
-          event_label: 'label',
-          value: 'value'
-        });
-      }
-    }
-  },
   shipyard: {
     metalCost: function() { return (SHIPYARD_METAL_BASE_COST * Math.pow(SHIPYARD_METAL_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
     polymerCost: function() { return (SHIPYARD_POLYMER_BASE_COST * Math.pow(SHIPYARD_POLYMER_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
@@ -1861,6 +1848,8 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   gameBuildings.lab.technology = gameData.technologies.researchProficiency;
   gameBuildings.factory.technology = gameData.technologies.polymerProficiency;
   gameBuildings.refinery.technology = gameData.technologies.aetherProficiency;
+  gameBuildings.tacticalLab.buildinginfo = gameData.buildings.tacticalLabs;
+  gameBuildings.tacticalLab.tacticalChoices = gameData.tacticalChoices.tacticalLabsSetting;
 
   $('#building').tab('show');
   $('#polymercontainer').addClass('hidden');
@@ -2279,7 +2268,7 @@ function updateGUI() {
     $('#btnSlowTacticalLab').removeClass('hidden');
   }
 
-  if (gameData.tacticalChoices.tacticalLabsSetting > 0) {
+  if (gameData.tacticalChoices.tacticalLabsSetting.count > 0) {
     $('#btnFastTacticalLab').addClass('hidden');
     $('#btnSlowTacticalLab').addClass('hidden');
     $('#btnBuyTacticalLab').removeClass('hidden');
@@ -2620,7 +2609,7 @@ function buyAutoFight() { // eslint-disable-line no-unused-vars
 }
 
 function chooseSlowOrFastTactical(choice:number) { // eslint-disable-line no-unused-vars
-  gameData.tacticalChoices.tacticalLabsSetting = choice;
+  gameData.tacticalChoices.tacticalLabsSetting.count = choice;
   $('#btnFastTacticalLab').addClass('hidden');
   $('#btnSlowTacticalLab').addClass('hidden');
   $('#btnBuyTacticalLab').removeClass('hidden');
@@ -2876,7 +2865,7 @@ const ELITE_ENEMY_ATTRIBUTES = ['Quick', 'Hardy', 'Elite'];
 function checkForCreateLoot(mission: Mission, zone: number) {
   var rtn = {
     lootType: '',
-    lootAmount: Math.pow(((mission.level - 1) * 100) + zone, 1.2) * mission.lootMultiplier * gamePerks.looter.getBonus()
+    lootAmount: Math.pow(((mission.level - 1) * 100) + zone, 1.21) * mission.lootMultiplier * gamePerks.looter.getBonus()
   };
   var l = Math.floor(Math.random() * 100);
   if (mission.IsGalaxy) {
@@ -3163,6 +3152,14 @@ function showTimeElapsed() {
 
 function CHEAT() { // eslint-disable-line no-unused-vars
   gameData.resources.chronoton += 100;
+}
+
+function CHEAT2() { // eslint-disable-line no-unused-vars
+  gameData.world.paused = true;
+  gameData.nextProcessTime.setMilliseconds(gameData.nextProcessTime.getMilliseconds() - (1000 * 60 * 60));
+  gameData.lastResourceProcessTime.setMilliseconds(gameData.lastResourceProcessTime.getMilliseconds() - (1000 * 60 * 60));
+  gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() - (1000 * 60 * 60));
+  gameData.world.paused = false;
 }
 
 window.setInterval(function() {
