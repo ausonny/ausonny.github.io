@@ -59,7 +59,7 @@ button {
 }
 
 .powerbutton {
-  width: 130px;
+  width: 98px;
   height: 25px;
   margin: 1px;
   padding: 0%;
@@ -82,15 +82,14 @@ button {
   font-size: 80%;
 }
 
-<<<<<<< HEAD
-@media (min-width: 1200px) {
-  .modal-xlg {
-     width: 90%;
-  }
+.multiplebuypowerbutton {
+  width: 28px;
+  height: 25px;
+  margin: 1px;
+  padding: 0%;
+  font-size: 100%;
 }
 
-=======
->>>>>>> ae16b8823738cd3657cdf8e94a4d80c3212489b0
 .upgradebutton {
   width: 160px;
   margin: 1px;
