@@ -1863,8 +1863,6 @@ function runRules() {
     var doequipment = false;
     var buildingcost = 10000;
     var equipmentcost = 100000;
-    var weapon = '';
-    var defense = '';
     if (typeof gameData.rules === 'undefined') {
         return;
     }
@@ -1965,8 +1963,14 @@ function runRules() {
     }
     if (doequipment) {
         var railgunvalue = gameEquipment.railgun.getValuePerUpgrade() / ((gameEquipment.railgun.metalForUpgrade() * 2) + gameEquipment.railgun.polymerForUpgrade());
-        var laservalue = gameEquipment.laser.getValuePerUpgrade() / ((gameEquipment.laser.metalForUpgrade() * 2) + gameEquipment.laser.polymerForUpgrade());
-        var missilevalue = gameEquipment.missile.getValuePerUpgrade() / ((gameEquipment.missile.metalForUpgrade() * 2) + gameEquipment.missile.polymerForUpgrade());
+        var laservalue = 0;
+        var missilevalue = 0;
+        if (gameEquipment.laser.technology.prestigeBought > 0) {
+            laservalue = gameEquipment.laser.getValuePerUpgrade() / ((gameEquipment.laser.metalForUpgrade() * 2) + gameEquipment.laser.polymerForUpgrade());
+        }
+        if (gameEquipment.missile.technology.prestigeBought > 0) {
+            missilevalue = gameEquipment.missile.getValuePerUpgrade() / ((gameEquipment.missile.metalForUpgrade() * 2) + gameEquipment.missile.polymerForUpgrade());
+        }
         var dorailgun = true;
         var dolaser = true;
         var domissile = true;
@@ -1989,8 +1993,14 @@ function runRules() {
             domissile = false;
         }
         var armorvalue = gameEquipment.armor.getValuePerUpgrade() / ((gameEquipment.armor.metalForUpgrade() * 2) + gameEquipment.armor.polymerForUpgrade());
-        var shieldvalue = gameEquipment.shield.getValuePerUpgrade() / ((gameEquipment.shield.metalForUpgrade() * 2) + gameEquipment.shield.polymerForUpgrade());
-        var flakvalue = gameEquipment.flak.getValuePerUpgrade() / ((gameEquipment.flak.metalForUpgrade() * 2) + gameEquipment.flak.polymerForUpgrade());
+        var shieldvalue = 0;
+        var flakvalue = 0;
+        if (gameEquipment.shield.technology.prestigeBought > 0) {
+            shieldvalue = gameEquipment.shield.getValuePerUpgrade() / ((gameEquipment.shield.metalForUpgrade() * 2) + gameEquipment.shield.polymerForUpgrade());
+        }
+        if (gameEquipment.flak.technology.prestigeBought > 0) {
+            flakvalue = gameEquipment.flak.getValuePerUpgrade() / ((gameEquipment.flak.metalForUpgrade() * 2) + gameEquipment.flak.polymerForUpgrade());
+        }
         var doarmor = true;
         var doshield = true;
         var doflak = true;
@@ -2837,7 +2847,7 @@ function updateAchievementScreen() {
         foo.removeChild(foo.firstChild);
     }
     var bonusspan = document.createElement('span');
-    bonusspan.innerHTML = 'Damage bonus from achivements: ' + prettify(achievementMultiplier);
+    bonusspan.innerHTML = 'Damage multiplier from achivements: ' + prettify(achievementMultiplier);
     foo.append(bonusspan);
     var table = document.createElement('table');
     foo.append(table);

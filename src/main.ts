@@ -515,7 +515,7 @@ class saveGameData {
 
   constructor(name: string) {
     this.name = name;
-    this.version = '0.7.7';
+    this.version = '0.7.8';
     this.stats = new Stats();
     this.challenges = new challenges();
     this.story = {
@@ -1643,6 +1643,7 @@ function exportsave() { // eslint-disable-line no-unused-vars
 }
 
 function init(passedperks: perks, passedchallenges: challenges, gatewayReset: boolean = false, activeChallenge: string = '', chronoton: number = 0, passedAchievements: number[] = [], savedstats: Stats = new Stats(), savedRules: automationRule[] = []) {
+  debugText = 'v0.7.8 - automation';
   debugText = 'v0.7.7 - New power building, new challenge, other changes';
   debugText += '\nv0.7.6 - Fix attack values bug, leading to what I think might be the 1.0 balance.  Rewrite of equipment and building code to use base classes.';
   debugText += '\nv0.7.4 - Fix to criticality challenge and numerous balance changes';
@@ -1839,6 +1840,17 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
 
   gameBuildings.panel.unlocked = true;
   gameBuildings.mine.unlocked = true;
+  gameBuildings.factory.unlocked = false;
+  gameBuildings.refinery.unlocked = false;
+  gameBuildings.lab.unlocked = false;
+  gameBuildings.generator.unlocked = false;
+  gameBuildings.plant.unlocked = false;
+  gameBuildings.aetherPlant.unlocked = false;
+  gameBuildings.fusionPlant.unlocked = false;
+  gameBuildings.chronotonPlant.unlocked = false;
+  gameBuildings.armorLab.unlocked = false;
+  gameBuildings.shieldLab.unlocked = false;
+  gameBuildings.flakLab.unlocked = false;
 
   gameEquipment.railgun.technology = gameData.technologies.railgun;
   gameEquipment.laser.technology = gameData.technologies.laser;
@@ -2226,8 +2238,6 @@ function runRules() {
   var doequipment = false;
   var buildingcost = 10000;
   var equipmentcost = 100000;
-  var weapon = '';
-  var defense = '';
 
   if (typeof gameData.rules === 'undefined') {
     return;
@@ -2334,8 +2344,14 @@ function runRules() {
   }
   if (doequipment) {
     var railgunvalue = gameEquipment.railgun.getValuePerUpgrade() / ((gameEquipment.railgun.metalForUpgrade() * 2) + gameEquipment.railgun.polymerForUpgrade());
-    var laservalue = gameEquipment.laser.getValuePerUpgrade() / ((gameEquipment.laser.metalForUpgrade() * 2) + gameEquipment.laser.polymerForUpgrade());
-    var missilevalue = gameEquipment.missile.getValuePerUpgrade() / ((gameEquipment.missile.metalForUpgrade() * 2) + gameEquipment.missile.polymerForUpgrade());
+    var laservalue = 0;
+    var missilevalue = 0;
+    if (gameEquipment.laser.technology.prestigeBought > 0) {
+      laservalue = gameEquipment.laser.getValuePerUpgrade() / ((gameEquipment.laser.metalForUpgrade() * 2) + gameEquipment.laser.polymerForUpgrade());
+    }
+    if (gameEquipment.missile.technology.prestigeBought > 0) {
+      missilevalue = gameEquipment.missile.getValuePerUpgrade() / ((gameEquipment.missile.metalForUpgrade() * 2) + gameEquipment.missile.polymerForUpgrade());
+    }
     var dorailgun = true;
     var dolaser = true;
     var domissile = true;
@@ -2356,8 +2372,14 @@ function runRules() {
     }
 
     var armorvalue = gameEquipment.armor.getValuePerUpgrade() / ((gameEquipment.armor.metalForUpgrade() * 2) + gameEquipment.armor.polymerForUpgrade());
-    var shieldvalue = gameEquipment.shield.getValuePerUpgrade() / ((gameEquipment.shield.metalForUpgrade() * 2) + gameEquipment.shield.polymerForUpgrade());
-    var flakvalue = gameEquipment.flak.getValuePerUpgrade() / ((gameEquipment.flak.metalForUpgrade() * 2) + gameEquipment.flak.polymerForUpgrade());
+    var shieldvalue = 0;
+    var flakvalue = 0;
+    if (gameEquipment.shield.technology.prestigeBought > 0) {
+      shieldvalue = gameEquipment.shield.getValuePerUpgrade() / ((gameEquipment.shield.metalForUpgrade() * 2) + gameEquipment.shield.polymerForUpgrade());
+    }
+    if (gameEquipment.flak.technology.prestigeBought > 0) {
+      flakvalue = gameEquipment.flak.getValuePerUpgrade() / ((gameEquipment.flak.metalForUpgrade() * 2) + gameEquipment.flak.polymerForUpgrade());
+    }
     var doarmor = true;
     var doshield = true;
     var doflak = true;
@@ -3248,7 +3270,7 @@ function updateAchievementScreen() {
     foo.removeChild(foo.firstChild);
   }
   var bonusspan = document.createElement('span');
-  bonusspan.innerHTML = 'Damage bonus from achivements: ' + prettify(achievementMultiplier);
+  bonusspan.innerHTML = 'Damage multiplier from achivements: ' + prettify(achievementMultiplier);
   foo.append(bonusspan);
   var table = document.createElement('table');
   foo.append(table);
