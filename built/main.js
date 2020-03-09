@@ -61,6 +61,12 @@ const FLAK_LAB_AETHER_BASE_COST = 250000;
 const FLAK_LAB_GROWTH_FACTOR = 1.3;
 const FLAK_LAB_POWER_USAGE = 5;
 const FLAK_LAB_POWER_GROWTH_USAGE = 1.01;
+const POWER_CONVERTER_METAL_BASE_COST = 1000000;
+const POWER_CONVERTER_POLYMER_BASE_COST = 500000;
+const POWER_CONVERTER_AETHER_BASE_COST = 5000;
+const POWER_CONVERTER_GROWTH_FACTOR = 1.4;
+const POWER_CONVERTER_POWER_USAGE = 5;
+const POWER_CONVERTER_POWER_GROWTH_USAGE = 1.02;
 const LAB_METAL_BASE_COST = 100;
 const LAB_METAL_GROWTH_FACTOR = 1.3;
 const LAB_POLYMER_BASE_COST = 100;
@@ -263,7 +269,7 @@ class challenges {
 class saveGameData {
     constructor(name) {
         this.name = name;
-        this.version = '0.7.7';
+        this.version = '0.7.8';
         this.stats = new Stats();
         this.challenges = new challenges();
         this.story = {
@@ -311,7 +317,8 @@ class saveGameData {
             armorLabs: new CountInfo(0),
             flakLabs: new CountInfo(0),
             fusionPlants: new CountInfo(0),
-            chronotonPlants: new CountInfo(0)
+            chronotonPlants: new CountInfo(0),
+            powerConverters: new CountInfo(0)
         };
         this.missions = [];
         this.enemyship = new Ship('dummy');
@@ -356,7 +363,8 @@ class saveGameData {
         this.tacticalChoices = {
             shieldLabsSetting: new CountInfo(0),
             armorLabsSetting: new CountInfo(0),
-            flakLabsSetting: new CountInfo(0)
+            flakLabsSetting: new CountInfo(0),
+            powerConvertersSetting: new CountInfo(0)
         };
     }
 }
@@ -405,21 +413,21 @@ class Ship {
     createEnemy(missionWork, zone) {
         var newEnemymods = possibleEnemies[Math.floor(Math.random() * possibleEnemies.length)]; // this will eventually need to be redone when we add advanced enemies
         this.name = newEnemymods.name;
-        var loot = checkForCreateLoot(missionWork, zone);
-        this.lootType = loot.lootType;
-        this.lootAmount = loot.lootAmount;
         this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 60 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
         this.hitPointsMax = this.hitPoints;
         var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 20 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
         this.minDamage = this.size * baseEnemyAttack / 1.25;
         this.maxDamage = this.size * baseEnemyAttack * 1.25;
+        var loot = checkForCreateLoot(missionWork, this);
+        this.lootType = loot.lootType;
+        this.lootAmount = loot.lootAmount;
         if (zone === missionWork.zones - 1) { // This is a Boss
             this.name += ' Station';
             this.hitPointsMax *= 0.60;
             this.shieldMax = this.hitPoints * newEnemymods.shmod;
             this.attributes.push(new ShipAttribute(ELITE_ENEMY_ATTRIBUTES[Math.floor(Math.random() * ELITE_ENEMY_ATTRIBUTES.length)]));
             while (this.lootType === '') {
-                loot = checkForCreateLoot(missionWork, zone);
+                loot = checkForCreateLoot(missionWork, this);
                 this.lootType = loot.lootType;
                 this.lootAmount = loot.lootAmount;
             }
@@ -589,259 +597,6 @@ var gamePerks = {
     criticality: new PerkBase('Criticality', new CountInfo(0), 100, 1.3, document.getElementById('btnCriticality'), 10),
     condenser: new PerkBase('Condenser', new CountInfo(0), 100, 1.3, document.getElementById('btnCondenser'), 80)
 };
-class BuildingBase {
-    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, chronotonBaseCost, chronotonGrowthFactor, buildinginfo, buyButton, buy10Button, buyButtonClass, powerGrowth, powerUsage) {
-        this.name = name;
-        this.metalBaseCost = metalBaseCost;
-        this.metalGrowthFactor = metalGrowthFactor;
-        this.polymerBaseCost = polymerBaseCost;
-        this.polymerGrowthFactor = polymerGrowthFactor;
-        this.aetherBaseCost = aetherBaseCost;
-        this.aetherGrowthFactor = aetherGrowthFactor;
-        this.chronotonBaseCost = chronotonBaseCost;
-        this.chronotonGrowthFactor = chronotonGrowthFactor;
-        this.buildinginfo = buildinginfo;
-        this.buyButton = buyButton;
-        this.buy10Button = buy10Button;
-        this.buyButtonClass = buyButtonClass;
-        this.powerGrowth = powerGrowth;
-        this.powerUsage = powerUsage;
-        this.unlocked = false;
-    }
-    metalCost(amt = 1) {
-        var cost = 0;
-        for (let index = 0; index < amt; index++) {
-            cost += this.metalBaseCost * Math.pow(this.metalGrowthFactor, this.buildinginfo.count + index);
-        }
-        return cost;
-    }
-    polymerCost(amt = 1) {
-        var cost = 0;
-        for (let index = 0; index < amt; index++) {
-            cost += this.polymerBaseCost * Math.pow(this.polymerGrowthFactor, this.buildinginfo.count + index);
-        }
-        return cost;
-    }
-    aetherCost(amt = 1) {
-        var cost = 0;
-        for (let index = 0; index < amt; index++) {
-            cost += this.aetherBaseCost * Math.pow(this.aetherGrowthFactor, this.buildinginfo.count + index);
-        }
-        return cost;
-    }
-    chronotonCost(amt = 1) {
-        var cost = 0;
-        for (let index = 0; index < amt; index++) {
-            cost += this.chronotonBaseCost * Math.pow(this.chronotonGrowthFactor, this.buildinginfo.count + index);
-        }
-        return cost;
-    }
-    powerCost(amt = 1) {
-        var cost = 0;
-        for (let index = 0; index < amt; index++) {
-            cost += this.powerUsage * Math.pow(this.powerGrowth, this.buildinginfo.count + index);
-        }
-        return cost;
-    }
-    canAffordBuy(amt = 1) { return (gameData.resources.metal >= this.metalCost(amt) && gameData.resources.polymer >= this.polymerCost(amt) && gameData.resources.aether >= this.aetherCost(amt) && gameData.resources.chronotonfragments >= this.chronotonCost(amt) && CheckPower(this.powerCost(amt))); }
-    updateBuyButtonText() { this.buyButton.innerHTML = this.name + ': ' + prettify(this.buildinginfo.count); }
-    tooltipCost(amt = 1) {
-        var rtn = '\nCosts:';
-        if (this.metalCost(amt) > 0) {
-            rtn += '\nMetal:' + prettify(this.metalCost(amt));
-        }
-        if (this.polymerCost(amt) > 0) {
-            rtn += '\nPolymer:' + prettify(this.polymerCost(amt));
-        }
-        if (this.aetherCost(amt) > 0) {
-            rtn += '\nAether:' + prettify(this.aetherCost(amt));
-        }
-        if (this.chronotonCost(amt) > 0) {
-            rtn += '\nChronoton Fragment:' + prettify(this.chronotonCost(amt));
-        }
-        if (this.powerCost(amt) > 0) {
-            rtn += '\nPower:' + prettify(this.powerCost(amt));
-        }
-        return rtn;
-    }
-    determineShowAffordBuy() {
-        if (this.canAffordBuy()) {
-            this.buyButton.classList.remove('btn-danger');
-            this.buyButton.classList.add(this.buyButtonClass);
-        }
-        else {
-            this.buyButton.classList.add('btn-danger');
-            this.buyButton.classList.remove(this.buyButtonClass);
-        }
-        if (this.canAffordBuy(10)) {
-            this.buy10Button.classList.remove('btn-danger');
-            this.buy10Button.classList.add(this.buyButtonClass);
-        }
-        else {
-            this.buy10Button.classList.add('btn-danger');
-            this.buy10Button.classList.remove(this.buyButtonClass);
-        }
-    }
-    powerSpent() { return sumOfExponents(this.buildinginfo.count, this.powerUsage, this.powerGrowth); }
-    buy(amt = 1) {
-        if (this.canAffordBuy(amt) && this.unlocked) {
-            for (let index = 0; index < amt; index++) {
-                gameData.resources.metal -= this.metalCost();
-                gameData.resources.polymer -= this.polymerCost();
-                gameData.resources.aether -= this.aetherCost();
-                gameData.resources.chronotonfragments -= this.chronotonCost();
-                this.buildinginfo.count++;
-            }
-            this.updateBuyButtonText();
-            checkForCompletedAchievements();
-        }
-    }
-    showBuyButton() {
-        this.buyButton.classList.remove('hidden');
-        this.buy10Button.classList.remove('hidden');
-        this.unlocked = true;
-    }
-}
-class PowerBuilding extends BuildingBase {
-    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, chronotonBaseCost, chronotonGrowthFactor, buildinginfo, basePowerPer, technology, buyButton, buy10Button, buyButtonClass) {
-        super(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, chronotonBaseCost, chronotonGrowthFactor, buildinginfo, buyButton, buy10Button, buyButtonClass, 0, 0);
-        this.basePowerPer = basePowerPer;
-        this.technology = technology;
-    }
-    powerPer(amt = 1) {
-        var rtn = (this.basePowerPer * Math.pow(2, this.technology.count) * gamePerks.power.getBonus()) * amt;
-        if (gameData.world.currentChallenge === 'Power') {
-            rtn /= 2;
-        }
-        return rtn;
-    }
-    totalPowerCreated() { return (this.buildinginfo.count * this.powerPer()); }
-    tooltipCost(amt = 1) { return 'Creates ' + prettify(this.powerPer(amt)) + ' power' + super.tooltipCost(amt); }
-    updateBuyButtonTooltip() {
-        this.buyButton.attributes.getNamedItem('title').value = this.tooltipCost();
-        this.buy10Button.attributes.getNamedItem('title').value = this.tooltipCost(10);
-    }
-    buy(amt = 1) {
-        super.buy(amt);
-        this.updateBuyButtonTooltip();
-    }
-}
-class ResourceBuilding extends BuildingBase {
-    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, buildinginfo, baseProductionPer, technology, buyButton, buy10Button, buyButtonClass, powerUsage, powerGrowth, proficiencyBaseRate) {
-        super(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, 0, 0, buildinginfo, buyButton, buy10Button, buyButtonClass, powerGrowth, powerUsage);
-        this.baseProductionPer = baseProductionPer;
-        this.technology = technology;
-        this.proficiencyBaseRate = proficiencyBaseRate;
-    }
-    tooltipCost(amt = 1) { return 'Creates ' + prettify(this.productionPerSecond() * amt / this.buildinginfo.count) + ' per second' + super.tooltipCost(amt); }
-    updateBuyButtonTooltip() {
-        this.buyButton.attributes.getNamedItem('title').value = this.tooltipCost();
-        this.buy10Button.attributes.getNamedItem('title').value = this.tooltipCost(10);
-    }
-    productionPerSecond() {
-        var increase = this.baseProductionPer * this.buildinginfo.count * Math.pow(this.proficiencyBaseRate, this.technology.bought);
-        increase *= Math.pow(2, gameData.technologies.goldMine);
-        increase *= gamePerks.producer.getBonus();
-        return increase;
-    }
-    buy(amt = 1) {
-        super.buy(amt);
-        this.updateBuyButtonTooltip();
-    }
-}
-class TacticBuilding extends BuildingBase {
-    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, buildinginfo, buyButton, buy10Button, buyButtonClass, powerUsage, powerGrowth, tacticalChoice) {
-        super(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, 0, 0, buildinginfo, buyButton, buy10Button, buyButtonClass, powerGrowth, powerUsage);
-        this.tacticalChoices = tacticalChoice;
-    }
-    tooltipCost(amt = 1) { return ('Buying will set value to ' + prettify(this.getBonus(amt) * 100) + '% efficiency') + super.tooltipCost(amt); }
-    updateBuyButtonTooltip() {
-        this.buyButton.attributes.getNamedItem('title').value = this.tooltipCost();
-        this.buy10Button.attributes.getNamedItem('title').value = this.tooltipCost(10);
-    }
-    getBonus(amt = 0) {
-        var count = this.buildinginfo.count + amt;
-        if (this.tacticalChoices.count === 0) {
-            return 1;
-        }
-        else if (this.tacticalChoices.count === 1) {
-            return (1 + (count * 0.1));
-        }
-        return (Math.pow(1.04, count));
-    }
-    buy(amt = 1) {
-        if (this.tacticalChoices.count > 0) {
-            super.buy(amt);
-            this.updateBuyButtonTooltip();
-            gameEquipment.armor.updateUpgradeTooltip();
-            gameEquipment.shield.updateUpgradeTooltip();
-            gameEquipment.flak.updateUpgradeTooltip();
-        }
-    }
-}
-var gameBuildings = {
-    panel: new PowerBuilding('Solar Panel', PANEL_BASE_COST, PANEL_GROWTH_FACTOR, 0, 0, 0, 0, 0, 0, new CountInfo(0), POWER_PER_PANEL, new CountInfo(0), document.getElementById('btnBuyPanel'), document.getElementById('btnBuy10Panel'), 'btn-light'),
-    generator: new PowerBuilding('Generator', GENERATOR_METAL_BASE_COST, GENERATOR_GROWTH_FACTOR, GENERATOR_POLYMER_BASE_COST, GENERATOR_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), POWER_PER_GENERATOR, new CountInfo(0), document.getElementById('btnBuyGenerator'), document.getElementById('btnBuy10Generator'), 'btn-light'),
-    plant: new PowerBuilding('Plant', PLANT_METAL_BASE_COST, PLANT_METAL_GROWTH_FACTOR, PLANT_POLYMER_BASE_COST, PLANT_POLYMER_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), POWER_PER_PLANT, new CountInfo(0), document.getElementById('btnBuyPlant'), document.getElementById('btnBuy10Plant'), 'btn-light'),
-    aetherPlant: new PowerBuilding('Aether Plant', AETHER_PLANT_METAL_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, AETHER_PLANT_POLYMER_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, AETHER_PLANT_AETHER_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, 0, 0, new CountInfo(0), POWER_PER_AETHER_PLANT, new CountInfo(0), document.getElementById('btnBuyAetherPlant'), document.getElementById('btnBuy10AetherPlant'), 'btn-light'),
-    fusionPlant: new PowerBuilding('Fusion Plant', FUSION_PLANT_METAL_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, FUSION_PLANT_POLYMER_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, FUSION_PLANT_AETHER_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, 0, 0, new CountInfo(0), POWER_PER_FUSION_PLANT, new CountInfo(0), document.getElementById('btnBuyFusionPlant'), document.getElementById('btnBuy10FusionPlant'), 'btn-light'),
-    chronotonPlant: new PowerBuilding('Chron. Plant', 0, 0, 0, 0, 0, 0, CHRONOTON_PLANT_CHRONOTON_BASE_COST, CHRONOTON_PLANT_GROWTH_FACTOR, new CountInfo(0), POWER_PER_CHRONOTON_PLANT, new CountInfo(0), document.getElementById('btnBuyChronotonPlant'), document.getElementById('btnBuy10ChronotonPlant'), 'btn-light'),
-    mine: new ResourceBuilding('Mine', MINE_BASE_COST, MINE_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyMine'), document.getElementById('btnBuy10Mine'), 'btn-warning', MINE_POWER_USAGE, MINE_POWER_GROWTH_USAGE, METAL_PROFICIENCY_BASE_RATE),
-    lab: new ResourceBuilding('Lab', LAB_METAL_BASE_COST, LAB_METAL_GROWTH_FACTOR, LAB_POLYMER_BASE_COST, LAB_POLYMER_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.25, new ResourceTechnology(0, 0), document.getElementById('btnBuyLab'), document.getElementById('btnBuy10Lab'), 'btn-info', LAB_POWER_USAGE, LAB_POWER_GROWTH_USAGE, RESEARCH_PROFICIENCY_BASE_RATE),
-    factory: new ResourceBuilding('Factory', FACTORY_BASE_COST, FACTORY_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyFactory'), document.getElementById('btnBuy10Factory'), 'btn-dark', FACTORY_POWER_USAGE, FACTORY_POWER_GROWTH_USAGE, POLYMER_PROFICIENCY_BASE_RATE),
-    refinery: new ResourceBuilding('Refinery', REFINERY_METAL_BASE_COST, REFINERY_GROWTH_FACTOR, REFINERY_POLYMER_BASE_COST, REFINERY_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.5, new ResourceTechnology(0, 0), document.getElementById('btnBuyRefinery'), document.getElementById('btnBuy10Refinery'), 'btn-secondary', REFINERY_POWER_USAGE, REFINERY_POWER_GROWTH_USAGE, AETHER_PROFICIENCY_BASE_RATE),
-    shieldLab: new TacticBuilding('Shield Lab', SHIELD_LAB_METAL_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, SHIELD_LAB_POLYMER_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, SHIELD_LAB_AETHER_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyShieldLab'), document.getElementById('btnBuy10ShieldLab'), 'btn-success', SHIELD_LAB_POWER_USAGE, SHIELD_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
-    armorLab: new TacticBuilding('Armor Lab', ARMOR_LAB_METAL_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, ARMOR_LAB_POLYMER_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, ARMOR_LAB_AETHER_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyArmorLab'), document.getElementById('btnBuy10ArmorLab'), 'btn-success', ARMOR_LAB_POWER_USAGE, ARMOR_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
-    flakLab: new TacticBuilding('Flak Lab', FLAK_LAB_METAL_BASE_COST, FLAK_LAB_GROWTH_FACTOR, FLAK_LAB_POLYMER_BASE_COST, FLAK_LAB_GROWTH_FACTOR, FLAK_LAB_AETHER_BASE_COST, FLAK_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyFlakLab'), document.getElementById('btnBuy10FlakLab'), 'btn-success', FLAK_LAB_POWER_USAGE, FLAK_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
-    shipyard: {
-        metalCost: function () { return (SHIPYARD_METAL_BASE_COST * Math.pow(SHIPYARD_METAL_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
-        polymerCost: function () { return (SHIPYARD_POLYMER_BASE_COST * Math.pow(SHIPYARD_POLYMER_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
-        rpCost: function () { return (SHIPYARD_RP_BASE_COST * Math.pow(SHIPYARD_RP_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
-        powerCost: function () { return (SHIPYARD_POWER_USAGE * Math.pow(SHIPYARD_POWER_GROWTH_USAGE, gameData.buildings.shipyard.count)); },
-        powerSpent: function () { return sumOfExponents(gameData.buildings.shipyard.count, SHIPYARD_POWER_USAGE, SHIPYARD_POWER_GROWTH_USAGE); },
-        tooltipCost: function () { return ('Increases ship size by 25%\nMetal Cost:' + prettify(this.metalCost()) + '\nPolymer Cost:' + prettify(this.polymerCost()) + '\nResearch Points Cost:' + prettify(this.rpCost()) + '\nPower Cost: ' + prettify(this.powerCost())); },
-        canAffordBuy: function () { return (gameData.resources.metal >= this.metalCost() && gameData.resources.polymer >= this.polymerCost() && gameData.resources.researchPoints >= this.rpCost() && CheckPower(this.powerCost())); },
-        updateBuyButtonText: function () { $('#btnBuyShipyard').text('Shipyard(' + (gameData.buildings.shipyard.count) + ')'); },
-        updateBuyButtonTooltip: function () { $('#btnBuyShipyard').attr('title', this.tooltipCost()); },
-        showBuyButton: function () { $('#btnBuyShipyard').removeClass('hidden'); },
-        determineShowAffordBuy: function () {
-            if (gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard.count) {
-                $('#btnBuyShipyard').removeClass('hidden');
-            }
-            else {
-                $('#btnBuyShipyard').addClass('hidden');
-            }
-            if (this.canAffordBuy()) {
-                $('#btnBuyShipyard').removeClass('btn-danger').addClass('btn-secondary');
-            }
-            else {
-                $('#btnBuyShipyard').removeClass('btn-secondary').addClass('btn-danger');
-            }
-        },
-        buy: function () {
-            if (this.canAffordBuy() && gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard.count) {
-                gameData.resources.metal -= this.metalCost();
-                gameData.resources.polymer -= this.polymerCost();
-                gameData.resources.researchPoints -= this.rpCost();
-                gameData.buildings.shipyard.count++;
-                this.updateBuyButtonText();
-                this.updateBuyButtonTooltip();
-                gameEquipment.armor.updateUpgradeText();
-                gameEquipment.shield.updateUpgradeText();
-                gameEquipment.flak.updateUpgradeText();
-                gameEquipment.railgun.updateUpgradeText();
-                gameEquipment.laser.updateUpgradeText();
-                gameEquipment.missile.updateUpgradeText();
-                gtag('event', 'buy shipyard', {
-                    event_category: 'click',
-                    event_label: 'label',
-                    value: 'value'
-                });
-                $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
-            }
-        }
-    }
-};
 class EquipmentBase {
     constructor(name, weapon, valueperlevel, upgradeMetalBaseCost, upgradePolymerBaseCost, upgradeRPBaseCost, upgradeAetherBaseCost, tech, upgradeButton, upgrade10Button, prestigeButton) {
         this.name = name;
@@ -1009,6 +764,289 @@ class EquipmentBase {
         }
     }
 }
+class BuildingBase {
+    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, chronotonBaseCost, chronotonGrowthFactor, buildinginfo, buyButton, buy10Button, buyButtonClass, powerGrowth, powerUsage) {
+        this.name = name;
+        this.metalBaseCost = metalBaseCost;
+        this.metalGrowthFactor = metalGrowthFactor;
+        this.polymerBaseCost = polymerBaseCost;
+        this.polymerGrowthFactor = polymerGrowthFactor;
+        this.aetherBaseCost = aetherBaseCost;
+        this.aetherGrowthFactor = aetherGrowthFactor;
+        this.chronotonBaseCost = chronotonBaseCost;
+        this.chronotonGrowthFactor = chronotonGrowthFactor;
+        this.buildinginfo = buildinginfo;
+        this.buyButton = buyButton;
+        this.buy10Button = buy10Button;
+        this.buyButtonClass = buyButtonClass;
+        this.powerGrowth = powerGrowth;
+        this.powerUsage = powerUsage;
+        this.unlocked = false;
+    }
+    metalCost(amt = 1) {
+        var cost = 0;
+        for (let index = 0; index < amt; index++) {
+            cost += this.metalBaseCost * Math.pow(this.metalGrowthFactor, this.buildinginfo.count + index);
+        }
+        return cost;
+    }
+    polymerCost(amt = 1) {
+        var cost = 0;
+        for (let index = 0; index < amt; index++) {
+            cost += this.polymerBaseCost * Math.pow(this.polymerGrowthFactor, this.buildinginfo.count + index);
+        }
+        return cost;
+    }
+    aetherCost(amt = 1) {
+        var cost = 0;
+        for (let index = 0; index < amt; index++) {
+            cost += this.aetherBaseCost * Math.pow(this.aetherGrowthFactor, this.buildinginfo.count + index);
+        }
+        return cost;
+    }
+    chronotonCost(amt = 1) {
+        var cost = 0;
+        for (let index = 0; index < amt; index++) {
+            cost += this.chronotonBaseCost * Math.pow(this.chronotonGrowthFactor, this.buildinginfo.count + index);
+        }
+        return cost;
+    }
+    powerCost(amt = 1) {
+        var cost = 0;
+        for (let index = 0; index < amt; index++) {
+            cost += this.powerUsage * Math.pow(this.powerGrowth, this.buildinginfo.count + index);
+        }
+        return cost;
+    }
+    canAffordBuy(amt = 1) { return (gameData.resources.metal >= this.metalCost(amt) && gameData.resources.polymer >= this.polymerCost(amt) && gameData.resources.aether >= this.aetherCost(amt) && gameData.resources.chronotonfragments >= this.chronotonCost(amt) && CheckPower(this.powerCost(amt))); }
+    updateBuyButtonText() { this.buyButton.innerHTML = this.name + ': ' + prettify(this.buildinginfo.count); }
+    tooltipCost(amt = 1) {
+        var rtn = '\nCosts:';
+        if (this.metalCost(amt) > 0) {
+            rtn += '\nMetal:' + prettify(this.metalCost(amt));
+        }
+        if (this.polymerCost(amt) > 0) {
+            rtn += '\nPolymer:' + prettify(this.polymerCost(amt));
+        }
+        if (this.aetherCost(amt) > 0) {
+            rtn += '\nAether:' + prettify(this.aetherCost(amt));
+        }
+        if (this.chronotonCost(amt) > 0) {
+            rtn += '\nChronoton Fragment:' + prettify(this.chronotonCost(amt));
+        }
+        if (this.powerCost(amt) > 0) {
+            rtn += '\nPower:' + prettify(this.powerCost(amt));
+        }
+        return rtn;
+    }
+    determineShowAffordBuy() {
+        if (this.canAffordBuy()) {
+            this.buyButton.classList.remove('btn-danger');
+            this.buyButton.classList.add(this.buyButtonClass);
+        }
+        else {
+            this.buyButton.classList.add('btn-danger');
+            this.buyButton.classList.remove(this.buyButtonClass);
+        }
+        if (this.canAffordBuy(10)) {
+            this.buy10Button.classList.remove('btn-danger');
+            this.buy10Button.classList.add(this.buyButtonClass);
+        }
+        else {
+            this.buy10Button.classList.add('btn-danger');
+            this.buy10Button.classList.remove(this.buyButtonClass);
+        }
+    }
+    powerSpent() { return sumOfExponents(this.buildinginfo.count, this.powerUsage, this.powerGrowth); }
+    buy(amt = 1) {
+        if (this.canAffordBuy(amt) && this.unlocked) {
+            for (let index = 0; index < amt; index++) {
+                gameData.resources.metal -= this.metalCost();
+                gameData.resources.polymer -= this.polymerCost();
+                gameData.resources.aether -= this.aetherCost();
+                gameData.resources.chronotonfragments -= this.chronotonCost();
+                this.buildinginfo.count++;
+            }
+            this.updateBuyButtonText();
+            checkForCompletedAchievements();
+        }
+    }
+    showBuyButton() {
+        this.buyButton.classList.remove('hidden');
+        this.buy10Button.classList.remove('hidden');
+        this.unlocked = true;
+    }
+}
+class PowerBuilding extends BuildingBase {
+    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, chronotonBaseCost, chronotonGrowthFactor, buildinginfo, basePowerPer, technology, buyButton, buy10Button, buyButtonClass) {
+        super(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, chronotonBaseCost, chronotonGrowthFactor, buildinginfo, buyButton, buy10Button, buyButtonClass, 0, 0);
+        this.basePowerPer = basePowerPer;
+        this.technology = technology;
+    }
+    powerPer(amt = 1) {
+        var rtn = (this.basePowerPer * Math.pow(2, this.technology.count) * gamePerks.power.getBonus()) * amt;
+        if (gameData.world.currentChallenge === 'Power') {
+            rtn /= 2;
+        }
+        return rtn;
+    }
+    totalPowerCreated() { return (this.buildinginfo.count * this.powerPer()); }
+    tooltipCost(amt = 1) { return 'Creates ' + prettify(this.powerPer(amt)) + ' power' + super.tooltipCost(amt); }
+    updateBuyButtonTooltip() {
+        this.buyButton.attributes.getNamedItem('title').value = this.tooltipCost();
+        this.buy10Button.attributes.getNamedItem('title').value = this.tooltipCost(10);
+    }
+    buy(amt = 1) {
+        super.buy(amt);
+        this.updateBuyButtonTooltip();
+    }
+}
+class ResourceBuilding extends BuildingBase {
+    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, buildinginfo, baseProductionPer, technology, buyButton, buy10Button, buyButtonClass, powerUsage, powerGrowth, proficiencyBaseRate) {
+        super(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, 0, 0, buildinginfo, buyButton, buy10Button, buyButtonClass, powerGrowth, powerUsage);
+        this.baseProductionPer = baseProductionPer;
+        this.technology = technology;
+        this.proficiencyBaseRate = proficiencyBaseRate;
+    }
+    tooltipCost(amt = 1) { return 'Creates ' + prettify(this.productionPerSecond() * amt / this.buildinginfo.count) + ' per second' + super.tooltipCost(amt); }
+    updateBuyButtonTooltip() {
+        this.buyButton.attributes.getNamedItem('title').value = this.tooltipCost();
+        this.buy10Button.attributes.getNamedItem('title').value = this.tooltipCost(10);
+    }
+    productionPerSecond() {
+        var increase = this.baseProductionPer * this.buildinginfo.count * Math.pow(this.proficiencyBaseRate, this.technology.bought);
+        increase *= Math.pow(2, gameData.technologies.goldMine);
+        increase *= gamePerks.producer.getBonus();
+        if (gameData.tacticalChoices.powerConvertersSetting.count === 1) {
+            increase *= gameBuildings.powerConverter.getBonus();
+        }
+        return increase;
+    }
+    buy(amt = 1) {
+        super.buy(amt);
+        this.updateBuyButtonTooltip();
+    }
+}
+class PowerConverterBuilding extends BuildingBase {
+    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, buildinginfo, buyButton, buy10Button, buyButtonClass, powerUsage, powerGrowth, tacticalChoice) {
+        super(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, 0, 0, buildinginfo, buyButton, buy10Button, buyButtonClass, powerGrowth, powerUsage);
+        this.tacticalChoices = tacticalChoice;
+    }
+    tooltipCost(amt = 1) { return ('Buying will set value to ' + prettify(this.getBonus(amt) * 100) + '% efficiency') + super.tooltipCost(amt); }
+    updateBuyButtonTooltip() {
+        this.buyButton.attributes.getNamedItem('title').value = this.tooltipCost();
+        this.buy10Button.attributes.getNamedItem('title').value = this.tooltipCost(10);
+    }
+    getBonus(amt = 0) {
+        var count = this.buildinginfo.count + amt;
+        if (count == 0)
+            return 1;
+        return (1 + (count * gameData.resources.power * 0.001));
+    }
+    buy(amt = 1) {
+        if (this.tacticalChoices.count > 0) {
+            super.buy(amt);
+            this.updateBuyButtonTooltip();
+            gameEquipment.armor.updateUpgradeTooltip();
+            gameEquipment.shield.updateUpgradeTooltip();
+            gameEquipment.flak.updateUpgradeTooltip();
+        }
+    }
+}
+class TacticBuilding extends BuildingBase {
+    constructor(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, buildinginfo, buyButton, buy10Button, buyButtonClass, powerUsage, powerGrowth, tacticalChoice) {
+        super(name, metalBaseCost, metalGrowthFactor, polymerBaseCost, polymerGrowthFactor, aetherBaseCost, aetherGrowthFactor, 0, 0, buildinginfo, buyButton, buy10Button, buyButtonClass, powerGrowth, powerUsage);
+        this.tacticalChoices = tacticalChoice;
+    }
+    tooltipCost(amt = 1) { return ('Buying will set value to ' + prettify(this.getBonus(amt) * 100) + '% efficiency') + super.tooltipCost(amt); }
+    updateBuyButtonTooltip() {
+        this.buyButton.attributes.getNamedItem('title').value = this.tooltipCost();
+        this.buy10Button.attributes.getNamedItem('title').value = this.tooltipCost(10);
+    }
+    getBonus(amt = 0) {
+        var count = this.buildinginfo.count + amt;
+        if (this.tacticalChoices.count === 0) {
+            return 1;
+        }
+        else if (this.tacticalChoices.count === 1) {
+            return (1 + (count * 0.1));
+        }
+        return (Math.pow(1.04, count));
+    }
+    buy(amt = 1) {
+        if (this.tacticalChoices.count > 0) {
+            super.buy(amt);
+            this.updateBuyButtonTooltip();
+            gameEquipment.armor.updateUpgradeTooltip();
+            gameEquipment.shield.updateUpgradeTooltip();
+            gameEquipment.flak.updateUpgradeTooltip();
+        }
+    }
+}
+var gameBuildings = {
+    panel: new PowerBuilding('Solar Panel', PANEL_BASE_COST, PANEL_GROWTH_FACTOR, 0, 0, 0, 0, 0, 0, new CountInfo(0), POWER_PER_PANEL, new CountInfo(0), document.getElementById('btnBuyPanel'), document.getElementById('btnBuy10Panel'), 'btn-light'),
+    generator: new PowerBuilding('Generator', GENERATOR_METAL_BASE_COST, GENERATOR_GROWTH_FACTOR, GENERATOR_POLYMER_BASE_COST, GENERATOR_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), POWER_PER_GENERATOR, new CountInfo(0), document.getElementById('btnBuyGenerator'), document.getElementById('btnBuy10Generator'), 'btn-light'),
+    plant: new PowerBuilding('Plant', PLANT_METAL_BASE_COST, PLANT_METAL_GROWTH_FACTOR, PLANT_POLYMER_BASE_COST, PLANT_POLYMER_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), POWER_PER_PLANT, new CountInfo(0), document.getElementById('btnBuyPlant'), document.getElementById('btnBuy10Plant'), 'btn-light'),
+    aetherPlant: new PowerBuilding('Aether Plant', AETHER_PLANT_METAL_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, AETHER_PLANT_POLYMER_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, AETHER_PLANT_AETHER_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, 0, 0, new CountInfo(0), POWER_PER_AETHER_PLANT, new CountInfo(0), document.getElementById('btnBuyAetherPlant'), document.getElementById('btnBuy10AetherPlant'), 'btn-light'),
+    fusionPlant: new PowerBuilding('Fusion Plant', FUSION_PLANT_METAL_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, FUSION_PLANT_POLYMER_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, FUSION_PLANT_AETHER_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, 0, 0, new CountInfo(0), POWER_PER_FUSION_PLANT, new CountInfo(0), document.getElementById('btnBuyFusionPlant'), document.getElementById('btnBuy10FusionPlant'), 'btn-light'),
+    chronotonPlant: new PowerBuilding('Chron. Plant', 0, 0, 0, 0, 0, 0, CHRONOTON_PLANT_CHRONOTON_BASE_COST, CHRONOTON_PLANT_GROWTH_FACTOR, new CountInfo(0), POWER_PER_CHRONOTON_PLANT, new CountInfo(0), document.getElementById('btnBuyChronotonPlant'), document.getElementById('btnBuy10ChronotonPlant'), 'btn-light'),
+    mine: new ResourceBuilding('Mine', MINE_BASE_COST, MINE_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyMine'), document.getElementById('btnBuy10Mine'), 'btn-warning', MINE_POWER_USAGE, MINE_POWER_GROWTH_USAGE, METAL_PROFICIENCY_BASE_RATE),
+    lab: new ResourceBuilding('Lab', LAB_METAL_BASE_COST, LAB_METAL_GROWTH_FACTOR, LAB_POLYMER_BASE_COST, LAB_POLYMER_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.25, new ResourceTechnology(0, 0), document.getElementById('btnBuyLab'), document.getElementById('btnBuy10Lab'), 'btn-info', LAB_POWER_USAGE, LAB_POWER_GROWTH_USAGE, RESEARCH_PROFICIENCY_BASE_RATE),
+    factory: new ResourceBuilding('Factory', FACTORY_BASE_COST, FACTORY_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyFactory'), document.getElementById('btnBuy10Factory'), 'btn-dark', FACTORY_POWER_USAGE, FACTORY_POWER_GROWTH_USAGE, POLYMER_PROFICIENCY_BASE_RATE),
+    refinery: new ResourceBuilding('Refinery', REFINERY_METAL_BASE_COST, REFINERY_GROWTH_FACTOR, REFINERY_POLYMER_BASE_COST, REFINERY_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.5, new ResourceTechnology(0, 0), document.getElementById('btnBuyRefinery'), document.getElementById('btnBuy10Refinery'), 'btn-secondary', REFINERY_POWER_USAGE, REFINERY_POWER_GROWTH_USAGE, AETHER_PROFICIENCY_BASE_RATE),
+    shieldLab: new TacticBuilding('Shield Lab', SHIELD_LAB_METAL_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, SHIELD_LAB_POLYMER_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, SHIELD_LAB_AETHER_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyShieldLab'), document.getElementById('btnBuy10ShieldLab'), 'btn-success', SHIELD_LAB_POWER_USAGE, SHIELD_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
+    armorLab: new TacticBuilding('Armor Lab', ARMOR_LAB_METAL_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, ARMOR_LAB_POLYMER_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, ARMOR_LAB_AETHER_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyArmorLab'), document.getElementById('btnBuy10ArmorLab'), 'btn-success', ARMOR_LAB_POWER_USAGE, ARMOR_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
+    flakLab: new TacticBuilding('Flak Lab', FLAK_LAB_METAL_BASE_COST, FLAK_LAB_GROWTH_FACTOR, FLAK_LAB_POLYMER_BASE_COST, FLAK_LAB_GROWTH_FACTOR, FLAK_LAB_AETHER_BASE_COST, FLAK_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyFlakLab'), document.getElementById('btnBuy10FlakLab'), 'btn-success', FLAK_LAB_POWER_USAGE, FLAK_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
+    powerConverter: new PowerConverterBuilding('Converter', POWER_CONVERTER_METAL_BASE_COST, POWER_CONVERTER_GROWTH_FACTOR, POWER_CONVERTER_POLYMER_BASE_COST, POWER_CONVERTER_GROWTH_FACTOR, POWER_CONVERTER_AETHER_BASE_COST, POWER_CONVERTER_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyPowerConverter'), document.getElementById('btnBuy10PowerConverter'), 'btn-success', POWER_CONVERTER_POWER_USAGE, POWER_CONVERTER_POWER_GROWTH_USAGE, new CountInfo(0)),
+    shipyard: {
+        metalCost: function () { return (SHIPYARD_METAL_BASE_COST * Math.pow(SHIPYARD_METAL_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
+        polymerCost: function () { return (SHIPYARD_POLYMER_BASE_COST * Math.pow(SHIPYARD_POLYMER_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
+        rpCost: function () { return (SHIPYARD_RP_BASE_COST * Math.pow(SHIPYARD_RP_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
+        powerCost: function () { return (SHIPYARD_POWER_USAGE * Math.pow(SHIPYARD_POWER_GROWTH_USAGE, gameData.buildings.shipyard.count)); },
+        powerSpent: function () { return sumOfExponents(gameData.buildings.shipyard.count, SHIPYARD_POWER_USAGE, SHIPYARD_POWER_GROWTH_USAGE); },
+        tooltipCost: function () { return ('Increases ship size by 25%\nMetal Cost:' + prettify(this.metalCost()) + '\nPolymer Cost:' + prettify(this.polymerCost()) + '\nResearch Points Cost:' + prettify(this.rpCost()) + '\nPower Cost: ' + prettify(this.powerCost())); },
+        canAffordBuy: function () { return (gameData.resources.metal >= this.metalCost() && gameData.resources.polymer >= this.polymerCost() && gameData.resources.researchPoints >= this.rpCost() && CheckPower(this.powerCost())); },
+        updateBuyButtonText: function () { $('#btnBuyShipyard').text('Shipyard(' + (gameData.buildings.shipyard.count) + ')'); },
+        updateBuyButtonTooltip: function () { $('#btnBuyShipyard').attr('title', this.tooltipCost()); },
+        showBuyButton: function () { $('#btnBuyShipyard').removeClass('hidden'); },
+        determineShowAffordBuy: function () {
+            if (gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard.count) {
+                $('#btnBuyShipyard').removeClass('hidden');
+            }
+            else {
+                $('#btnBuyShipyard').addClass('hidden');
+            }
+            if (this.canAffordBuy()) {
+                $('#btnBuyShipyard').removeClass('btn-danger').addClass('btn-secondary');
+            }
+            else {
+                $('#btnBuyShipyard').removeClass('btn-secondary').addClass('btn-danger');
+            }
+        },
+        buy: function () {
+            if (this.canAffordBuy() && gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard.count) {
+                gameData.resources.metal -= this.metalCost();
+                gameData.resources.polymer -= this.polymerCost();
+                gameData.resources.researchPoints -= this.rpCost();
+                gameData.buildings.shipyard.count++;
+                this.updateBuyButtonText();
+                this.updateBuyButtonTooltip();
+                gameEquipment.armor.updateUpgradeText();
+                gameEquipment.shield.updateUpgradeText();
+                gameEquipment.flak.updateUpgradeText();
+                gameEquipment.railgun.updateUpgradeText();
+                gameEquipment.laser.updateUpgradeText();
+                gameEquipment.missile.updateUpgradeText();
+                gtag('event', 'buy shipyard', {
+                    event_category: 'click',
+                    event_label: 'label',
+                    value: 'value'
+                });
+                $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
+            }
+        }
+    }
+};
 var gameEquipment = {
     railgun: new EquipmentBase('Railgun', true, RAILGUN_UPGRADE_BASE_IMPROVEMENT, RAILGUN_UPGRADE_METAL_BASE_COST, RAILGUN_UPGRADE_POLYMER_BASE_COST, RAILGUN_UPGRADE_RP_BASE_COST, RAILGUN_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnRailgunUpgrade'), document.getElementById('btnRailgunUpgrade10'), document.getElementById('btnRailgunPrestige')),
     laser: new EquipmentBase('Laser', true, LASER_UPGRADE_BASE_IMPROVEMENT, LASER_UPGRADE_METAL_BASE_COST, LASER_UPGRADE_POLYMER_BASE_COST, LASER_UPGRADE_RP_BASE_COST, LASER_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnLaserUpgrade'), document.getElementById('btnLaserUpgrade10'), document.getElementById('btnLaserPrestige')),
@@ -1190,6 +1228,7 @@ function exportsave() {
     debugText = JSON.stringify(gameData);
 }
 function init(passedperks, passedchallenges, gatewayReset = false, activeChallenge = '', chronoton = 0, passedAchievements = [], savedstats = new Stats(), savedRules = []) {
+    debugText = 'v0.7.8 - automation';
     debugText = 'v0.7.7 - New power building, new challenge, other changes';
     debugText += '\nv0.7.6 - Fix attack values bug, leading to what I think might be the 1.0 balance.  Rewrite of equipment and building code to use base classes.';
     debugText += '\nv0.7.4 - Fix to criticality challenge and numerous balance changes';
@@ -1268,6 +1307,8 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
                 gameData.buildings.armorLabs.count = savegame.buildings.armorLabs.count;
             if (typeof savegame.buildings.flakLabs !== 'undefined' && typeof savegame.buildings.flakLabs.count !== 'undefined')
                 gameData.buildings.flakLabs.count = savegame.buildings.flakLabs.count;
+            if (typeof savegame.buildings.powerConverters !== 'undefined' && typeof savegame.buildings.powerConverters.count !== 'undefined')
+                gameData.buildings.powerConverters.count = savegame.buildings.powerConverters.count;
             if (typeof savegame.buildings.mines.count !== 'undefined')
                 gameData.buildings.mines.count = savegame.buildings.mines.count;
             if (typeof savegame.enemyship.shield !== 'undefined')
@@ -1464,6 +1505,8 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
                 gameData.tacticalChoices.armorLabsSetting = savegame.tacticalChoices.armorLabsSetting;
             if (typeof savegame.tacticalChoices.flakLabsSetting !== 'undefined')
                 gameData.tacticalChoices.flakLabsSetting = savegame.tacticalChoices.flakLabsSetting;
+            if (typeof savegame.tacticalChoices.powerConvertersSetting !== 'undefined')
+                gameData.tacticalChoices.powerConvertersSetting = savegame.tacticalChoices.powerConvertersSetting;
             if (typeof savegame.stats !== 'undefined') {
                 if (typeof savegame.stats.gatewaysUsed !== 'undefined') {
                     gameData.stats.gatewaysUsed = savegame.stats.gatewaysUsed;
@@ -1495,6 +1538,18 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     }
     gameBuildings.panel.unlocked = true;
     gameBuildings.mine.unlocked = true;
+    gameBuildings.factory.unlocked = false;
+    gameBuildings.refinery.unlocked = false;
+    gameBuildings.lab.unlocked = false;
+    gameBuildings.generator.unlocked = false;
+    gameBuildings.plant.unlocked = false;
+    gameBuildings.aetherPlant.unlocked = false;
+    gameBuildings.fusionPlant.unlocked = false;
+    gameBuildings.chronotonPlant.unlocked = false;
+    gameBuildings.armorLab.unlocked = false;
+    gameBuildings.shieldLab.unlocked = false;
+    gameBuildings.flakLab.unlocked = false;
+    gameBuildings.powerConverter.unlocked = false;
     gameEquipment.railgun.technology = gameData.technologies.railgun;
     gameEquipment.laser.technology = gameData.technologies.laser;
     gameEquipment.missile.technology = gameData.technologies.missile;
@@ -1527,6 +1582,8 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     gameBuildings.armorLab.tacticalChoices = gameData.tacticalChoices.armorLabsSetting;
     gameBuildings.flakLab.buildinginfo = gameData.buildings.flakLabs;
     gameBuildings.flakLab.tacticalChoices = gameData.tacticalChoices.flakLabsSetting;
+    gameBuildings.powerConverter.buildinginfo = gameData.buildings.powerConverters;
+    gameBuildings.powerConverter.tacticalChoices = gameData.tacticalChoices.powerConvertersSetting;
     gamePerks.looter.perkData = gameData.perks.looter;
     gamePerks.producer.perkData = gameData.perks.producer;
     gamePerks.damager.perkData = gameData.perks.damager;
@@ -1544,6 +1601,7 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     $('#btnBuyShieldLab').addClass('hidden');
     $('#btnBuyArmorLab').addClass('hidden');
     $('#btnBuyFlakLab').addClass('hidden');
+    $('#btnBuyPowerConverter').addClass('hidden');
     $('#btnBuyGenerator').addClass('hidden');
     $('#btnBuyPlant').addClass('hidden');
     $('#btnBuyRefinery').addClass('hidden');
@@ -1555,6 +1613,7 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     $('#btnBuy10ShieldLab').addClass('hidden');
     $('#btnBuy10ArmorLab').addClass('hidden');
     $('#btnBuy10FlakLab').addClass('hidden');
+    $('#btnBuy10PowerConverter').addClass('hidden');
     $('#btnBuy10Generator').addClass('hidden');
     $('#btnBuy10Plant').addClass('hidden');
     $('#btnBuy10Refinery').addClass('hidden');
@@ -1696,6 +1755,8 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     gameBuildings.armorLab.updateBuyButtonTooltip();
     gameBuildings.flakLab.updateBuyButtonText();
     gameBuildings.flakLab.updateBuyButtonTooltip();
+    gameBuildings.powerConverter.updateBuyButtonText();
+    gameBuildings.powerConverter.updateBuyButtonTooltip();
     achievementlist = [];
     // eslint-disable-next-line max-statements-per-line
     achievementlist.push(new Achievement(0, '5 mines', 1, function () { return gameData.buildings.mines.count >= 5; }));
@@ -1828,6 +1889,13 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     achievementlist.push(new Achievement(127, '1000000 Chronoton Collected', 160, function () { return gameData.resources.chronoton >= 1000000; }));
     achievementlist.push(new Achievement(128, '10000000 Chronoton Collected', 320, function () { return gameData.resources.chronoton >= 100000000; }));
     achievementlist.push(new Achievement(129, '100000000 Chronoton Collected', 640, function () { return gameData.resources.chronoton >= 100000000; }));
+    achievementlist.push(new Achievement(130, '1 Power Converter', 1, function () { return gameData.buildings.powerConverters.count >= 1; }));
+    achievementlist.push(new Achievement(131, '5 Power Converters', 2, function () { return gameData.buildings.powerConverters.count >= 5; }));
+    achievementlist.push(new Achievement(132, '10 Power Converters', 5, function () { return gameData.buildings.powerConverters.count >= 10; }));
+    achievementlist.push(new Achievement(133, '25 Power Converters', 10, function () { return gameData.buildings.powerConverters.count >= 25; }));
+    achievementlist.push(new Achievement(134, '50 Power Converters', 25, function () { return gameData.buildings.powerConverters.count >= 50; }));
+    achievementlist.push(new Achievement(135, '100 Power Converters', 50, function () { return gameData.buildings.powerConverters.count >= 100; }));
+    achievementlist.push(new Achievement(136, '1000 Power Converters', 100, function () { return gameData.buildings.powerConverters.count >= 1000; }));
     $('#btnConfirmGateway').attr('title', 'Standard Run');
     $('#btnConfirmConsistency').attr('title', gameData.challenges.consistency.description);
     $('#btnConfirmPower').attr('title', gameData.challenges.power.description);
@@ -1918,6 +1986,9 @@ function runRules() {
         }
         if (gameBuildings.flakLab.canAffordBuy(buildingcost)) {
             gameBuildings.flakLab.buy(1);
+        }
+        if (gameBuildings.powerConverter.canAffordBuy(buildingcost)) {
+            gameBuildings.powerConverter.buy(1);
         }
     }
     if (doresearch) {
@@ -2328,7 +2399,8 @@ function updateGUI() {
     $('#btnSlowArmorLab').addClass('hidden');
     $('#btnFastFlakLab').addClass('hidden');
     $('#btnSlowFlakLab').addClass('hidden');
-    if (gameData.missions[0].level >= 5 && gameData.tacticalChoices.shieldLabsSetting.count === 0) {
+    $('#btnPowerConverterResource').addClass('hidden');
+    if (gameData.missions[0].level >= 10 && gameData.tacticalChoices.shieldLabsSetting.count === 0) {
         $('#buildingsContainer').removeClass('hidden');
         $('#TacticalExplanation').removeClass('hidden');
         $('#btnFastShieldLab').removeClass('hidden');
@@ -2340,11 +2412,15 @@ function updateGUI() {
         $('#btnFastArmorLab').removeClass('hidden');
         $('#btnSlowArmorLab').removeClass('hidden');
     }
-    if (gameData.missions[0].level >= 5 && gameData.tacticalChoices.flakLabsSetting.count === 0) {
+    if (gameData.missions[0].level >= 20 && gameData.tacticalChoices.flakLabsSetting.count === 0) {
         $('#buildingsContainer').removeClass('hidden');
         $('#TacticalExplanation').removeClass('hidden');
         $('#btnFastFlakLab').removeClass('hidden');
         $('#btnSlowFlakLab').removeClass('hidden');
+    }
+    if (gameData.missions[0].level >= 10 && gameData.tacticalChoices.powerConvertersSetting.count === 0) {
+        $('#buildingsContainer').removeClass('hidden');
+        $('#btnPowerConverterResource').removeClass('hidden');
     }
     if (gameData.tacticalChoices.armorLabsSetting.count > 0) {
         $('#btnBuyArmorLab').removeClass('hidden');
@@ -2360,6 +2436,11 @@ function updateGUI() {
         $('#btnBuyFlakLab').removeClass('hidden');
         $('#btnBuy10FlakLab').removeClass('hidden');
         gameBuildings.flakLab.unlocked = true;
+    }
+    if (gameData.tacticalChoices.powerConvertersSetting.count > 0) {
+        $('#btnBuyPowerConverter').removeClass('hidden');
+        $('#btnBuy10PowerConverter').removeClass('hidden');
+        gameBuildings.powerConverter.unlocked = true;
     }
     if (gameData.missions[0].level > 1) {
         $('#btnResetAbilities').addClass('hidden');
@@ -2480,6 +2561,7 @@ function updateGUI() {
     gameBuildings.shieldLab.determineShowAffordBuy();
     gameBuildings.armorLab.determineShowAffordBuy();
     gameBuildings.flakLab.determineShowAffordBuy();
+    gameBuildings.powerConverter.determineShowAffordBuy();
     gameEquipment.railgun.determineShowPrestigeButton();
     gameEquipment.railgun.determineShowUpgradeButton();
     gameEquipment.railgun.determineShowAffordPrestige();
@@ -2644,7 +2726,7 @@ function updatePower() {
     var p5 = gameBuildings.fusionPlant.totalPowerCreated();
     var p6 = gameBuildings.chronotonPlant.totalPowerCreated();
     var powerAvailable = p1 + p2 + p3 + p4 + p5 + p6;
-    var facilities = gameBuildings.shieldLab.powerSpent() + gameBuildings.armorLab.powerSpent() + gameBuildings.flakLab.powerSpent() + gameBuildings.mine.powerSpent() + gameBuildings.shipyard.powerSpent() + gameBuildings.factory.powerSpent() + gameBuildings.lab.powerSpent() + gameBuildings.refinery.powerSpent();
+    var facilities = gameBuildings.powerConverter.powerSpent() + gameBuildings.shieldLab.powerSpent() + gameBuildings.armorLab.powerSpent() + gameBuildings.flakLab.powerSpent() + gameBuildings.mine.powerSpent() + gameBuildings.shipyard.powerSpent() + gameBuildings.factory.powerSpent() + gameBuildings.lab.powerSpent() + gameBuildings.refinery.powerSpent();
     gameData.resources.power = powerAvailable - facilities;
 }
 function CheckPower(powerRequirement) {
@@ -2687,6 +2769,13 @@ function chooseSlowOrFastFlakLab(choice) {
     $('#btnBuyFlakLab').removeClass('hidden');
     gameBuildings.flakLab.updateBuyButtonText();
     gameBuildings.flakLab.updateBuyButtonTooltip();
+}
+function choosePowerConverter(choice) {
+    gameData.tacticalChoices.powerConvertersSetting.count = choice;
+    $('#btnPowerConverterResource').addClass('hidden');
+    $('#btnBuyPowerConverter').removeClass('hidden');
+    gameBuildings.powerConverter.updateBuyButtonText();
+    gameBuildings.powerConverter.updateBuyButtonTooltip();
 }
 function buyMetalProficiency() {
     var nextMetalCost = Math.floor(METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiency.bought));
@@ -2915,10 +3004,10 @@ function updateMissionButtons() {
     }
 }
 const ELITE_ENEMY_ATTRIBUTES = ['Quick', 'Hardy', 'Elite'];
-function checkForCreateLoot(mission, zone) {
+function checkForCreateLoot(mission, enemy) {
     var rtn = {
         lootType: '',
-        lootAmount: Math.pow(((mission.level - 1) * 100) + zone, 1.2) * mission.lootMultiplier * gamePerks.looter.getBonus()
+        lootAmount: (enemy.shieldMax + enemy.hitPointsMax)
     };
     var l = Math.floor(Math.random() * 100);
     if (mission.IsGalaxy) {
@@ -2989,11 +3078,11 @@ function checkForUnlocks() {
             updateMissionButtons();
         }
     }
-    if (gameData.missions[0].level % 10 === 0 && gameData.missions[0].zone === 27) {
-        gameData.missions.push(new Mission('A Gold Mine', true, 2, 3, gameData.missions[0].level, 100, false));
-        updateMissionButtons();
-        addToDisplay('I have found the locaton of an ancient Gold Mine.  It may be worth checking out.', 'story');
-    }
+    // if (gameData.missions[0].level % 10 === 0 && gameData.missions[0].zone === 27) {
+    //   gameData.missions.push(new Mission('A Gold Mine', true, 2, 3, gameData.missions[0].level, 100, false));
+    //   updateMissionButtons();
+    //   addToDisplay('I have found the locaton of an ancient Gold Mine.  It may be worth checking out.', 'story');
+    // }
     if (gameData.missions[0].level === 20 && gameData.missions[0].zone === 50) {
         gameData.missions.push(new Mission('Panel Improvement', true, 2, 1, gameData.missions[0].level, 100, false));
         updateMissionButtons();
