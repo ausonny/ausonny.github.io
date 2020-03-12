@@ -281,9 +281,9 @@
                 </div>
               </div>
             </div>
-            <button class="btn btn-sm btn-primary fightbutton" id="btnRules" type="button" data-toggle="modal" data-target="#RulesModal">Automation</button>
+            <button class="btn btn-sm btn-primary fightbutton hidden" id="btnRules" type="button" data-toggle="modal" data-target="#RulesModal">Automation</button>
             <div class="modal fade" id="RulesModal" tabindex="-1" role="dialog" aria-labelledby="rulesModalLabel" aria-hidden="true">
-              <div class="modal-dialog modal-xl" role="document">
+              <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                   <div class="modal-header bg-dark">
                     <h5 class="modal-title" id="rulesModalLabel">Rules</h5>
@@ -291,55 +291,7 @@
                   </div>
                   <div class="modal-body bg-secondary text-left">
                     <form>
-                      <div class="form-row align-items-center">
-                        <div class="col-2">
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="rule1active">
-                            <label class="form-check-label" for="rule1active">
-                              Active
-                            </label>
-                          </div>
-                        </div>
-                        <div class="col-5">
-                          <select class="custom-select mr-sm-2" id="rule1what">
-                            <option selected>Choose...</option>
-                            <option value="1">All</option>
-                            <option value="2">Buildings</option>
-                            <option value="3">Research</option>
-                            <option value="4">Equipment</option>
-                          </select>
-                        </div>
-                        <div class="col-5 form-inline">
-                          <label for="rule1Cost" class="m-2">Cost </label>
-                          <input type="number" class="form-control" id="rule1cost" placeholder="10">
-                        </div>
-                      </div>
-                      <div class="form-row align-items-center">
-                        <div class="col-2">
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="rule2active">
-                            <label class="form-check-label" for="rule2active">
-                              Active
-                            </label>
-                          </div>
-                        </div>
-                        <div class="col-5">
-                          <select class="custom-select mr-sm-2" id="rule2what">
-                            <option selected>Choose...</option>
-                            <option value="1">All</option>
-                            <option value="2">Buildings</option>
-                            <option value="3">Research</option>
-                            <option value="4">Equipment</option>
-                          </select>
-                        </div>
-                        <div class="col-5 form-inline">
-                          <label for="rule2Cost" class="m-2">Cost </label>
-                          <input type="number" class="form-control" id="rule2cost" placeholder="10">
-                        </div>
-                      </div>
-                      <div class="form-row text-right">
-                        <div class="col">
-                        </div>
+                      <div id='rulescontainer'>
                       </div>
                     </form>
                   </div>

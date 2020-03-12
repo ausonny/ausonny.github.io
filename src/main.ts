@@ -1536,6 +1536,7 @@ function chronotonAvailable() {
   rtn -= gamePerks.consistency.chronotonSpent();
   rtn -= gamePerks.power.chronotonSpent();
   rtn -= gamePerks.criticality.chronotonSpent();
+  rtn -= gamePerks.condenser.chronotonSpent();
   return rtn;
 }
 
@@ -1563,6 +1564,8 @@ function gatewayClick(challengeChosen: string = '') { // eslint-disable-line no-
   savedChallenges.power.unlocked = gameData.challenges.power.unlocked;
   savedChallenges.criticality.completed = gameData.challenges.criticality.completed;
   savedChallenges.criticality.unlocked = gameData.challenges.criticality.unlocked;
+  savedChallenges.condenser.completed = gameData.challenges.condenser.completed;
+  savedChallenges.condenser.unlocked = gameData.challenges.condenser.unlocked;
   var savedRules = gameData.rules;
   init(savedperks, savedChallenges, true, challengeChosen, gameData.resources.chronoton, savedachievements, savedstats, savedRules);
   $('#GatewayModal').modal('hide');
@@ -1991,6 +1994,7 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   $('#aethercontainer').addClass('hidden');
   $('#buildingsContainer').addClass('hidden');
   $('#equipmentContainer').addClass('hidden');
+  $('#btnRules').addClass('hidden');
 
   $('#upgrade-tab').addClass('hidden');
   $('#btnFight').addClass('hidden');
@@ -2121,6 +2125,94 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   gameBuildings.flakLab.updateBuyButtonTooltip();
   gameBuildings.powerConverter.updateBuyButtonText();
   gameBuildings.powerConverter.updateBuyButtonTooltip();
+
+  var ruleContainer = document.getElementById('rulescontainer');
+  while (ruleContainer.firstChild) {
+    ruleContainer.removeChild(ruleContainer.lastChild);
+  }
+
+  for (let index = 0; index < Math.floor(gameData.stats.maxGalaxy / 20); index++) {
+    var formRow = document.createElement('div');
+    ruleContainer.appendChild(formRow);
+    formRow.classList.add('form-row');
+    formRow.classList.add('align-items-center');
+    var col1 = document.createElement('div');
+    col1.classList.add('col-3');
+    formRow.appendChild(col1);
+    var formCheck = document.createElement('div');
+    formCheck.classList.add('form-check');
+    col1.appendChild(formCheck);
+    var ruleactive = document.createElement('input');
+    ruleactive.classList.add('form-check-input');
+    ruleactive.type = 'checkbox';
+    ruleactive.id = 'rule' + index + 'active';
+    formCheck.appendChild(ruleactive);
+    var ruleactivelabel = document.createElement('label');
+    ruleactivelabel.classList.add('form-check-label');
+    ruleactivelabel.innerHTML = 'Active';
+    ruleactivelabel.htmlFor = ruleactive.id;
+    formCheck.appendChild(ruleactivelabel);
+    var col2 = document.createElement('div');
+    col2.classList.add('col-3');
+    formRow.appendChild(col2);
+    var select = document.createElement('select');
+    select.classList.add('cusrom-select');
+    select.classList.add('mr-sm-2');
+    select.id = 'rule' + index + 'what';
+    col2.appendChild(select);
+    var option0 = document.createElement('option');
+    option0.selected = true;
+    option0.innerHTML = 'Choose...';
+    select.appendChild(option0);
+    var option1 = document.createElement('option');
+    option1.value = '1';
+    option1.innerHTML = 'All';
+    select.appendChild(option1);
+    var option2 = document.createElement('option');
+    option2.value = '2';
+    option2.innerHTML = 'Buildings';
+    select.appendChild(option2);
+    var option3 = document.createElement('option');
+    option3.value = '3';
+    option3.innerHTML = 'Research';
+    select.appendChild(option3);
+    var option4 = document.createElement('option');
+    option4.value = '4';
+    option4.innerHTML = 'Equipment';
+    select.appendChild(option4);
+    var option5 = document.createElement('option');
+    option5.value = '10';
+    option5.innerHTML = 'Power';
+    select.appendChild(option5);
+    var option6 = document.createElement('option');
+    option6.value = '11';
+    option6.innerHTML = 'Resource Creation';
+    select.appendChild(option6);
+    var option7 = document.createElement('option');
+    option7.value = '12';
+    option7.innerHTML = 'Equipment Labs';
+    select.appendChild(option7);
+    var col3 = document.createElement('div');
+    col3.classList.add('col-6');
+    col3.classList.add('form-inline');
+    formRow.appendChild(col3);
+    var costinput = document.createElement('input');
+    costinput.type = 'number';
+    costinput.classList.add('form-control');
+    costinput.id = 'rule' + index + 'cost';
+    costinput.placeholder = '10';
+    var rulecostlabel = document.createElement('label');
+    rulecostlabel.classList.add('m-2');
+    rulecostlabel.htmlFor = costinput.id;
+    rulecostlabel.innerHTML = 'Cost';
+    col3.appendChild(rulecostlabel);
+    col3.appendChild(costinput);
+    if (typeof gameData.rules[index] !== 'undefined') {
+      select.value = gameData.rules[index].action;
+      costinput.value = gameData.rules[index].cost.toString(10);
+      ruleactive.checked = gameData.rules[index].active;
+    }
+  }
 
   achievementlist = [];
 
@@ -2285,25 +2377,30 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
 function saveRules() { // eslint-disable-line no-unused-vars
   gameData.rules = [];
 
-  var newRule = new automationRule(1);
-  newRule.action = (<HTMLInputElement>document.getElementById('rule1what')).value;
-  newRule.cost = Number((<HTMLInputElement>document.getElementById('rule1cost')).value);
-  newRule.active = Boolean((<HTMLInputElement>document.getElementById('rule1active')).checked);
-  gameData.rules.push(newRule);
-
-  var newRule2 = new automationRule(2);
-  newRule2.action = (<HTMLInputElement>document.getElementById('rule2what')).value;
-  newRule2.cost = Number((<HTMLInputElement>document.getElementById('rule2cost')).value);
-  newRule2.active = Boolean((<HTMLInputElement>document.getElementById('rule2active')).checked);
-  gameData.rules.push(newRule2);
+  for (let index = 0; index < Math.floor(gameData.stats.maxGalaxy / 20); index++) {
+    var newRule = new automationRule(index);
+    var what = 'rule' + index + 'what';
+    var cost = 'rule' + index + 'cost';
+    var active = 'rule' + index + 'active';
+    if (typeof document.getElementById(what) !== 'undefined') {
+      newRule.action = (<HTMLInputElement>document.getElementById(what)).value;
+      newRule.cost = Number((<HTMLInputElement>document.getElementById(cost)).value);
+      newRule.active = Boolean((<HTMLInputElement>document.getElementById(active)).checked);
+    }
+    gameData.rules.push(newRule);
+  }
 }
 
 function runRules() {
-  var dobuilding = false;
   var doresearch = false;
   var doequipment = false;
-  var buildingcost = 10000;
-  var equipmentcost = 100000;
+  var dopower = false;
+  var doresource = false;
+  var doequipmentlabs = false;
+  var equipmentcost = 1000;
+  var powercost = 1000;
+  var resourcecost = 1000;
+  var equimentlabscost = 1000;
 
   if (typeof gameData.rules === 'undefined') {
     return;
@@ -2313,8 +2410,12 @@ function runRules() {
     const element = gameData.rules[index];
     if (element.active) {
       if (element.action === '1' || element.action === '2') {
-        buildingcost = Math.min(buildingcost, element.cost);
-        dobuilding = true;
+        powercost = Math.min(powercost, element.cost);
+        resourcecost = Math.min(resourcecost, element.cost);
+        equimentlabscost = Math.min(equimentlabscost, element.cost);
+        dopower = true;
+        doresource = true;
+        doequipmentlabs = true;
       }
       if (element.action === '1' || element.action === '3') {
         doresearch = true;
@@ -2323,47 +2424,63 @@ function runRules() {
         equipmentcost = Math.min(equipmentcost, element.cost);
         doequipment = true;
       }
+      if (element.action === '10') {
+        powercost = element.cost;
+        dopower = true;
+      }
+      if (element.action === '11') {
+        resourcecost = element.cost;
+        doresource = true;
+      }
+      if (element.action === '12') {
+        equimentlabscost = element.cost;
+        doequipmentlabs = true;
+      }
     }
   }
 
-  if (dobuilding) {
-    if (gameBuildings.panel.canAffordBuy(buildingcost)) {
+  if (dopower) {
+    if (gameBuildings.panel.canAffordBuy(powercost)) {
       gameBuildings.panel.buy(1);
     }
-    if (gameBuildings.generator.canAffordBuy(buildingcost)) {
+    if (gameBuildings.generator.canAffordBuy(powercost)) {
       gameBuildings.generator.buy(1);
     }
-    if (gameBuildings.plant.canAffordBuy(buildingcost)) {
+    if (gameBuildings.plant.canAffordBuy(powercost)) {
       gameBuildings.plant.buy(1);
     }
-    if (gameBuildings.aetherPlant.canAffordBuy(buildingcost)) {
+    if (gameBuildings.aetherPlant.canAffordBuy(powercost)) {
       gameBuildings.aetherPlant.buy(1);
     }
-    if (gameBuildings.fusionPlant.canAffordBuy(buildingcost)) {
+    if (gameBuildings.fusionPlant.canAffordBuy(powercost)) {
       gameBuildings.fusionPlant.buy(1);
     }
-    if (gameBuildings.mine.canAffordBuy(buildingcost)) {
+  }
+  if (doresource) {
+    if (gameBuildings.mine.canAffordBuy(resourcecost)) {
       gameBuildings.mine.buy(1);
     }
-    if (gameBuildings.factory.canAffordBuy(buildingcost)) {
+    if (gameBuildings.factory.canAffordBuy(resourcecost)) {
       gameBuildings.factory.buy(1);
     }
-    if (gameBuildings.lab.canAffordBuy(buildingcost)) {
+    if (gameBuildings.lab.canAffordBuy(resourcecost)) {
       gameBuildings.lab.buy(1);
     }
-    if (gameBuildings.refinery.canAffordBuy(buildingcost)) {
+    if (gameBuildings.refinery.canAffordBuy(resourcecost)) {
       gameBuildings.refinery.buy(1);
     }
-    if (gameBuildings.armorLab.canAffordBuy(buildingcost)) {
+  }
+  if (doequipmentlabs) {
+    if (gameBuildings.armorLab.canAffordBuy(equimentlabscost)) {
       gameBuildings.armorLab.buy(1);
     }
-    if (gameBuildings.shieldLab.canAffordBuy(buildingcost)) {
+    if (gameBuildings.shieldLab.canAffordBuy(equimentlabscost)) {
       gameBuildings.shieldLab.buy(1);
     }
-    if (gameBuildings.flakLab.canAffordBuy(buildingcost)) {
+    if (gameBuildings.flakLab.canAffordBuy(equimentlabscost)) {
       gameBuildings.flakLab.buy(1);
     }
-    if (gameBuildings.powerConverter.canAffordBuy(buildingcost)) {
+    if (gameBuildings.powerConverter.canAffordBuy(equimentlabscost)) {
       gameBuildings.powerConverter.buy(1);
     }
   }
@@ -2922,6 +3039,8 @@ function updateGUI() {
   gamePerks.power.determineShowBuyButton();
   gamePerks.criticality.determineShowAffordUpgrade();
   gamePerks.criticality.determineShowBuyButton();
+  gamePerks.condenser.determineShowAffordUpgrade();
+  gamePerks.condenser.determineShowBuyButton();
 
   if (debugText.length > 0) {
     $('#debugContainer').removeClass('hidden');
@@ -2944,6 +3063,10 @@ function updateGUI() {
   $('#btnConfirmCondenser').addClass('hidden');
   if (gameData.challenges.condenser.unlocked && !gameData.challenges.condenser.completed) {
     $('#btnConfirmCondenser').removeClass('hidden');
+  }
+
+  if (gameData.stats.maxGalaxy >= 20) {
+    $('#btnRules').removeClass('hidden');
   }
 }
 
