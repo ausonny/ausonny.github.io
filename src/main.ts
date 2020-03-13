@@ -1556,6 +1556,7 @@ function gatewayClick(challengeChosen: string = '') { // eslint-disable-line no-
   savedperks.speed = gameData.perks.speed;
   savedperks.thickskin = gameData.perks.thickskin;
   savedperks.criticality = gameData.perks.criticality;
+  savedperks.condenser = gameData.perks.condenser;
   var savedachievements = gameData.achievementids;
   var savedChallenges = new challenges();
   savedChallenges.consistency.completed = gameData.challenges.consistency.completed;

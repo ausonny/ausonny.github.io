@@ -1093,6 +1093,7 @@ function gatewayClick(challengeChosen = '') {
     savedperks.speed = gameData.perks.speed;
     savedperks.thickskin = gameData.perks.thickskin;
     savedperks.criticality = gameData.perks.criticality;
+    savedperks.condenser = gameData.perks.condenser;
     var savedachievements = gameData.achievementids;
     var savedChallenges = new challenges();
     savedChallenges.consistency.completed = gameData.challenges.consistency.completed;
@@ -1635,6 +1636,7 @@ function init(passedperks, passedchallenges, gatewayReset = false, activeChallen
     $('#aethercontainer').addClass('hidden');
     $('#buildingsContainer').addClass('hidden');
     $('#equipmentContainer').addClass('hidden');
+    $('#btnRules').addClass('hidden');
     $('#upgrade-tab').addClass('hidden');
     $('#btnFight').addClass('hidden');
     $('#btnAutoFight').addClass('hidden');
@@ -2674,6 +2676,9 @@ function updateGUI() {
     $('#btnConfirmCondenser').addClass('hidden');
     if (gameData.challenges.condenser.unlocked && !gameData.challenges.condenser.completed) {
         $('#btnConfirmCondenser').removeClass('hidden');
+    }
+    if (gameData.stats.maxGalaxy >= 20) {
+        $('#btnRules').removeClass('hidden');
     }
 }
 function resetAbilities() {
