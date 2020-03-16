@@ -173,6 +173,7 @@ const FLAK_UPGRADE_AETHER_BASE_COST = 350;
 
 // const GALAXIES_PER_RULE = 20;
 var notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
+var LabSpeedOptions = ['Both', 'Fast Only', 'Slow Only'];
 
 var possibleEnemies: PossibleEnemies[];
 var lastSaveGameTime = new Date();
@@ -275,6 +276,8 @@ class perks {
 
   condenser: CountInfo
 
+  streamline: CountInfo
+
   constructor() {
     this.looter = new CountInfo(0);
     this.producer = new CountInfo(0);
@@ -285,6 +288,7 @@ class perks {
     this.power = new CountInfo(0);
     this.criticality = new CountInfo(0);
     this.condenser = new CountInfo(0);
+    this.streamline = new CountInfo(0);
   }
 }
 
@@ -392,11 +396,14 @@ class challenges {
 
   condenser: challenge
 
+  streamline: challenge
+
   constructor() {
     this.consistency = new challenge('Your drones damage maximum will be lowered to the drones minimum damage for the duration of this challenge.  Completing Galaxy 25 will complete the challenge and unlock the Consistency ability which will improve your drones minimum damage and damage will return to normal.', 25, 25);
     this.power = new challenge('Power production will be halved for the duration of this challenge. Completing Galaxy 30 will complete the challenge, unlock the Power ability, and return power production to normal.', 30, 30);
     this.criticality = new challenge('The enemy has gained the ability to unleash massive amounts of critical damage from time to time.  Completing Galaxy 35 will complete the challenge and unlock the criticality ability.  Learning this ability will be incredibly helpful.', 35, 35);
     this.condenser = new challenge('You are about to enter another dimension.  A dimension not only of sight and sound but of big maps.  Each map is 150 zones in size.   Completing Galaxy 40 will complete the challenge and unlock the condenser ability.  Each level bought will decrease Mission(not Galaxy) sizes by one.', 40, 40);
+    this.streamline = new challenge('You are about to enter another dimension.  A dimension not only of sight and sound but of poor planning maps.  Each piece of equipment or infusion is twice as expensive.   Completing Galaxy 50 will complete the challenge and unlock the streamline ability.  Streamline will reduce equipment and infusion costs.', 50, 50);
   }
 }
 
@@ -438,6 +445,9 @@ class saveGameData {
   options: {
     standardNotation: number
     logNotBase: number
+    armorLabOption: number
+    shieldLabOption: number
+    flakLabOption: number
   }
 
   resources: {
@@ -547,7 +557,10 @@ class saveGameData {
     this.perks = new perks();
     this.options = {
       logNotBase: 1,
-      standardNotation: 1
+      standardNotation: 1,
+      armorLabOption: 0,
+      shieldLabOption: 0,
+      flakLabOption: 0
     };
     this.resources = {
       aether: 0,
@@ -837,13 +850,16 @@ class PerkBase {
 
   maxBought: number
 
-  constructor(name:string, perkData: CountInfo, initialCost: number, costGrowthRate: number, btnBuy: HTMLElement, maxBought:number = 100000000) {
+  description: string
+
+  constructor(name:string, perkData: CountInfo, initialCost: number, costGrowthRate: number, btnBuy: HTMLElement, description: string, maxBought:number = 100000000) {
     this.name = name;
     this.perkData = perkData;
     this.costGrowthRate = costGrowthRate;
     this.initialCost = initialCost;
     this.btnBuy = btnBuy;
     this.maxBought = maxBought;
+    this.description = description;
   }
 
   chronotonforBuy() { return this.initialCost * Math.pow(this.costGrowthRate, this.perkData.count); }
@@ -859,7 +875,7 @@ class PerkBase {
     if (this.maxBought != 100000000) {
       maxAdd = '\nMaximum allowed: ' + this.maxBought;
     }
-    return ('Each level bought will add 10% additively\n\nChronoton Cost:' + prettify(this.chronotonforBuy()) + maxAdd);
+    return (this.description + '\n\nChronoton Cost:' + prettify(this.chronotonforBuy()) + maxAdd);
   }
 
   updateBuyButtonTooltip() { this.btnBuy.attributes.getNamedItem('title').value = this.toolTip(); }
@@ -887,6 +903,12 @@ class PerkBase {
       }
     } else if (this.name === 'Condenser') {
       if (gameData.challenges.condenser.completed) {
+        this.btnBuy.classList.remove('hidden');
+      } else {
+        this.btnBuy.classList.add('hidden');
+      }
+    } else if (this.name === 'Streamline') {
+      if (gameData.challenges.streamline.completed) {
         this.btnBuy.classList.remove('hidden');
       } else {
         this.btnBuy.classList.add('hidden');
@@ -919,15 +941,16 @@ class PerkBase {
 }
 
 var gamePerks = {
-  looter: new PerkBase('Looter', new CountInfo(0), 1, 1.3, document.getElementById('btnLooter')),
-  producer: new PerkBase('Producer', new CountInfo(0), 1, 1.3, document.getElementById('btnProducer')),
-  damager: new PerkBase('Damager', new CountInfo(0), 1, 1.3, document.getElementById('btnDamager')),
-  thickskin: new PerkBase('ThickSkin', new CountInfo(0), 1, 1.3, document.getElementById('btnThickSkin')),
-  speed: new PerkBase('Speed', new CountInfo(0), 4, 1.3, document.getElementById('btnSpeed'), 10),
-  consistency: new PerkBase('Consistency', new CountInfo(0), 1, 1.3, document.getElementById('btnConsistency'), 25),
-  power: new PerkBase('Power', new CountInfo(0), 25, 1.3, document.getElementById('btnPower')),
-  criticality: new PerkBase('Criticality', new CountInfo(0), 100, 1.3, document.getElementById('btnCriticality'), 10),
-  condenser: new PerkBase('Condenser', new CountInfo(0), 100, 1.3, document.getElementById('btnCondenser'), 80)
+  looter: new PerkBase('Looter', new CountInfo(0), 3, 1.3, document.getElementById('btnLooter'), 'Each level adds 10% additively to the resources gained from fighting as well as chronoton gained from finishing a galaxy'),
+  producer: new PerkBase('Producer', new CountInfo(0), 2, 1.3, document.getElementById('btnProducer'), 'Each level adds 10% additively to the resources gained from production'),
+  damager: new PerkBase('Damager', new CountInfo(0), 2, 1.3, document.getElementById('btnDamager'), 'Each level adds 10% additively to the damage of our drones'),
+  thickskin: new PerkBase('ThickSkin', new CountInfo(0), 2, 1.3, document.getElementById('btnThickSkin'), 'Each level adds 10% additively to the hitpoints and shields of our drones'),
+  speed: new PerkBase('Speed', new CountInfo(0), 5, 1.3, document.getElementById('btnSpeed'), 'Each level reduces the delay between attacks by 50ms', 10),
+  consistency: new PerkBase('Consistency', new CountInfo(0), 1, 1.3, document.getElementById('btnConsistency'), 'Each attack does between 75% and 125% of the base damage.  Each level of consistency bought increases the lower figure by 1%, i.e. 5 levels will make the range 80% to 125%', 25),
+  power: new PerkBase('Power', new CountInfo(0), 25, 1.3, document.getElementById('btnPower'), 'Each level adds 10% additevely to the power created by our facilities'),
+  criticality: new PerkBase('Criticality', new CountInfo(0), 100, 1.3, document.getElementById('btnCriticality'), 'Each level adds 5% to the chance for a critical hit and 50% to the damage done by a critical hit', 10),
+  condenser: new PerkBase('Condenser', new CountInfo(0), 100, 1.3, document.getElementById('btnCondenser'), 'Each level reduces the size of mission maps (not galaxy maps) by 1', 75),
+  streamline: new PerkBase('Streamline', new CountInfo(0), 15, 1.3, document.getElementById('btnStreamline'), 'Each level is a 5% multiplicative decrease to all equipment and prestige costs')
 };
 
 
@@ -956,7 +979,7 @@ class EquipmentBase {
 
   buttonclass: string
 
-  constructor(name: string, weapon: boolean, valueperlevel:number, upgradeMetalBaseCost: number, upgradePolymerBaseCost:number, upgradeRPBaseCost:number, upgradeAetherBaseCost:number, tech:EquipmentTechnology, upgradeButton:HTMLElement, upgrade10Button:HTMLElement, prestigeButton:HTMLElement) {
+  constructor(name: string, weapon: boolean, valueperlevel:number, upgradeMetalBaseCost: number, upgradePolymerBaseCost:number, upgradeRPBaseCost:number, upgradeAetherBaseCost:number, tech:EquipmentTechnology, upgradeButton:HTMLElement, upgrade10Button:HTMLElement, prestigeButton:HTMLElement, buttonclass: string) {
     this.name = name;
     this.weapon = weapon;
     this.valuePerLevel = valueperlevel;
@@ -968,11 +991,7 @@ class EquipmentBase {
     this.upgradeButton = upgradeButton;
     this.upgrade10Button = upgrade10Button;
     this.prestigeButton = prestigeButton;
-    if (weapon) {
-      this.buttonclass = 'btn-warning';
-    } else {
-      this.buttonclass = 'btn-info';
-    }
+    this.buttonclass = buttonclass;
   }
 
   metalForShip() { return (this.upgradeMetalBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought)); }
@@ -984,15 +1003,22 @@ class EquipmentBase {
   metalForUpgrade(amt:number = 1) {
     var cost = 0;
     for (let index = 0; index < amt; index++) {
-      cost += this.upgradeMetalBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1);
+      cost += this.upgradeMetalBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1) * Math.pow(0.95, gameData.perks.streamline.count);
     }
+    if (gameData.world.currentChallenge === 'Streamline') {
+      cost *= 2;
+    }
+
     return cost;
   }
 
   polymerForUpgrade(amt:number = 1) {
     var cost = 0;
     for (let index = 0; index < amt; index++) {
-      cost += this.upgradePolymerBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1);
+      cost += this.upgradePolymerBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1) * Math.pow(0.95, gameData.perks.streamline.count);
+    }
+    if (gameData.world.currentChallenge === 'Streamline') {
+      cost *= 2;
     }
     return cost;
   }
@@ -1001,18 +1027,49 @@ class EquipmentBase {
   //  return 0 * amt * this.upgradeRPBaseCost;
     var cost = 0;
     for (let index = 0; index < amt; index++) {
-      cost += this.upgradeRPBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1);
+      cost += this.upgradeRPBaseCost * (this.technology.upgrade + index + 1) * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1) * Math.pow(0.95, gameData.perks.streamline.count);
+    }
+    if (gameData.world.currentChallenge === 'Streamline') {
+      cost *= 2;
     }
     return cost;
   }
 
-  metalForPrestige() { return (this.upgradeMetalBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1)); }
+  metalForPrestige() {
+    var cost = 0;
+    cost = this.upgradeMetalBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1) * Math.pow(0.95, gameData.perks.streamline.count);
+    if (gameData.world.currentChallenge === 'Streamline') {
+      cost *= 2;
+    }
+    return cost;
+  }
 
-  polymerForPrestige() { return (this.upgradePolymerBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1)); }
+  polymerForPrestige() {
+    var cost = 0;
+    cost = this.upgradePolymerBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1) * Math.pow(0.95, gameData.perks.streamline.count);
+    if (gameData.world.currentChallenge === 'Streamline') {
+      cost *= 2;
+    }
+    return cost;
+  }
 
-  rpForPrestige() { return (this.upgradeRPBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1)); }
+  rpForPrestige() {
+    var cost = 0;
+    cost = this.upgradeRPBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1) * Math.pow(0.95, gameData.perks.streamline.count);
+    if (gameData.world.currentChallenge === 'Streamline') {
+      cost *= 2;
+    }
+    return cost;
+  }
 
-  aetherForPrestige() { return (this.upgradeAetherBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1)); }
+  aetherForPrestige() {
+    var cost = 0;
+    cost = this.upgradeAetherBaseCost * Math.pow(PRESTIGE_COST_MULTIPLIER, this.technology.prestigeBought - 1) * Math.pow(0.95, gameData.perks.streamline.count);
+    if (gameData.world.currentChallenge === 'Streamline') {
+      cost *= 2;
+    }
+    return cost;
+  }
 
   tooltipForUpgrade(amt:number = 1) {
     var str = '';
@@ -1506,14 +1563,13 @@ var gameBuildings = {
   }
 };
 
-
 var gameEquipment = {
-  railgun: new EquipmentBase('Railgun', true, RAILGUN_UPGRADE_BASE_IMPROVEMENT, RAILGUN_UPGRADE_METAL_BASE_COST, RAILGUN_UPGRADE_POLYMER_BASE_COST, RAILGUN_UPGRADE_RP_BASE_COST, RAILGUN_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnRailgunUpgrade'), document.getElementById('btnRailgunUpgrade10'), document.getElementById('btnRailgunPrestige')),
-  laser: new EquipmentBase('Laser', true, LASER_UPGRADE_BASE_IMPROVEMENT, LASER_UPGRADE_METAL_BASE_COST, LASER_UPGRADE_POLYMER_BASE_COST, LASER_UPGRADE_RP_BASE_COST, LASER_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnLaserUpgrade'), document.getElementById('btnLaserUpgrade10'), document.getElementById('btnLaserPrestige')),
-  missile: new EquipmentBase('Missile', true, MISSILE_UPGRADE_BASE_IMPROVEMENT, MISSILE_UPGRADE_METAL_BASE_COST, MISSILE_UPGRADE_POLYMER_BASE_COST, MISSILE_UPGRADE_RP_BASE_COST, MISSILE_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnMissileUpgrade'), document.getElementById('btnMissileUpgrade10'), document.getElementById('btnMissilePrestige')),
-  armor: new EquipmentBase('Armor', false, ARMOR_UPGRADE_BASE_IMPROVEMENT, ARMOR_UPGRADE_METAL_BASE_COST, ARMOR_UPGRADE_POLYMER_BASE_COST, ARMOR_UPGRADE_RP_BASE_COST, ARMOR_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnArmorUpgrade'), document.getElementById('btnArmorUpgrade10'), document.getElementById('btnArmorPrestige')),
-  shield: new EquipmentBase('Shield', false, SHIELD_UPGRADE_BASE_IMPROVEMENT, SHIELD_UPGRADE_METAL_BASE_COST, SHIELD_UPGRADE_POLYMER_BASE_COST, SHIELD_UPGRADE_RP_BASE_COST, SHIELD_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnShieldUpgrade'), document.getElementById('btnShieldUpgrade10'), document.getElementById('btnShieldPrestige')),
-  flak: new EquipmentBase('Flak', false, FLAK_UPGRADE_BASE_IMPROVEMENT, FLAK_UPGRADE_METAL_BASE_COST, FLAK_UPGRADE_POLYMER_BASE_COST, FLAK_UPGRADE_RP_BASE_COST, FLAK_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnFlakUpgrade'), document.getElementById('btnFlakUpgrade10'), document.getElementById('btnFlakPrestige'))
+  railgun: new EquipmentBase('Railgun', true, RAILGUN_UPGRADE_BASE_IMPROVEMENT, RAILGUN_UPGRADE_METAL_BASE_COST, RAILGUN_UPGRADE_POLYMER_BASE_COST, RAILGUN_UPGRADE_RP_BASE_COST, RAILGUN_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnRailgunUpgrade'), document.getElementById('btnRailgunUpgrade10'), document.getElementById('btnRailgunPrestige'), 'btn-warning'),
+  laser: new EquipmentBase('Laser', true, LASER_UPGRADE_BASE_IMPROVEMENT, LASER_UPGRADE_METAL_BASE_COST, LASER_UPGRADE_POLYMER_BASE_COST, LASER_UPGRADE_RP_BASE_COST, LASER_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnLaserUpgrade'), document.getElementById('btnLaserUpgrade10'), document.getElementById('btnLaserPrestige'), 'btn-warning'),
+  missile: new EquipmentBase('Missile', true, MISSILE_UPGRADE_BASE_IMPROVEMENT, MISSILE_UPGRADE_METAL_BASE_COST, MISSILE_UPGRADE_POLYMER_BASE_COST, MISSILE_UPGRADE_RP_BASE_COST, MISSILE_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnMissileUpgrade'), document.getElementById('btnMissileUpgrade10'), document.getElementById('btnMissilePrestige'), 'btn-warning'),
+  armor: new EquipmentBase('Armor', false, ARMOR_UPGRADE_BASE_IMPROVEMENT, ARMOR_UPGRADE_METAL_BASE_COST, ARMOR_UPGRADE_POLYMER_BASE_COST, ARMOR_UPGRADE_RP_BASE_COST, ARMOR_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnArmorUpgrade'), document.getElementById('btnArmorUpgrade10'), document.getElementById('btnArmorPrestige'), 'btn-info'),
+  shield: new EquipmentBase('Shield', false, SHIELD_UPGRADE_BASE_IMPROVEMENT, SHIELD_UPGRADE_METAL_BASE_COST, SHIELD_UPGRADE_POLYMER_BASE_COST, SHIELD_UPGRADE_RP_BASE_COST, SHIELD_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnShieldUpgrade'), document.getElementById('btnShieldUpgrade10'), document.getElementById('btnShieldPrestige'), 'btn-primary'),
+  flak: new EquipmentBase('Flak', false, FLAK_UPGRADE_BASE_IMPROVEMENT, FLAK_UPGRADE_METAL_BASE_COST, FLAK_UPGRADE_POLYMER_BASE_COST, FLAK_UPGRADE_RP_BASE_COST, FLAK_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(0, 0, 0), document.getElementById('btnFlakUpgrade'), document.getElementById('btnFlakUpgrade10'), document.getElementById('btnFlakPrestige'), 'btn-info')
 };
 
 function giveChronotonFragments(amt: number) {
@@ -1537,38 +1593,17 @@ function chronotonAvailable() {
   rtn -= gamePerks.power.chronotonSpent();
   rtn -= gamePerks.criticality.chronotonSpent();
   rtn -= gamePerks.condenser.chronotonSpent();
+  rtn -= gamePerks.streamline.chronotonSpent();
   return rtn;
 }
 
 // @ts-ignore
 function gatewayClick(challengeChosen: string = '') { // eslint-disable-line no-unused-vars
   gameData.stats.gatewaysUsed++;
-  var savedstats = gameData.stats;
   gameData.world.paused = true;
   gameData.resources.chronoton += gameData.resources.chronotonfragments;
   gameData.resources.chronotonfragments = 0;
-  var savedperks = new perks();
-  savedperks.looter = gameData.perks.looter;
-  savedperks.consistency = gameData.perks.consistency;
-  savedperks.power = gameData.perks.power;
-  savedperks.producer = gameData.perks.producer;
-  savedperks.damager = gameData.perks.damager;
-  savedperks.speed = gameData.perks.speed;
-  savedperks.thickskin = gameData.perks.thickskin;
-  savedperks.criticality = gameData.perks.criticality;
-  savedperks.condenser = gameData.perks.condenser;
-  var savedachievements = gameData.achievementids;
-  var savedChallenges = new challenges();
-  savedChallenges.consistency.completed = gameData.challenges.consistency.completed;
-  savedChallenges.consistency.unlocked = gameData.challenges.consistency.unlocked;
-  savedChallenges.power.completed = gameData.challenges.power.completed;
-  savedChallenges.power.unlocked = gameData.challenges.power.unlocked;
-  savedChallenges.criticality.completed = gameData.challenges.criticality.completed;
-  savedChallenges.criticality.unlocked = gameData.challenges.criticality.unlocked;
-  savedChallenges.condenser.completed = gameData.challenges.condenser.completed;
-  savedChallenges.condenser.unlocked = gameData.challenges.condenser.unlocked;
-  var savedRules = gameData.rules;
-  init(savedperks, savedChallenges, true, challengeChosen, gameData.resources.chronoton, savedachievements, savedstats, savedRules);
+  init(true, challengeChosen, gameData);
   $('#GatewayModal').modal('hide');
 
   gtag('event', 'gateway', {
@@ -1688,6 +1723,30 @@ function changeNotation() { // eslint-disable-line no-unused-vars
   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
 }
 
+function changeArmorLabAvailability() { // eslint-disable-line no-unused-vars
+  gameData.options.armorLabOption++;
+  if (gameData.options.armorLabOption > 2) {
+    gameData.options.armorLabOption = 0;
+  }
+  $('#btnArmorFastorSlow').text('Armor ' + LabSpeedOptions[gameData.options.armorLabOption]);
+}
+
+function changeShieldLabAvailability() { // eslint-disable-line no-unused-vars
+  gameData.options.shieldLabOption++;
+  if (gameData.options.shieldLabOption > 2) {
+    gameData.options.shieldLabOption = 0;
+  }
+  $('#btnShieldFastorSlow').text('Shield ' + LabSpeedOptions[gameData.options.shieldLabOption]);
+}
+
+function changeFlakLabAvailability() { // eslint-disable-line no-unused-vars
+  gameData.options.flakLabOption++;
+  if (gameData.options.flakLabOption > 2) {
+    gameData.options.flakLabOption = 0;
+  }
+  $('#btnFlakFastorSlow').text('Flak ' + LabSpeedOptions[gameData.options.flakLabOption]);
+}
+
 function resetGame() { // eslint-disable-line no-unused-vars
   localStorage.clear();
   location.reload(true);
@@ -1697,7 +1756,7 @@ function exportsave() { // eslint-disable-line no-unused-vars
   debugText = JSON.stringify(gameData);
 }
 
-function init(passedperks: perks, passedchallenges: challenges, gatewayReset: boolean = false, activeChallenge: string = '', chronoton: number = 0, passedAchievements: number[] = [], savedstats: Stats = new Stats(), savedRules: automationRule[] = []) {
+function init(gatewayReset: boolean, activeChallenge: string, oldsave:saveGameData = null) {
   debugText = 'v0.7.8 - automation';
   debugText += '\nv0.7.7 - New power building, new challenge, other changes';
   debugText += '\nv0.7.6 - Fix attack values bug, leading to what I think might be the 1.0 balance.  Rewrite of equipment and building code to use base classes.';
@@ -1712,12 +1771,11 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   debugText += '\nKnown issues and other ramblings:';
   debugText += '\n1. If the tab loses focus or is closed, when you return you will notice the game runs faster than expected until time catches up.  Enjoy this for now, eventually there will be an ability that will allow/limit this time.';
   debugText += '\n2. There are currently no tooltips for touchscreen users.';
-  debugText += '\n3. There is currently no confirmation dialog on clicking the reset button under settings.  Be careful.';
-  debugText += '\n4. The flavor text is basically in rough draft form complete with a few placeholders.';
-  debugText += '\n5. Balance is an ongoing process and any thoughts are appreciated.';
-  debugText += '\n6. Autosave is hardcoded for every five minutes.  This needs to be adjustable in settings.  And Playfab integration is coming.  One day.';
-  debugText += '\n7. Current achievements are limited.';
-  debugText += '\n8. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.';
+  debugText += '\n3. The flavor text is basically in rough draft form complete with a few placeholders.';
+  debugText += '\n4. Balance is an ongoing process and any thoughts are appreciated.';
+  debugText += '\n5. Autosave is hardcoded for every five minutes.  This needs to be adjustable in settings.  And Playfab integration is coming.  One day.';
+  debugText += '\n6. Current achievements are limited.';
+  debugText += '\n7. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.';
   possibleEnemies = [];
   possibleEnemies.push(new PossibleEnemies('Raider', 1, 1, 1));
   possibleEnemies.push(new PossibleEnemies('Tank', 0.5, 2, 1));
@@ -1735,20 +1793,14 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   gameData = new saveGameData('new');
 
   if (gatewayReset) {
-    gameData.resources.chronoton = chronoton;
-    gameData.perks = passedperks;
-    gameData.achievementids = passedAchievements;
-    gameData.challenges.consistency.completed = passedchallenges.consistency.completed;
-    gameData.challenges.consistency.unlocked = passedchallenges.consistency.unlocked;
-    gameData.challenges.power.completed = passedchallenges.power.completed;
-    gameData.challenges.power.unlocked = passedchallenges.power.unlocked;
-    gameData.challenges.criticality.completed = passedchallenges.criticality.completed;
-    gameData.challenges.criticality.unlocked = passedchallenges.criticality.unlocked;
-    gameData.challenges.condenser.completed = passedchallenges.condenser.completed;
-    gameData.challenges.condenser.unlocked = passedchallenges.condenser.unlocked;
+    gameData.resources.chronoton = oldsave.resources.chronoton;
+    gameData.perks = oldsave.perks;
+    gameData.achievementids = oldsave.achievementids;
+    gameData.challenges = oldsave.challenges;
     gameData.world.currentChallenge = activeChallenge;
-    gameData.stats = savedstats;
-    gameData.rules = savedRules;
+    gameData.stats = oldsave.stats;
+    gameData.rules = oldsave.rules;
+    gameData.options = oldsave.options;
   } else {
     var savegame = JSON.parse(localStorage.getItem('save'));
     if (savegame !== null) {
@@ -1830,6 +1882,9 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       if (typeof savegame.world.currentChallenge !== 'undefined') gameData.world.currentChallenge = savegame.world.currentChallenge;
       if (typeof savegame.options.standardNotation !== 'undefined') gameData.options.standardNotation = savegame.options.standardNotation;
       if (typeof savegame.options.logNotBase !== 'undefined') gameData.options.logNotBase = savegame.options.logNotBase;
+      if (typeof savegame.options.armorLabOption !== 'undefined') gameData.options.armorLabOption = savegame.options.armorLabOption;
+      if (typeof savegame.options.shieldLabOption !== 'undefined') gameData.options.shieldLabOption = savegame.options.shieldLabOption;
+      if (typeof savegame.options.flakLabOption !== 'undefined') gameData.options.flakLabOption = savegame.options.flakLabOption;
       if (typeof savegame.achievementids !== 'undefined') gameData.achievementids = savegame.achievementids;
       if (typeof savegame.perks.damager !== 'undefined') gameData.perks.damager = savegame.perks.damager;
       if (typeof savegame.perks.looter !== 'undefined') gameData.perks.looter = savegame.perks.looter;
@@ -1840,6 +1895,7 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       if (typeof savegame.perks.power !== 'undefined') gameData.perks.power = savegame.perks.power;
       if (typeof savegame.perks.criticality !== 'undefined') gameData.perks.criticality = savegame.perks.criticality;
       if (typeof savegame.perks.condenser !== 'undefined') gameData.perks.condenser = savegame.perks.condenser;
+      if (typeof savegame.perks.streamline !== 'undefined') gameData.perks.streamline = savegame.perks.streamline;
       if (typeof savegame.story.shipyardUnlocked !== 'undefined') gameData.story.shipyardUnlocked = savegame.story.shipyardUnlocked;
       if (typeof savegame.story.gatewayUnlocked !== 'undefined') gameData.story.gatewayUnlocked = savegame.story.gatewayUnlocked;
       if (typeof savegame.story.factoryunlocked !== 'undefined') gameData.story.factoryunlocked = savegame.story.factoryunlocked;
@@ -1861,6 +1917,8 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
       if (typeof savegame.challenges.criticality !== 'undefined') gameData.challenges.criticality.completed = savegame.challenges.criticality.completed;
       if (typeof savegame.challenges.condenser !== 'undefined') gameData.challenges.condenser.completed = savegame.challenges.condenser.completed;
       if (typeof savegame.challenges.condenser !== 'undefined') gameData.challenges.condenser.unlocked = savegame.challenges.condenser.unlocked;
+      if (typeof savegame.challenges.streamline !== 'undefined') gameData.challenges.streamline.completed = savegame.challenges.streamline.completed;
+      if (typeof savegame.challenges.streamline !== 'undefined') gameData.challenges.streamline.unlocked = savegame.challenges.streamline.unlocked;
       if (typeof savegame.tacticalChoices.shieldLabsSetting !== 'undefined') gameData.tacticalChoices.shieldLabsSetting = savegame.tacticalChoices.shieldLabsSetting;
       if (typeof savegame.tacticalChoices.armorLabsSetting !== 'undefined') gameData.tacticalChoices.armorLabsSetting = savegame.tacticalChoices.armorLabsSetting;
       if (typeof savegame.tacticalChoices.flakLabsSetting !== 'undefined') gameData.tacticalChoices.flakLabsSetting = savegame.tacticalChoices.flakLabsSetting;
@@ -1955,6 +2013,7 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   gamePerks.power.perkData = gameData.perks.power;
   gamePerks.criticality.perkData = gameData.perks.criticality;
   gamePerks.condenser.perkData = gameData.perks.condenser;
+  gamePerks.streamline.perkData = gameData.perks.streamline;
 
   $('#nav-research').tab('show');
   $('#polymercontainer').addClass('hidden');
@@ -2018,7 +2077,11 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   }
   $('#btnConfirmCondenser').addClass('hidden');
   if (gameData.challenges.condenser.unlocked && !gameData.challenges.condenser.completed) {
-    $('#btnConfirmcondenser').removeClass('hidden');
+    $('#btnConfirmCondenser').removeClass('hidden');
+  }
+  $('#btnConfirmStreamline').addClass('hidden');
+  if (gameData.challenges.streamline.unlocked && !gameData.challenges.streamline.completed) {
+    $('#btnConfirmStreamline').removeClass('hidden');
   }
 
   $('#btnFight').attr('title', 'Metal Cost:' + prettify(shipMetalRequired()) + '\nPolymer Cost:' + prettify(shipPolymerRequired()));
@@ -2095,6 +2158,10 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   gamePerks.condenser.updateBuyButtonTooltip();
   gamePerks.condenser.determineShowAffordUpgrade();
   gamePerks.condenser.determineShowBuyButton();
+  gamePerks.streamline.updateBuyButtonText();
+  gamePerks.streamline.updateBuyButtonTooltip();
+  gamePerks.streamline.determineShowAffordUpgrade();
+  gamePerks.streamline.determineShowBuyButton();
 
   gameBuildings.mine.updateBuyButtonText();
   gameBuildings.mine.updateBuyButtonTooltip();
@@ -2361,6 +2428,7 @@ function init(passedperks: perks, passedchallenges: challenges, gatewayReset: bo
   $('#btnConfirmPower').attr('title', gameData.challenges.power.description);
   $('#btnConfirmCriticality').attr('title', gameData.challenges.criticality.description);
   $('#btnConfirmCondenser').attr('title', gameData.challenges.condenser.description);
+  $('#btnConfirmStreamline').attr('title', gameData.challenges.streamline.description);
 
   updateAchievementBonus();
   updateAchievementScreen();
@@ -2717,6 +2785,8 @@ function updateGUI() {
     sceninfo = gameData.challenges.criticality.description;
   } else if (gameData.world.currentChallenge === 'Condenser') {
     sceninfo = gameData.challenges.condenser.description;
+  } else if (gameData.world.currentChallenge === 'Streamline') {
+    sceninfo = gameData.challenges.streamline.description;
   }
   document.getElementById('scenarioinfo').innerHTML = sceninfo;
 
@@ -2736,7 +2806,6 @@ function updateGUI() {
   document.getElementById('chronoton2').innerHTML = prettify(chronotonAvailable());
   document.getElementById('chronotonfragments').innerHTML = prettify(gameData.resources.chronotonfragments);
   document.getElementById('power').innerHTML = 'Power: ' + prettify(gameData.resources.power);
-  // document.getElementById('power').attributes.getNamedItem('title').value = 'Solar Panels: ' + gameBuildings.panel.powerPer() + '\n'
   document.getElementById('enemyName').innerHTML = gameData.enemyship.name;
   document.getElementById('enemyShipSize').innerHTML = prettify(gameData.enemyship.size);
   var width = 0;
@@ -3042,6 +3111,8 @@ function updateGUI() {
   gamePerks.criticality.determineShowBuyButton();
   gamePerks.condenser.determineShowAffordUpgrade();
   gamePerks.condenser.determineShowBuyButton();
+  gamePerks.streamline.determineShowAffordUpgrade();
+  gamePerks.streamline.determineShowBuyButton();
 
   if (debugText.length > 0) {
     $('#debugContainer').removeClass('hidden');
@@ -3065,6 +3136,10 @@ function updateGUI() {
   if (gameData.challenges.condenser.unlocked && !gameData.challenges.condenser.completed) {
     $('#btnConfirmCondenser').removeClass('hidden');
   }
+  $('#btnConfirmStreamline').addClass('hidden');
+  if (gameData.challenges.streamline.unlocked && !gameData.challenges.streamline.completed) {
+    $('#btnConfirmStreamline').removeClass('hidden');
+  }
 
   if (gameData.stats.maxGalaxy >= 20) {
     $('#btnRules').removeClass('hidden');
@@ -3081,6 +3156,7 @@ function resetAbilities() { // eslint-disable-line no-unused-vars
   gameData.perks.power.count = 0;
   gameData.perks.criticality.count = 0;
   gameData.perks.condenser.count = 0;
+  gameData.perks.streamline.count = 0;
   gamePerks.looter.updateBuyButtonText();
   gamePerks.looter.updateBuyButtonTooltip();
   gamePerks.producer.updateBuyButtonText();
@@ -3099,6 +3175,8 @@ function resetAbilities() { // eslint-disable-line no-unused-vars
   gamePerks.criticality.updateBuyButtonTooltip();
   gamePerks.condenser.updateBuyButtonText();
   gamePerks.condenser.updateBuyButtonTooltip();
+  gamePerks.streamline.updateBuyButtonText();
+  gamePerks.streamline.updateBuyButtonTooltip();
   gtag('event', 'resetAbilities()', {
     event_category: 'click',
     event_label: 'label',
@@ -3474,9 +3552,22 @@ function updateMissionButtons() {
     element.classList.add('btn-sm');
     element.classList.add('fightbutton');
     if (missionIndex === 0) {
-      element.classList.add('btn-primary');
+      element.classList.add('btn-dark');
+      element.classList.add('border');
+      element.classList.add('border-secondary');
+      element.classList.add('rounded');
     } else if (gameData.missions[missionIndex].name.includes('Mine')) {
+      element.classList.add('btn-secondary');
+    } else if (gameData.missions[missionIndex].name.includes('Lab')) {
+      element.classList.add('btn-success');
+    } else if (gameData.missions[missionIndex].name.includes('Improvement')) {
+      element.classList.add('btn-light');
+    } else if (gameData.missions[missionIndex].name.includes('Railgun') || gameData.missions[missionIndex].name.includes('Laser') || gameData.missions[missionIndex].name.includes('Missile')) {
       element.classList.add('btn-warning');
+    } else if (gameData.missions[missionIndex].name.includes('Armor') || gameData.missions[missionIndex].name.includes('Flak')) {
+      element.classList.add('btn-info');
+    } else if (gameData.missions[missionIndex].name.includes('Shield')) {
+      element.classList.add('btn-primary');
     } else {
       element.classList.add('btn-info');
     }
@@ -3626,7 +3717,7 @@ function checkForUnlocks() {
     gameEquipment.flak.updateUpgradeTooltip();
     addToDisplay('Rudimentary plans for a new defense system have been found. Flak is online.', 'story');
   }
-  if ((gameData.missions[0].level - 1) % 4 === 0 && gameData.missions[0].zone === 50 && gameData.missions[0].level > 4) {
+  if ((gameData.missions[0].level - 1) % 4 === 0 && gameData.missions[0].zone === 50 && gameData.missions[0].level > 4 && gameData.missions[0].level <= 21) {
     gameData.missions.push(new Mission('Aether Mine ' + prettify((gameData.missions[0].level - 1) / 4), true, 2, 3, gameData.missions[0].level, 100, false));
     updateMissionButtons();
     addToDisplay('There\'s an aether mine. We should stock up.', 'story');
@@ -3656,22 +3747,34 @@ function checkForUnlocks() {
   }
 
   if (gameData.missions[0].level === 5 && gameData.missions[0].zone === 60) {
-    gameData.missions.push(new Mission('Choose Fast Armor Labs', true, 1, 1, gameData.missions[0].level, 100, false));
-    gameData.missions.push(new Mission('Choose Slow Armor Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    if (gameData.options.armorLabOption === 0 || gameData.options.armorLabOption === 1) {
+      gameData.missions.push(new Mission('Choose Fast Armor Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    }
+    if (gameData.options.armorLabOption === 0 || gameData.options.armorLabOption === 2) {
+      gameData.missions.push(new Mission('Choose Slow Armor Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    }
     updateMissionButtons();
     addToDisplay('I must choose which form of Armor lab to take. Both missions will disappear upon completion of either.', 'story');
   }
 
   if (gameData.missions[0].level === 10 && gameData.missions[0].zone === 60) {
-    gameData.missions.push(new Mission('Choose Fast Shield Labs', true, 1, 1, gameData.missions[0].level, 100, false));
-    gameData.missions.push(new Mission('Choose Slow Shield Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    if (gameData.options.shieldLabOption === 0 || gameData.options.shieldLabOption === 1) {
+      gameData.missions.push(new Mission('Choose Fast Shield Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    }
+    if (gameData.options.shieldLabOption === 0 || gameData.options.shieldLabOption === 2) {
+      gameData.missions.push(new Mission('Choose Slow Shield Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    }
     updateMissionButtons();
     addToDisplay('I must choose which form of Shield lab to take. Both missions will disappear upon completion of either.', 'story');
   }
 
   if (gameData.missions[0].level === 15 && gameData.missions[0].zone === 60) {
-    gameData.missions.push(new Mission('Choose Fast Flak Labs', true, 1, 1, gameData.missions[0].level, 100, false));
-    gameData.missions.push(new Mission('Choose Slow Flak Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    if (gameData.options.flakLabOption === 0 || gameData.options.flakLabOption === 1) {
+      gameData.missions.push(new Mission('Choose Fast Flak Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    }
+    if (gameData.options.shieldLabOption === 0 || gameData.options.shieldLabOption === 2) {
+      gameData.missions.push(new Mission('Choose Slow Flak Labs', true, 1, 1, gameData.missions[0].level, 100, false));
+    }
     updateMissionButtons();
     addToDisplay('I must choose which form of Flak lab to take. Both missions will disappear upon completion of either.', 'story');
   }
@@ -3686,6 +3789,7 @@ function checkForUnlocks() {
   gameData.challenges.power.checkForUnlock(gameData.missions[0].level);
   gameData.challenges.criticality.checkForUnlock(gameData.missions[0].level);
   gameData.challenges.condenser.checkForUnlock(gameData.missions[0].level);
+  gameData.challenges.streamline.checkForUnlock(gameData.missions[0].level);
 
   if (gameData.world.currentChallenge === 'Consistency') {
     gameData.challenges.consistency.checkForCompletion(gameData.missions[0].level, document.getElementById('btnConfirmConsistency'));
@@ -3695,6 +3799,8 @@ function checkForUnlocks() {
     gameData.challenges.criticality.checkForCompletion(gameData.missions[0].level, document.getElementById('btnConfirmCriticality'));
   } else if (gameData.world.currentChallenge === 'Condenser') {
     gameData.challenges.condenser.checkForCompletion(gameData.missions[0].level, document.getElementById('btnConfirmCondenser'));
+  } else if (gameData.world.currentChallenge === 'Streamline') {
+    gameData.challenges.streamline.checkForCompletion(gameData.missions[0].level, document.getElementById('btnConfirmStreamline'));
   }
 }
 
@@ -3905,10 +4011,7 @@ function DudeAlive() {
 window.setInterval(function() {
   if (!initted) {
     if (document.readyState === 'complete') {
-      var savedperks = new perks();
-      var savedachievements = [];
-      var savedChallenges = new challenges();
-      init(savedperks, savedChallenges, false, '', 0, savedachievements); // this seeds the init function, which will overwrite this data with the save if there is one
+      init(false, ''); // this seeds the init function, which will overwrite this data with the save if there is one
     }
     return; // still waiting on pageload
   }

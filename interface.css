@@ -109,48 +109,37 @@ button {
   display: inline-block;
 }
 
-nav > .nav.nav-tabs{
-
-  border: none;
-    color:#f8f9fa;
-    background:#272e38;
-    border-radius:0;
-
-}
-nav > div a.nav-item.nav-link,
-nav > div a.nav-item.nav-link.active
-{
-  border: none;
-    padding: 1px 2px;
-    color:#f8f9fa;
-    background:#272e38;
-    border-radius:0;
+.nav-tabs{
+  background-color:#6c757d;
 }
 
-nav > div a.nav-item.nav-link.active:after
- {
-  content: "";
-  position: relative;
-  bottom: -60px;
-  left: -10%;
-  border: 15px solid transparent;
-  border-top-color: #272e38 ;
+.nav-tabs > li > a{
+  border-radius: 5px;
+  color:#fff;
 }
-.tab-content{
-  background: #6c757d;
-    line-height: 2px;
-    border: 1px solid #6c757d;
-    border-top:5px solid #6c757d;
-    border-bottom:5px solid #6c757d;
-    padding:3px 2px;
+.nav-tabs > li > a:hover{
+  background-color: #272e38;
+  border-radius: 5px;
+  color:#fff;
+  border:1px solid black;
+}
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:focus,
+.nav-tabs > li.active > a:hover{
+  background-color: #6c757d;
+  color:#fff;
+  border:2px solid #3F515F;
+}
+.noscrollbars {
+  overflow: scroll; /* Add the ability to scroll */
 }
 
-nav > div a.nav-item.nav-link:hover,
-nav > div a.nav-item.nav-link:focus
-{
-  border: none;
-    background: #6c757d;
-    color:#f8f9fa;
-    border-radius:0;
-    transition:background 0.20s linear;
+/* Hide scrollbar for Chrome, Safari and Opera */
+.noscrollbars::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE and Edge */
+.noscrollbars {
+    -ms-overflow-style: none;
 }
