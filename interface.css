@@ -143,3 +143,21 @@ button {
 .noscrollbars {
     -ms-overflow-style: none;
 }
+
+.btn-metal, .bg-metal {
+  background-color: #A9A9A9;
+}
+
+.btn-polymer, .bg-polymer {
+  background-color: #D2B48B;
+}
+
+.btn-research, .bg-research {
+  background-color: #3352FF;
+  color: #fff
+}
+
+.btn-aether, .bg-aether {
+  background-color: rgb(182, 248, 1);
+  color: #000000
+}

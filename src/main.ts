@@ -739,7 +739,7 @@ class Ship {
     var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 20 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
     this.minDamage = this.size * baseEnemyAttack / 1.25;
     this.maxDamage = this.size * baseEnemyAttack * 1.25;
-    var loot = checkForCreateLoot(missionWork, this);
+    var loot = checkForCreateLoot(missionWork);
 
     this.lootType = loot.lootType;
     this.lootAmount = loot.lootAmount;
@@ -750,7 +750,7 @@ class Ship {
       this.shieldMax = this.hitPoints * newEnemymods.shmod;
       this.attributes.push(new ShipAttribute(ELITE_ENEMY_ATTRIBUTES[Math.floor(Math.random() * ELITE_ENEMY_ATTRIBUTES.length)]));
       while (this.lootType === '') {
-        loot = checkForCreateLoot(missionWork, this);
+        loot = checkForCreateLoot(missionWork);
         this.lootType = loot.lootType;
         this.lootAmount = loot.lootAmount;
       }
@@ -1506,10 +1506,10 @@ var gameBuildings = {
   aetherPlant: new PowerBuilding('Aether Plant', AETHER_PLANT_METAL_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, AETHER_PLANT_POLYMER_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, AETHER_PLANT_AETHER_BASE_COST, AETHER_PLANT_GROWTH_FACTOR, 0, 0, new CountInfo(0), POWER_PER_AETHER_PLANT, new CountInfo(0), document.getElementById('btnBuyAetherPlant'), document.getElementById('btnBuy10AetherPlant'), 'btn-light'),
   fusionPlant: new PowerBuilding('Fusion Plant', FUSION_PLANT_METAL_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, FUSION_PLANT_POLYMER_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, FUSION_PLANT_AETHER_BASE_COST, FUSION_PLANT_GROWTH_FACTOR, 0, 0, new CountInfo(0), POWER_PER_FUSION_PLANT, new CountInfo(0), document.getElementById('btnBuyFusionPlant'), document.getElementById('btnBuy10FusionPlant'), 'btn-light'),
   chronotonPlant: new PowerBuilding('Chron. Plant', 0, 0, 0, 0, 0, 0, CHRONOTON_PLANT_CHRONOTON_BASE_COST, CHRONOTON_PLANT_GROWTH_FACTOR, new CountInfo(0), POWER_PER_CHRONOTON_PLANT, new CountInfo(0), document.getElementById('btnBuyChronotonPlant'), document.getElementById('btnBuy10ChronotonPlant'), 'btn-light'),
-  mine: new ResourceBuilding('Mine', MINE_BASE_COST, MINE_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyMine'), document.getElementById('btnBuy10Mine'), 'btn-warning', MINE_POWER_USAGE, MINE_POWER_GROWTH_USAGE, METAL_PROFICIENCY_BASE_RATE),
-  lab: new ResourceBuilding('Lab', LAB_METAL_BASE_COST, LAB_METAL_GROWTH_FACTOR, LAB_POLYMER_BASE_COST, LAB_POLYMER_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.25, new ResourceTechnology(0, 0), document.getElementById('btnBuyLab'), document.getElementById('btnBuy10Lab'), 'btn-info', LAB_POWER_USAGE, LAB_POWER_GROWTH_USAGE, RESEARCH_PROFICIENCY_BASE_RATE),
-  factory: new ResourceBuilding('Factory', FACTORY_BASE_COST, FACTORY_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyFactory'), document.getElementById('btnBuy10Factory'), 'btn-dark', FACTORY_POWER_USAGE, FACTORY_POWER_GROWTH_USAGE, POLYMER_PROFICIENCY_BASE_RATE),
-  refinery: new ResourceBuilding('Refinery', REFINERY_METAL_BASE_COST, REFINERY_GROWTH_FACTOR, REFINERY_POLYMER_BASE_COST, REFINERY_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.5, new ResourceTechnology(0, 0), document.getElementById('btnBuyRefinery'), document.getElementById('btnBuy10Refinery'), 'btn-secondary', REFINERY_POWER_USAGE, REFINERY_POWER_GROWTH_USAGE, AETHER_PROFICIENCY_BASE_RATE),
+  mine: new ResourceBuilding('Mine', MINE_BASE_COST, MINE_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyMine'), document.getElementById('btnBuy10Mine'), 'btn-metal', MINE_POWER_USAGE, MINE_POWER_GROWTH_USAGE, METAL_PROFICIENCY_BASE_RATE),
+  lab: new ResourceBuilding('Lab', LAB_METAL_BASE_COST, LAB_METAL_GROWTH_FACTOR, LAB_POLYMER_BASE_COST, LAB_POLYMER_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.25, new ResourceTechnology(0, 0), document.getElementById('btnBuyLab'), document.getElementById('btnBuy10Lab'), 'btn-research', LAB_POWER_USAGE, LAB_POWER_GROWTH_USAGE, RESEARCH_PROFICIENCY_BASE_RATE),
+  factory: new ResourceBuilding('Factory', FACTORY_BASE_COST, FACTORY_GROWTH_FACTOR, 0, 0, 0, 0, new CountInfo(0), 1, new ResourceTechnology(0, 0), document.getElementById('btnBuyFactory'), document.getElementById('btnBuy10Factory'), 'btn-polymer', FACTORY_POWER_USAGE, FACTORY_POWER_GROWTH_USAGE, POLYMER_PROFICIENCY_BASE_RATE),
+  refinery: new ResourceBuilding('Refinery', REFINERY_METAL_BASE_COST, REFINERY_GROWTH_FACTOR, REFINERY_POLYMER_BASE_COST, REFINERY_GROWTH_FACTOR, 0, 0, new CountInfo(0), 0.5, new ResourceTechnology(0, 0), document.getElementById('btnBuyRefinery'), document.getElementById('btnBuy10Refinery'), 'btn-aether', REFINERY_POWER_USAGE, REFINERY_POWER_GROWTH_USAGE, AETHER_PROFICIENCY_BASE_RATE),
   shieldLab: new TacticBuilding('Shield Lab', SHIELD_LAB_METAL_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, SHIELD_LAB_POLYMER_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, SHIELD_LAB_AETHER_BASE_COST, SHIELD_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyShieldLab'), document.getElementById('btnBuy10ShieldLab'), 'btn-success', SHIELD_LAB_POWER_USAGE, SHIELD_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
   armorLab: new TacticBuilding('Armor Lab', ARMOR_LAB_METAL_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, ARMOR_LAB_POLYMER_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, ARMOR_LAB_AETHER_BASE_COST, ARMOR_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyArmorLab'), document.getElementById('btnBuy10ArmorLab'), 'btn-success', ARMOR_LAB_POWER_USAGE, ARMOR_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
   flakLab: new TacticBuilding('Flak Lab', FLAK_LAB_METAL_BASE_COST, FLAK_LAB_GROWTH_FACTOR, FLAK_LAB_POLYMER_BASE_COST, FLAK_LAB_GROWTH_FACTOR, FLAK_LAB_AETHER_BASE_COST, FLAK_LAB_GROWTH_FACTOR, new CountInfo(0), document.getElementById('btnBuyFlakLab'), document.getElementById('btnBuy10FlakLab'), 'btn-success', FLAK_LAB_POWER_USAGE, FLAK_LAB_POWER_GROWTH_USAGE, new CountInfo(0)),
@@ -3072,6 +3072,9 @@ function updateGUI() {
   gameBuildings.armorLab.determineShowAffordBuy();
   gameBuildings.flakLab.determineShowAffordBuy();
   gameBuildings.powerConverter.determineShowAffordBuy();
+  gameBuildings.powerConverter.updateBuyButtonText();
+  gameBuildings.powerConverter.updateBuyButtonTooltip();
+
 
   gameEquipment.railgun.determineShowPrestigeButton();
   gameEquipment.railgun.determineShowUpgradeButton();
@@ -3557,7 +3560,7 @@ function updateMissionButtons() {
       element.classList.add('border-secondary');
       element.classList.add('rounded');
     } else if (gameData.missions[missionIndex].name.includes('Mine')) {
-      element.classList.add('btn-secondary');
+      element.classList.add('btn-aether');
     } else if (gameData.missions[missionIndex].name.includes('Lab')) {
       element.classList.add('btn-success');
     } else if (gameData.missions[missionIndex].name.includes('Improvement')) {
@@ -3580,10 +3583,10 @@ function updateMissionButtons() {
 const ELITE_ENEMY_ATTRIBUTES = ['Quick', 'Hardy', 'Elite'];
 
 
-function checkForCreateLoot(mission:Mission, enemy:Ship) {
+function checkForCreateLoot(mission:Mission) {
   var rtn = {
     lootType: '',
-    lootAmount: Math.pow(0.9, mission.level) * (enemy.shieldMax + enemy.hitPointsMax)
+    lootAmount: Math.pow(1.4, mission.level) * 1000 * gamePerks.looter.getBonus()
   };
   var l = Math.floor(Math.random() * 100);
   if (mission.IsGalaxy) {
