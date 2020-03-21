@@ -284,12 +284,13 @@
                     </div>
                     <div class="modal-body bg-secondary">
                       This will reset your game to the beginning. You will lose all buildings and resources, but gain chronoton equal to the number of fragments you have which you can spend on abilities to increase things like your production or damage.
-                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmGateway" type="button" onclick="gatewayClick()">Gateway</button>
-                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmConsistency" type="button" onclick="gatewayClick('Consistency')">Consistency Challenge</button>
-                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmPower" type="button" onclick="gatewayClick('Power')">Power Challenge</button>
-                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmCriticality" type="button" onclick="gatewayClick('Criticality')">Criticality Challenge</button>
-                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmCondenser" type="button" onclick="gatewayClick('Condenser')">Condenser Challenge</button>
-                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmStreamline" type="button" onclick="gatewayClick('Streamline')">Streamline Challenge</button>
+                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmGateway" title="TTOB" type="button" onclick="gatewayClick()">Gateway</button>
+                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmConsistency" title="TTOB" type="button" onclick="gatewayClick('Consistency')">Consistency Challenge</button>
+                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmPower" title="TTOB" type="button" onclick="gatewayClick('Power')">Power Challenge</button>
+                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmCriticality" title="TTOB" type="button" onclick="gatewayClick('Criticality')">Criticality Challenge</button>
+                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmCondenser" title="TTOB" type="button" onclick="gatewayClick('Condenser')">Condenser Challenge</button>
+                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmStreamline" title="TTOB" type="button" onclick="gatewayClick('Streamline')">Streamline Challenge</button>
+                      <button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="bottom" id="btnConfirmAutoMap" title="TTOB"type="button" onclick="gatewayClick('AutoMap')">AutoMap Challenge</button>
                     </div>
                     <div class="modal-footer bg-dark">
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -319,6 +320,7 @@
                       <button class="btn btn-sm btn-primary" id="btnCriticality" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will raise power production by 10%" onclick="gamePerks.criticality.add()">Criticality 1</button>
                       <button class="btn btn-sm btn-primary" id="btnCondenser" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will shorten missions by 1" onclick="gamePerks.condenser.add()">Condenser 1</button>
                       <button class="btn btn-sm btn-primary" id="btnStreamline" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will decrease equipment costs by 5%" onclick="gamePerks.streamline.add()">Streamline 1</button>
+                      <button class="btn btn-sm btn-primary" id="btnAutoMap" type="button" data-toggle="tooltip" data-placement="bottom" title="Each level bought will decrease equipment costs by 5%" onclick="gamePerks.automap.add()">AutoMap 1</button>
                     </div>
                     <div class="modal-footer bg-dark">
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
