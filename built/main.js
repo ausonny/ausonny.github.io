@@ -468,9 +468,9 @@ class Ship {
     createEnemy(missionWork, zone) {
         var newEnemymods = possibleEnemies[Math.floor(Math.random() * possibleEnemies.length)]; // this will eventually need to be redone when we add advanced enemies
         this.name = newEnemymods.name;
-        this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 40 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
+        this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 200 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
         this.hitPointsMax = this.hitPoints;
-        var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 15 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
+        var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 100 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
         this.minRailgunDamage = this.size * baseEnemyAttack / 1.25;
         this.maxRailgunDamage = this.size * baseEnemyAttack * 1.25;
         var loot = checkForCreateLoot(missionWork, zone);
@@ -782,10 +782,10 @@ class EquipmentBase {
         }
         return cost;
     }
-    metalForPrestige() { return (this.upgradeMetalBaseCost * Math.pow(2, this.technology.prestigeBought - 1)); }
-    polymerForPrestige() { return (this.upgradePolymerBaseCost * Math.pow(2, this.technology.prestigeBought - 1)); }
-    rpForPrestige() { return (this.upgradeRPBaseCost * Math.pow(2, this.technology.prestigeBought - 1)); }
-    aetherForPrestige() { return (this.upgradeAetherBaseCost * Math.pow(2, this.technology.prestigeBought - 1)); }
+    metalForPrestige() { return (this.upgradeMetalBaseCost * Math.pow(11, this.technology.prestigeBought - 1)); }
+    polymerForPrestige() { return (this.upgradePolymerBaseCost * Math.pow(11, this.technology.prestigeBought - 1)); }
+    rpForPrestige() { return (this.upgradeRPBaseCost * Math.pow(11, this.technology.prestigeBought - 1)); }
+    aetherForPrestige() { return (this.upgradeAetherBaseCost * Math.pow(11, this.technology.prestigeBought - 1)); }
     tooltipForUpgrade(amt = 1) {
         var str = '';
         if (this.weapon) {
