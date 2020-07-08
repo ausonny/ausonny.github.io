@@ -2469,150 +2469,150 @@ function saveRules() { // eslint-disable-line no-unused-vars
 }
 
 function runRules() {
-  // var doresearch = false;
-  // var doequipment = false;
-  // var dopower = false;
-  // var doresource = false;
-  // var doequipmentlabs = false;
-  // var doshipyard = false;
-  // var equipmentcost = 1000;
-  // var powercost = 1000;
-  // var resourcecost = 1000;
-  // var equimentlabscost = 1000;
+  var doresearch = false;
+  var doequipment = false;
+  var dopower = false;
+  var doresource = false;
+  var doequipmentlabs = false;
+  var doshipyard = false;
+  var equipmentcost = 1000;
+  var powercost = 1000;
+  var resourcecost = 1000;
+  var equimentlabscost = 1000;
 
-  // if (typeof gameData.rules === 'undefined') {
-  //   return;
-  // }
+  if (typeof gameData.rules === 'undefined') {
+    return;
+  }
 
-  // for (let index = 0; index < gameData.rules.length; index++) {
-  //   const element = gameData.rules[index];
-  //   if (element.active) {
-  //     if (element.action === '1' || element.action === '2') {
-  //       powercost = Math.min(powercost, element.cost);
-  //       resourcecost = Math.min(resourcecost, element.cost);
-  //       equimentlabscost = Math.min(equimentlabscost, element.cost);
-  //       dopower = true;
-  //       doresource = true;
-  //       doequipmentlabs = true;
-  //     }
-  //     if (element.action === '1' || element.action === '3') {
-  //       doresearch = true;
-  //       doshipyard = true;
-  //     }
-  //     if (element.action === '13') {
-  //       doresearch = true;
-  //     }
-  //     if (element.action === '1' || element.action === '4') {
-  //       equipmentcost = Math.min(equipmentcost, element.cost);
-  //       doequipment = true;
-  //     }
-  //     if (element.action === '10') {
-  //       powercost = element.cost;
-  //       dopower = true;
-  //     }
-  //     if (element.action === '11') {
-  //       resourcecost = element.cost;
-  //       doresource = true;
-  //     }
-  //     if (element.action === '12') {
-  //       equimentlabscost = element.cost;
-  //       doequipmentlabs = true;
-  //     }
-  //   }
-  // }
+  for (let index = 0; index < gameData.rules.length; index++) {
+    const element = gameData.rules[index];
+    if (element.active) {
+      if (element.action === '1' || element.action === '2') {
+        powercost = Math.min(powercost, element.cost);
+        resourcecost = Math.min(resourcecost, element.cost);
+        equimentlabscost = Math.min(equimentlabscost, element.cost);
+        dopower = true;
+        doresource = true;
+        doequipmentlabs = true;
+      }
+      if (element.action === '1' || element.action === '3') {
+        doresearch = true;
+        doshipyard = true;
+      }
+      if (element.action === '13') {
+        doresearch = true;
+      }
+      if (element.action === '1' || element.action === '4') {
+        equipmentcost = Math.min(equipmentcost, element.cost);
+        doequipment = true;
+      }
+      if (element.action === '10') {
+        powercost = element.cost;
+        dopower = true;
+      }
+      if (element.action === '11') {
+        resourcecost = element.cost;
+        doresource = true;
+      }
+      if (element.action === '12') {
+        equimentlabscost = element.cost;
+        doequipmentlabs = true;
+      }
+    }
+  }
 
-  // if (dopower) {
-  //   if (gameBuildings.panel.canAffordBuy(powercost)) {
-  //     gameBuildings.panel.buy(1);
-  //   }
-  //   if (gameBuildings.generator.canAffordBuy(powercost)) {
-  //     gameBuildings.generator.buy(1);
-  //   }
-  //   if (gameBuildings.plant.canAffordBuy(powercost)) {
-  //     gameBuildings.plant.buy(1);
-  //   }
-  //   if (gameBuildings.aetherPlant.canAffordBuy(powercost)) {
-  //     gameBuildings.aetherPlant.buy(1);
-  //   }
-  //   if (gameBuildings.fusionPlant.canAffordBuy(powercost)) {
-  //     gameBuildings.fusionPlant.buy(1);
-  //   }
-  // }
-  // if (doresource) {
-  //   if (gameBuildings.mine.canAffordBuy(resourcecost)) {
-  //     gameBuildings.mine.buy(1);
-  //   }
-  //   if (gameBuildings.factory.canAffordBuy(resourcecost)) {
-  //     gameBuildings.factory.buy(1);
-  //   }
-  //   if (gameBuildings.lab.canAffordBuy(resourcecost)) {
-  //     gameBuildings.lab.buy(1);
-  //   }
-  //   if (gameBuildings.refinery.canAffordBuy(resourcecost)) {
-  //     gameBuildings.refinery.buy(1);
-  //   }
-  // }
-  // if (doequipmentlabs) {
-  //   if (gameBuildings.armorLab.canAffordBuy(equimentlabscost)) {
-  //     gameBuildings.armorLab.buy(1);
-  //   }
-  //   if (gameBuildings.shieldLab.canAffordBuy(equimentlabscost)) {
-  //     gameBuildings.shieldLab.buy(1);
-  //   }
-  //   if (gameBuildings.powerConverter.canAffordBuy(equimentlabscost)) {
-  //     gameBuildings.powerConverter.buy(1);
-  //   }
-  // }
+  if (dopower) {
+    if (gameBuildings.panel.canAffordBuy(powercost)) {
+      gameBuildings.panel.buy(1);
+    }
+    if (gameBuildings.generator.canAffordBuy(powercost)) {
+      gameBuildings.generator.buy(1);
+    }
+    if (gameBuildings.plant.canAffordBuy(powercost)) {
+      gameBuildings.plant.buy(1);
+    }
+    if (gameBuildings.aetherPlant.canAffordBuy(powercost)) {
+      gameBuildings.aetherPlant.buy(1);
+    }
+    if (gameBuildings.fusionPlant.canAffordBuy(powercost)) {
+      gameBuildings.fusionPlant.buy(1);
+    }
+  }
+  if (doresource) {
+    if (gameBuildings.mine.canAffordBuy(resourcecost)) {
+      gameBuildings.mine.buy(1);
+    }
+    if (gameBuildings.factory.canAffordBuy(resourcecost)) {
+      gameBuildings.factory.buy(1);
+    }
+    if (gameBuildings.lab.canAffordBuy(resourcecost)) {
+      gameBuildings.lab.buy(1);
+    }
+    if (gameBuildings.refinery.canAffordBuy(resourcecost)) {
+      gameBuildings.refinery.buy(1);
+    }
+  }
+  if (doequipmentlabs) {
+    if (gameBuildings.armorLab.canAffordBuy(equimentlabscost)) {
+      gameBuildings.armorLab.buy(1);
+    }
+    if (gameBuildings.shieldLab.canAffordBuy(equimentlabscost)) {
+      gameBuildings.shieldLab.buy(1);
+    }
+    if (gameBuildings.powerConverter.canAffordBuy(equimentlabscost)) {
+      gameBuildings.powerConverter.buy(1);
+    }
+  }
 
-  // if (doshipyard) {
-  //   gameBuildings.shipyard.buy();
-  // }
+  if (doshipyard) {
+    gameBuildings.shipyard.buy();
+  }
 
-  // if (doresearch) {
-  //   buyResearchProficiency();
-  //   buyMetalProficiency();
-  //   buyPolymerProficiency();
-  //   buyAetherProficiency();
-  //   if ((gameData.technologies.autofightBought === 0 && gameData.technologies.autofightUnlock > 0)) {
-  //     buyAutoFight();
-  //   }
-  // }
+  if (doresearch) {
+    buyResearchProficiency();
+    buyMetalProficiency();
+    buyPolymerProficiency();
+    buyAetherProficiency();
+    if ((gameData.technologies.autofightBought === 0 && gameData.technologies.autofightUnlock > 0)) {
+      buyAutoFight();
+    }
+  }
 
-  // if (doequipment) {
-  //   if (gameEquipment.railgun.technology.prestigeUnlocked > gameEquipment.railgun.technology.prestigeBought) {
-  //     gameEquipment.railgun.buyPrestige();
-  //   }
-  //   if (gameEquipment.armor.technology.prestigeUnlocked > gameEquipment.armor.technology.prestigeBought) {
-  //     gameEquipment.armor.buyPrestige();
-  //   }
-  //   if (gameEquipment.laser.technology.prestigeUnlocked > gameEquipment.laser.technology.prestigeBought) {
-  //     gameEquipment.laser.buyPrestige();
-  //   }
-  //   if (gameEquipment.shield.technology.prestigeUnlocked > gameEquipment.shield.technology.prestigeBought) {
-  //     gameEquipment.shield.buyPrestige();
-  //   }
-  //   if (gameEquipment.missile.technology.prestigeUnlocked > gameEquipment.missile.technology.prestigeBought) {
-  //     gameEquipment.missile.buyPrestige();
-  //   }
-  // }
+  if (doequipment) {
+    if (gameEquipment.railgun.technology.prestigeUnlocked > gameEquipment.railgun.technology.prestigeBought) {
+      gameEquipment.railgun.buyPrestige();
+    }
+    if (gameEquipment.armor.technology.prestigeUnlocked > gameEquipment.armor.technology.prestigeBought) {
+      gameEquipment.armor.buyPrestige();
+    }
+    if (gameEquipment.laser.technology.prestigeUnlocked > gameEquipment.laser.technology.prestigeBought) {
+      gameEquipment.laser.buyPrestige();
+    }
+    if (gameEquipment.shield.technology.prestigeUnlocked > gameEquipment.shield.technology.prestigeBought) {
+      gameEquipment.shield.buyPrestige();
+    }
+    if (gameEquipment.missile.technology.prestigeUnlocked > gameEquipment.missile.technology.prestigeBought) {
+      gameEquipment.missile.buyPrestige();
+    }
+  }
 
-  // if (doequipment) {
-  //   if (gameEquipment.railgun.canAffordUpgrade(equipmentcost) && gameEquipment.railgun.technology.prestigeBought > 0) {
-  //     gameEquipment.railgun.buyUpgrade(1);
-  //   }
-  //   if (gameEquipment.armor.canAffordUpgrade(equipmentcost) && gameEquipment.armor.technology.prestigeBought > 0) {
-  //     gameEquipment.armor.buyUpgrade(1);
-  //   }
-  //   if (gameEquipment.laser.canAffordUpgrade(equipmentcost) && gameEquipment.laser.technology.prestigeBought > 0) {
-  //     gameEquipment.laser.buyUpgrade(1);
-  //   }
-  //   if (gameEquipment.shield.canAffordUpgrade(equipmentcost) && gameEquipment.shield.technology.prestigeBought > 0) {
-  //     gameEquipment.shield.buyUpgrade(1);
-  //   }
-  //   if (gameEquipment.missile.canAffordUpgrade(equipmentcost) && gameEquipment.missile.technology.prestigeBought > 0) {
-  //     gameEquipment.missile.buyUpgrade(1);
-  //   }
-  // }
+  if (doequipment) {
+    if (gameEquipment.railgun.canAffordUpgrade(equipmentcost) && gameEquipment.railgun.technology.prestigeBought > 0) {
+      gameEquipment.railgun.buyUpgrade(1);
+    }
+    if (gameEquipment.armor.canAffordUpgrade(equipmentcost) && gameEquipment.armor.technology.prestigeBought > 0) {
+      gameEquipment.armor.buyUpgrade(1);
+    }
+    if (gameEquipment.laser.canAffordUpgrade(equipmentcost) && gameEquipment.laser.technology.prestigeBought > 0) {
+      gameEquipment.laser.buyUpgrade(1);
+    }
+    if (gameEquipment.shield.canAffordUpgrade(equipmentcost) && gameEquipment.shield.technology.prestigeBought > 0) {
+      gameEquipment.shield.buyUpgrade(1);
+    }
+    if (gameEquipment.missile.canAffordUpgrade(equipmentcost) && gameEquipment.missile.technology.prestigeBought > 0) {
+      gameEquipment.missile.buyUpgrade(1);
+    }
+  }
 }
 
 function updateAchievementBonus() {
@@ -3509,7 +3509,7 @@ const ELITE_ENEMY_ATTRIBUTES = ['Quick', 'Hardy', 'Elite'];
 function checkForCreateLoot(mission: Mission, zone: number) {
   var rtn = {
     lootType: '',
-    lootAmount: 10 * Math.pow(1.5, mission.level + (zone / 100)) * gamePerks.looter.getBonus()
+    lootAmount: 25 * Math.pow(1.5, mission.level + (zone / 100)) * gamePerks.looter.getBonus()
   };
   var l = Math.floor(Math.random() * 100);
   if (mission.IsGalaxy) {
@@ -3520,9 +3520,9 @@ function checkForCreateLoot(mission: Mission, zone: number) {
     } else if (l <= 30) {
       rtn.lootType = 'ResearchPoints';
       rtn.lootAmount /= 8;
-    } else if (l <= 31) {
-      rtn.lootType = 'Aether';
-      rtn.lootAmount /= 250;
+    // } else if (l <= 31) {
+    //   rtn.lootType = 'Aether';
+    //   rtn.lootAmount /= 250;
     }
   } else {
     if (l <= 10) {
