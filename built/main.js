@@ -468,9 +468,9 @@ class Ship {
     createEnemy(missionWork, zone) {
         var newEnemymods = possibleEnemies[Math.floor(Math.random() * possibleEnemies.length)]; // this will eventually need to be redone when we add advanced enemies
         this.name = newEnemymods.name;
-        this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 100 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
+        this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 60 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
         this.hitPointsMax = this.hitPoints;
-        var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 50 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
+        var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 30 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
         this.minRailgunDamage = this.size * baseEnemyAttack / 1.25;
         this.maxRailgunDamage = this.size * baseEnemyAttack * 1.25;
         var loot = checkForCreateLoot(missionWork, zone);
