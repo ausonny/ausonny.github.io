@@ -782,10 +782,10 @@ class EquipmentBase {
         }
         return cost;
     }
-    metalForPrestige() { return (this.upgradeMetalBaseCost * Math.pow(11, this.technology.prestigeBought - 0)); }
-    polymerForPrestige() { return (this.upgradePolymerBaseCost * Math.pow(11, this.technology.prestigeBought - 0)); }
-    rpForPrestige() { return (this.upgradeRPBaseCost * Math.pow(11, this.technology.prestigeBought - 0)); }
-    aetherForPrestige() { return (this.upgradeAetherBaseCost * Math.pow(11, this.technology.prestigeBought - 1)); }
+    metalForPrestige() { return (this.upgradeMetalBaseCost * Math.pow(5, this.technology.prestigeBought - 0)); }
+    polymerForPrestige() { return (this.upgradePolymerBaseCost * Math.pow(5, this.technology.prestigeBought - 0)); }
+    rpForPrestige() { return (this.upgradeRPBaseCost * Math.pow(5, this.technology.prestigeBought - 0)); }
+    aetherForPrestige() { return (this.upgradeAetherBaseCost * Math.pow(5, this.technology.prestigeBought - 1)); }
     tooltipForUpgrade(amt = 1) {
         var str = '';
         if (this.weapon) {
@@ -2668,6 +2668,11 @@ function updateGUI() {
     gameEquipment.shield.determineShowAffordUpgrade();
     gameEquipment.shield.determineShowPrestigeButton();
     gameEquipment.shield.determineShowAffordPrestige();
+    gameEquipment.railgun.updatePrestigeTooltip();
+    gameEquipment.laser.updatePrestigeTooltip();
+    gameEquipment.missile.updatePrestigeTooltip();
+    gameEquipment.shield.updatePrestigeTooltip();
+    gameEquipment.armor.updatePrestigeTooltip();
     gamePerks.looter.determineShowAffordUpgrade();
     gamePerks.looter.determineShowBuyButton();
     gamePerks.producer.determineShowAffordUpgrade();
