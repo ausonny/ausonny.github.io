@@ -1542,8 +1542,6 @@ class PowerConverterBuilding extends BuildingBase {
     if (this.tacticalChoices.count > 0) {
       super.buy(amt);
       this.updateBuyButtonTooltip();
-      gameEquipment.armor.updateUpgradeTooltip();
-      gameEquipment.shield.updateUpgradeTooltip();
     }
   }
 
@@ -3048,6 +3046,14 @@ function updateGUI() {
   gameBuildings.powerConverter.determineShowAffordBuy();
   gameBuildings.powerConverter.updateBuyButtonText();
   gameBuildings.powerConverter.updateBuyButtonTooltip();
+  gameBuildings.aetherPlant.updateBuyButtonText();
+  gameBuildings.aetherPlant.updateBuyButtonTooltip();
+  gameBuildings.factory.updateBuyButtonText();
+  gameBuildings.factory.updateBuyButtonTooltip();
+  gameBuildings.mine.updateBuyButtonText();
+  gameBuildings.mine.updateBuyButtonTooltip();
+  gameBuildings.lab.updateBuyButtonText();
+  gameBuildings.lab.updateBuyButtonTooltip();
 
 
   gameEquipment.railgun.determineShowUpgradeButton();
