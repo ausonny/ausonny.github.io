@@ -600,7 +600,6 @@ class Ship {
         if (this.hitPoints <= 0) {
             return;
         }
-        addToDisplay('M', 'combat');
         var damageToEnemy = Math.max(chooseRandom(this.minMissileDamage, this.maxMissileDamage), 0);
         if (chooseRandom(0, 100) < this.criticalChance) {
             damageToEnemy *= this.criticalMultiplier;
