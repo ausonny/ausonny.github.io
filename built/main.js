@@ -557,7 +557,7 @@ class Ship {
         var damageToEnemy = Math.max(chooseRandom(this.minRailgunDamage, this.maxRailgunDamage), 0);
         if (chooseRandom(0, 100) < this.criticalChance) {
             damageToEnemy *= this.criticalMultiplier;
-            addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
+            // addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
         }
         if (defender.shield > 0) {
             if (damageToEnemy > defender.shield) {
@@ -580,7 +580,7 @@ class Ship {
         var damageToEnemy = Math.max(chooseRandom(this.minLaserDamage, this.maxLaserDamage), 0);
         if (chooseRandom(0, 100) < this.criticalChance) {
             damageToEnemy *= this.criticalMultiplier;
-            addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
+            // addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
         }
         if (defender.shield > 0) {
             if (damageToEnemy > defender.shield) {
@@ -600,10 +600,11 @@ class Ship {
         if (this.hitPoints <= 0) {
             return;
         }
+        addToDisplay('M', 'combat');
         var damageToEnemy = Math.max(chooseRandom(this.minMissileDamage, this.maxMissileDamage), 0);
         if (chooseRandom(0, 100) < this.criticalChance) {
             damageToEnemy *= this.criticalMultiplier;
-            addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
+            // addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
         }
         if (defender.shield > 0) {
             if (damageToEnemy > defender.shield) {
@@ -1461,6 +1462,8 @@ function init(gatewayReset, activeChallenge, oldsave = null) {
                 gameData.lastRailgunCombatProcessTime = new Date(savegame.lastRailgunCombatProcessTime);
             if (typeof savegame.lastLaserCombatProcessTime !== 'undefined')
                 gameData.lastLaserCombatProcessTime = new Date(savegame.lastLaserCombatProcessTime);
+            if (typeof savegame.lastMissileCombatProcessTime !== 'undefined')
+                gameData.lastMissileCombatProcessTime = new Date(savegame.lastMissileCombatProcessTime);
             if (typeof savegame.lastResourceProcessTime !== 'undefined')
                 gameData.lastResourceProcessTime = new Date(savegame.lastResourceProcessTime);
             if (typeof savegame.nextProcessTime !== 'undefined')
@@ -3457,7 +3460,7 @@ function RailgunAttacks() {
             gameData.enemyship.railgunAttack(gameData.playership);
         }
         if (gameData.playership.hitPoints <= 0) { // We dead
-            addToDisplay('The drone is no longer on the sensors', 'combat');
+            // addToDisplay('The drone is no longer on the sensors', 'combat');
         }
     }
     gameData.lastRailgunCombatProcessTime.setMilliseconds(gameData.lastRailgunCombatProcessTime.getMilliseconds() + 1000 - (findPerk('Speed').count * 50));
@@ -3473,31 +3476,26 @@ function LaserAttacks() {
             gameData.enemyship.laserAttack(gameData.playership);
         }
         if (gameData.playership.hitPoints <= 0) { // We dead
-            addToDisplay('The drone is no longer on the sensors', 'combat');
+            // addToDisplay('The drone is no longer on the sensors', 'combat');
         }
     }
     gameData.lastLaserCombatProcessTime.setMilliseconds(gameData.lastLaserCombatProcessTime.getMilliseconds() + 100 - (findPerk('Speed').count * 5));
 }
 function MissileAttacks() {
-    try {
-        if (gameData.playership.hitPoints > 0) { // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick as opposed to both
-            if (gameData.enemyship.attributes.filter((att) => (att.name === 'Quick')).length > 0) { // enemy is quick and gets to attack first
-                gameData.enemyship.missileAttack(gameData.playership);
-                gameData.playership.missileAttack(gameData.enemyship);
-            }
-            else {
-                gameData.playership.missileAttack(gameData.enemyship);
-                gameData.enemyship.missileAttack(gameData.playership);
-            }
-            if (gameData.playership.hitPoints <= 0) { // We dead
-                addToDisplay('The drone is no longer on the sensors', 'combat');
-            }
+    if (gameData.playership.hitPoints > 0) { // we check for hitpoints in the attack function, but checking here allows either an attack or respawn per tick as opposed to both
+        if (gameData.enemyship.attributes.filter((att) => (att.name === 'Quick')).length > 0) { // enemy is quick and gets to attack first
+            gameData.enemyship.missileAttack(gameData.playership);
+            gameData.playership.missileAttack(gameData.enemyship);
         }
-        gameData.lastMissileCombatProcessTime.setMilliseconds(gameData.lastMissileCombatProcessTime.getMilliseconds() + 2000 - (findPerk('Speed').count * 100));
+        else {
+            gameData.playership.missileAttack(gameData.enemyship);
+            gameData.enemyship.missileAttack(gameData.playership);
+        }
+        if (gameData.playership.hitPoints <= 0) { // We dead
+            // addToDisplay('The drone is no longer on the sensors', 'combat');
+        }
     }
-    catch (error) {
-        logMyErrors(error);
-    }
+    gameData.lastMissileCombatProcessTime.setMilliseconds(gameData.lastMissileCombatProcessTime.getMilliseconds() + 2000 - (findPerk('Speed').count * 100));
 }
 function logMyErrors(e) {
     addToDisplay(e.message);
