@@ -77,6 +77,7 @@
                 <span id="scenarioinfo">0</span>
               </div>
               <div class="modal-footer bg-dark">
+                <button class="btn btn-danger" type="button" onclick="abandonChallenge()">Abandon</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
               </div>
             </div>
@@ -106,7 +107,7 @@
           <!-- <button class="btn btn-sm btn-primary menubutton" type="button" onclick="exportsave()">Export</button> -->
       </div>
     </div>
-    <div class="row bg-dark p-0 m-0 text-left text-xsmall">
+    <div class="row bg-dark p-0 m-0 text-center text-xsmall">
       <div class="col-2 p-0 m-0 bg-light text-dark">
         <span id="power">9</span>
       </div>
@@ -275,77 +276,262 @@
         </ul>
         <div id="myTabContent" class="tab-content">
           <div class="tab-pane fade active show" id="resources">
-            <div class="row p-0 m-0 border border-secondary rounded text-xsmall text-left">
-              <div class="border p-0 m-0 border-secondary rounded col-12 col-sm-12 col-md-12 col-lg-12 bg-dark text-light text-left rounded shadow" id="resourcetabcontainer" style="height:310px;">
-                <button class="btn powerbutton text-left" type="button" id="btnBuyPanel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy(1)">Solar</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Panel" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.panel.buy(10)">10</button>
-                <button class="btn hidden powerbutton text-left" type="button" id="btnBuyGenerator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy()">Generator</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Generator" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.generator.buy(10)">10</button>
-                <button class="btn hidden powerbutton text-left" type="button" id="btnBuyPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy()">Plant</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Plant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.plant.buy(10)">10</button>
-                <button class="btn hidden powerbutton text-left" type="button" id="btnBuyAetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10AetherPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.aetherPlant.buy(10)">10</button>
-                <button class="btn hidden powerbutton text-left" type="button" id="btnBuyFusionPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.fusionPlant.buy()">Fusion Plant</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10FusionPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.fusionPlant.buy(10)">10</button>
-                <button class="btn hidden powerbutton text-left" type="button" id="btnBuyChronotonPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.chronotonPlant.buy()">Chronoton Plant</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10ChronotonPlant" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.chronotonPlant.buy(10)">10</button>
-                <br />
-                <button class="btn powerbutton text-left" type="button" id="btnBuyMine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy()">Buy Mine</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Mine" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.mine.buy(10)">10</button>
-                <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnMetalTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyMetalProficiency()">Send Ships</button>
-                <br />
-                <button class="btn hidden powerbutton text-left" type="button" id="btnBuyFactory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.factory.buy()">Buy Factory</button>
-                <button class="btn multiplebuypowerbutton text-center border border-secondary" type="button" id="btnBuy10Factory" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.factory.buy(10)">10</button>
-                <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnPolymerTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyPolymerProficiency()">Send Ships</button>
-                <br>
-                <button class="btn hidden powerbutton text-left" type="button" id="btnBuyLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy()">Buy Lab</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Lab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.lab.buy(10)">10</button>
-                <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnResearchTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyResearchProficiency()">Send Ships</button>
-                <br>
-                <button class="btn hidden powerbutton text-left" type="button" id="btnBuyRefinery" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.refinery.buy()">Buy Refinery</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Refinery" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.refinery.buy(10)">10</button>
-                <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnAetherTech" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAetherProficiency()">Send Ships</button>
-                <br>
-                <button class="btn powerbutton hidden text-left" type="button" id="btnBuyPowerConverter" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.powerConverter.buy()">Tactical Lab</button>
-                <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10PowerConverter" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.powerConverter.buy(10)">10</button>
+            <div class="border p-0 m-0 border-secondary rounded col-12 col-sm-12 col-md-12 col-lg-12 bg-dark text-light text-left rounded shadow" id="resourcetabcontainer">
+              <div class="row p-0 m-0">
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                  <div class="row p-0 m-0 rounded border border-secondary">
+                    <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                      <button class="btn powerbutton text-left" type="button" id="btnBuyPanel" onclick="gameBuildings.panel.buy(1)">Solar</button>
+                    </div>
+                    <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                      <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Panel" onclick="gameBuildings.panel.buy(10)">10</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                  <div class="row p-0 m-0 rounded border border-secondary">
+                    <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                      <button class="btn hidden powerbutton text-left" type="button" id="btnBuyGenerator" onclick="gameBuildings.generator.buy()">Generator</button>
+                    </div>
+                    <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                      <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Generator" onclick="gameBuildings.generator.buy(10)">10</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                  <div class="row p-0 m-0 rounded border border-secondary">
+                    <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                      <button class="btn hidden powerbutton text-left" type="button" id="btnBuyPlant" onclick="gameBuildings.plant.buy()">Plant</button>
+                    </div>
+                    <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                      <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Plant" onclick="gameBuildings.plant.buy(10)">10</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                  <div class="row p-0 m-0 rounded border border-secondary">
+                    <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                      <button class="btn hidden powerbutton text-left" type="button" id="btnBuyAetherPlant" onclick="gameBuildings.aetherPlant.buy()">Aether Plant</button>
+                    </div>
+                    <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                      <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10AetherPlant" onclick="gameBuildings.aetherPlant.buy(10)">10</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row p-0 m-0">
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                  <div class="row p-0 m-0 rounded border border-secondary">
+                    <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                      <button class="btn hidden powerbutton text-left" type="button" id="btnBuyFusionPlant" onclick="gameBuildings.fusionPlant.buy()">Fusion Plant</button>
+                    </div>
+                    <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                      <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10FusionPlant" onclick="gameBuildings.fusionPlant.buy(10)">10</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                  <div class="row p-0 m-0 rounded border border-secondary">
+                    <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                      <button class="btn hidden powerbutton text-left" type="button" id="btnBuyChronotonPlant" onclick="gameBuildings.chronotonPlant.buy()">Chronoton Plant</button>
+                    </div>
+                    <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                      <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10ChronotonPlant" onclick="gameBuildings.chronotonPlant.buy(10)">10</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                  <div class="row p-0 m-0 rounded border border-secondary">
+                    <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                      <button class="btn powerbutton hidden text-left" type="button" id="btnBuyPowerConverter" onclick="gameBuildings.powerConverter.buy()">Tactical Lab</button>
+                    </div>
+                    <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                      <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10PowerConverter" onclick="gameBuildings.powerConverter.buy(10)">10</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                  <div class="row p-0 m-0 rounded border border-secondary">
+                    <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    </div>
+                    <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row p-0 m-0 text-xsmall">
+              </div>
+            </div>
+            <div class="row p-0 m-0">
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button class="btn powerbutton text-left text-xsmall" type="button" id="btnBuyMine" onclick="gameBuildings.mine.buy()">Buy Mine</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button class="btn multiplebuypowerbutton text-center text-xsmall" type="button" id="btnBuy10Mine" onclick="gameBuildings.mine.buy(10)">10</button>
+                    <button class="btn btn-success multiplebuypowerbutton text-xsmall" type="button" id="btnMetalTech" onclick="buyMetalProficiency()">Send Ships</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button class="btn hidden powerbutton text-left" type="button" id="btnBuyFactory" onclick="gameBuildings.factory.buy()">Buy Factory</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button class="btn multiplebuypowerbutton text-center border border-secondary" type="button" id="btnBuy10Factory" onclick="gameBuildings.factory.buy(10)">10</button>
+                    <button class="btn btn-success multiplebuypowerbutton" type="button" id="btnPolymerTech" onclick="buyPolymerProficiency()">Send Ships</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button class="btn hidden powerbutton text-left" type="button" id="btnBuyLab" onclick="gameBuildings.lab.buy()">Buy Lab</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Lab" onclick="gameBuildings.lab.buy(10)">10</button>
+                    <button class="btn btn-success multiplebuypowerbutton" type="button" id="btnResearchTech" onclick="buyResearchProficiency()">Send Ships</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button class="btn hidden powerbutton text-left" type="button" id="btnBuyRefinery" onclick="gameBuildings.refinery.buy()">Buy Refinery</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10Refinery" onclick="gameBuildings.refinery.buy(10)">10</button>
+                    <button class="btn btn-success multiplebuypowerbutton" type="button" id="btnAetherTech" onclick="buyAetherProficiency()">Send Ships</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           <div class="tab-pane fade" id="components">
-            <div class="row p-0 m-0 border border-secondary rounded">
-              <div class="border p-0 m-0 border-secondary rounded col-xl-12 bg-dark text-light rounded shadow hidden" id="equipmentContainer" style="height:310px;">
-                <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnBuyShipyard" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
-                <button class="btn btn-sm btn-success upgradebutton" type="button" id="btnAutoFight" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="buyAutoFight()">Deploy ships automatically</button><br />
-                <button data-sort='24' class="btn btn-sm upgradebutton text-left" type="button" id="btnRailgunUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyUpgrade(1)">Upgrade Railgun</button>
-                <button data-sort='24' class="btn btn-sm multiplebuybutton text-left" type="button" id="btnRailgunUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyUpgrade(10)">10</button>
-                <button data-sort='23' class="btn btn-sm prestigebutton text-center" type="button" id="btnRailgunPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.railgun.buyPrestige()">U</button>
-                <br data-sort="25" />
-                <button data-sort='30' class="btn btn-sm upgradebutton text-left" type="button" id="btnLaserUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
-                <button data-sort='24' class="btn btn-sm multiplebuybutton text-left" type="button" id="btnLaserUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyUpgrade(10)">10</button>
-                <button data-sort='29' class="btn btn-sm prestigebutton text-center" type="button" id="btnLaserPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.laser.buyPrestige()">U</button>
-                <br data-sort="25" />
-                <button data-sort='36' class="btn btn-sm upgradebutton text-left" type="button" id="btnMissileUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
-                <button data-sort='24' class="btn btn-sm multiplebuybutton text-left" type="button" id="btnMissileUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyUpgrade(10)">10</button>
-                <button data-sort='35' class="btn btn-sm prestigebutton text-center" type="button" id="btnMissilePrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.missile.buyPrestige()">U</button>
-                <br data-sort="25" />
-                <button data-sort='27' class="btn btn-sm upgradebutton text-left" type="button" id="btnArmorUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
-                <button data-sort='24' class="btn btn-sm multiplebuybutton text-left" type="button" id="btnArmorUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyUpgrade(10)">10</button>
-                <button data-sort='26' class="btn btn-sm prestigebutton text-center" type="button" id="btnArmorPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.armor.buyPrestige()">U</button>
-                <button class="btn upgradebutton hidden text-left" type="button" id="btnBuyArmorLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.armorLab.buy()">Tactical Lab</button>
-                <button class="btn multiplebuybutton text-center" type="button" id="btnBuy10ArmorLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.armorLab.buy(10)">10</button>
-                <br data-sort="25" />
-                <button data-sort='33' class="btn btn-sm upgradebutton text-left" type="button" id="btnShieldUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
-                <button data-sort='24' class="btn btn-sm multiplebuybutton text-left" type="button" id="btnShieldUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyUpgrade(10)">10</button>
-                <button data-sort='32' class="btn btn-sm prestigebutton text-center" type="button" id="btnShieldPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.shield.buyPrestige()">U</button>
-                <button class="btn upgradebutton hidden text-left" type="button" id="btnBuyShieldLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shieldLab.buy()">Tactical Lab</button>
-                <button class="btn multiplebuybutton text-center" type="button" id="btnBuy10ShieldLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.shieldLab.buy(10)">10</button>
-                <!-- <br data-sort="25" />
-                <button data-sort='39' class="btn btn-sm upgradebutton text-left" type="button" id="btnFlakUpgrade" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyUpgrade()">Upgrade Flak</button>
-                <button data-sort='24' class="btn btn-sm multiplebuybutton text-left" type="button" id="btnFlakUpgrade10" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyUpgrade(10)">10</button>
-                <button data-sort='38' class="btn btn-sm prestigebutton" type="button" id="btnFlakPrestige" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameEquipment.flak.buyPrestige()">U</button>
-                <button class="btn upgradebutton hidden text-left" type="button" id="btnBuyFlakLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.flakLab.buy()">Tactical Lab</button>
-                <button class="btn multiplebuybutton text-center" type="button" id="btnBuy10FlakLab" data-toggle="tooltip" data-placement="bottom" title="TTOB" onclick="gameBuildings.flakLab.buy(10)">10</button> -->
-             </div>
+            <div class="row p-0 m-0">
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button class="btn btn-success powerbutton text-left" type="button" id="btnBuyShipyard" onclick="gameBuildings.shipyard.buy()">Shipyard</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button class="btn btn-success powerbutton text-left" type="button" id="btnAutoFight" onclick="buyAutoFight()">Deploy ships automatically</button><br />
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row p-0 m-0">
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button data-sort='24' class="btn powerbutton text-left" type="button" id="btnRailgunUpgrade" onclick="gameEquipment.railgun.buyUpgrade(1)">Upgrade Railgun</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button data-sort='24' class="btn multiplebuypowerbutton" type="button" id="btnRailgunUpgrade10" onclick="gameEquipment.railgun.buyUpgrade(10)">10</button>
+                    <button data-sort='23' class="btn multiplebuypowerbutton text-center" type="button" id="btnRailgunPrestige" onclick="gameEquipment.railgun.buyPrestige()">U</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button data-sort='30' class="btn powerbutton text-left" type="button" id="btnLaserUpgrade" onclick="gameEquipment.laser.buyUpgrade()">Upgrade Laser</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button data-sort='24' class="btn multiplebuypowerbutton" type="button" id="btnLaserUpgrade10" onclick="gameEquipment.laser.buyUpgrade(10)">10</button>
+                    <button data-sort='29' class="btn multiplebuypowerbutton text-center" type="button" id="btnLaserPrestige" onclick="gameEquipment.laser.buyPrestige()">U</button>
+                      </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button data-sort='36' class="btn powerbutton text-left" type="button" id="btnMissileUpgrade" onclick="gameEquipment.missile.buyUpgrade()">Upgrade Missile</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button data-sort='24' class="btn multiplebuypowerbutton" type="button" id="btnMissileUpgrade10" onclick="gameEquipment.missile.buyUpgrade(10)">10</button>
+                    <button data-sort='35' class="btn multiplebuypowerbutton text-center" type="button" id="btnMissilePrestige" onclick="gameEquipment.missile.buyPrestige()">U</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row p-0 m-0">
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button data-sort='27' class="btn powerbutton text-left" type="button" id="btnArmorUpgrade" onclick="gameEquipment.armor.buyUpgrade()">Upgrade Hull Plating</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button data-sort='24' class="btn multiplebuypowerbutton" type="button" id="btnArmorUpgrade10" onclick="gameEquipment.armor.buyUpgrade(10)">10</button>
+                    <button data-sort='26' class="btn multiplebuypowerbutton text-center" type="button" id="btnArmorPrestige" onclick="gameEquipment.armor.buyPrestige()">U</button>
+                      </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button class="btn powerbutton hidden text-left" type="button" id="btnBuyArmorLab" onclick="gameBuildings.armorLab.buy()">Tactical Lab</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10ArmorLab" onclick="gameBuildings.armorLab.buy(10)">10</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button data-sort='33' class="btn powerbutton text-left" type="button" id="btnShieldUpgrade" onclick="gameEquipment.shield.buyUpgrade()">Upgrade Shieldd</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button data-sort='24' class="btn multiplebuypowerbutton" type="button" id="btnShieldUpgrade10" onclick="gameEquipment.shield.buyUpgrade(10)">10</button>
+                    <button data-sort='32' class="btn multiplebuypowerbutton text-center" type="button" id="btnShieldPrestige" onclick="gameEquipment.shield.buyPrestige()">U</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 p-0 m-0">
+                <div class="row p-0 m-0 rounded border border-secondary">
+                  <div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 text-xsmall p-0 m-0">
+                    <button class="btn powerbutton hidden text-left" type="button" id="btnBuyShieldLab" onclick="gameBuildings.shieldLab.buy()">Tactical Lab</button>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-2 text-xsmall p-0 m-0">
+                    <button class="btn multiplebuypowerbutton text-center" type="button" id="btnBuy10ShieldLab" onclick="gameBuildings.shieldLab.buy(10)">10</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="tab-pane fade" id="destinations">
