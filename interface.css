@@ -59,9 +59,9 @@ button {
 }
 
 .powerbutton {
-  width: 150px;
-  height: 100px;
-  margin: 0px;
+  width: 118px;
+  height: 40px;
+  margin: 1px;
   padding: 0px;
   font-size: 125%;
   line-height: 0.7;
@@ -85,8 +85,8 @@ button {
 
 .multiplebuypowerbutton {
   width: 28px;
-  height: 49px;
-  margin: 0px;
+  height: 40px;
+  margin: 1px;
   padding: 0%;
   font-size: 100%;
 }

@@ -127,7 +127,7 @@ const AETHER_PROFICIENCY_BASE_RATE = 1.5;
 const RAILGUN_UPGRADE_METAL_BASE_COST = 50;
 const RAILGUN_UPGRADE_POLYMER_BASE_COST = 25;
 const RAILGUN_UPGRADE_RP_BASE_COST = 50;
-const RAILGUN_UPGRADE_BASE_IMPROVEMENT = 7;
+const RAILGUN_UPGRADE_BASE_IMPROVEMENT = 6;
 const RAILGUN_UPGRADE_AETHER_BASE_COST = 500;
 
 const LASER_UPGRADE_METAL_BASE_COST = 20;
@@ -139,19 +139,19 @@ const LASER_UPGRADE_AETHER_BASE_COST = 500;
 const MISSILE_UPGRADE_METAL_BASE_COST = 100 / 3;
 const MISSILE_UPGRADE_POLYMER_BASE_COST = 100 / 3;
 const MISSILE_UPGRADE_RP_BASE_COST = 50;
-const MISSILE_UPGRADE_BASE_IMPROVEMENT = 20;
+const MISSILE_UPGRADE_BASE_IMPROVEMENT = 14;
 const MISSILE_UPGRADE_AETHER_BASE_COST = 500;
 
 const ARMOR_UPGRADE_METAL_BASE_COST = 100;
 const ARMOR_UPGRADE_POLYMER_BASE_COST = 0;
 const ARMOR_UPGRADE_RP_BASE_COST = 50;
-const ARMOR_UPGRADE_BASE_IMPROVEMENT = 50;
+const ARMOR_UPGRADE_BASE_IMPROVEMENT = 100;
 const ARMOR_UPGRADE_AETHER_BASE_COST = 500;
 
 const SHIELD_UPGRADE_METAL_BASE_COST = 0;
 const SHIELD_UPGRADE_POLYMER_BASE_COST = 100;
 const SHIELD_UPGRADE_RP_BASE_COST = 50;
-const SHIELD_UPGRADE_BASE_IMPROVEMENT = 50;
+const SHIELD_UPGRADE_BASE_IMPROVEMENT = 20;
 const SHIELD_UPGRADE_AETHER_BASE_COST = 500;
 
 // const FLAK_UPGRADE_METAL_BASE_COST = 75;
@@ -774,7 +774,7 @@ class Ship {
     var newEnemymods = possibleEnemies[Math.floor(Math.random() * possibleEnemies.length)]; // this will eventually need to be redone when we add advanced enemies
     this.name = newEnemymods.name;
 
-    this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 40 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
+    this.hitPoints = missionWork.difficulty * newEnemymods.hitPointMod * this.size * 200 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
     this.hitPointsMax = this.hitPoints;
 
     var baseEnemyAttack = missionWork.difficulty * newEnemymods.attackMod * 20 * Math.pow(2.1, missionWork.level - 1) * Math.pow(1.007, zone - 1);
@@ -865,6 +865,26 @@ class Ship {
     });
   }
 
+  resolveAttack(defender:Ship, damageToEnemy:number) { // eslint-disable-line class-methods-use-this
+    if (defender.shield > 0) {
+      if (damageToEnemy > defender.shield) {
+        damageToEnemy -= defender.shield;
+        defender.shield = 0;
+      } else {
+        defender.shield -= damageToEnemy;
+        damageToEnemy = 0;
+      }
+    }
+
+    if (damageToEnemy > 0) {
+      defender.hitPoints -= damageToEnemy;
+      if (defender.hitPoints < 0) {
+        defender.hitPoints = 0;
+      }
+    }
+
+  }
+
   railgunAttack(defender:Ship) {
     if (this.hitPoints <= 0) {
       return;
@@ -875,19 +895,7 @@ class Ship {
       // addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
     }
 
-    if (defender.shield > 0) {
-      if (damageToEnemy > defender.shield) {
-        damageToEnemy -= defender.shield;
-        defender.shield -= 0;
-      } else {
-        defender.shield -= damageToEnemy;
-        damageToEnemy = 0;
-      }
-    }
-
-    if (damageToEnemy > 0) {
-      defender.hitPoints -= damageToEnemy;
-    }
+    this.resolveAttack(defender, damageToEnemy);
   }
 
   laserAttack(defender:Ship) {
@@ -899,19 +907,7 @@ class Ship {
       damageToEnemy *= this.criticalMultiplier;
       // addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
     }
-    if (defender.shield > 0) {
-      if (damageToEnemy > defender.shield) {
-        damageToEnemy -= defender.shield;
-        defender.shield -= 0;
-      } else {
-        defender.shield -= damageToEnemy;
-        damageToEnemy = 0;
-      }
-    }
-
-    if (damageToEnemy > 0) {
-      defender.hitPoints -= damageToEnemy;
-    }
+    this.resolveAttack(defender, damageToEnemy);
   }
 
   missileAttack(defender:Ship) {
@@ -923,19 +919,7 @@ class Ship {
       damageToEnemy *= this.criticalMultiplier;
       // addToDisplay(this.name + ' scores a critical hit for ' + prettify(damageToEnemy) + ' damage', 'combat');
     }
-    if (defender.shield > 0) {
-      if (damageToEnemy > defender.shield) {
-        damageToEnemy -= defender.shield;
-        defender.shield -= 0;
-      } else {
-        defender.shield -= damageToEnemy;
-        damageToEnemy = 0;
-      }
-    }
-
-    if (damageToEnemy > 0) {
-      defender.hitPoints -= damageToEnemy;
-    }
+    this.resolveAttack(defender, damageToEnemy);
   }
 }
 
@@ -1103,7 +1087,9 @@ class EquipmentBase {
 
   buttonclass: string
 
-  constructor(name: string, weapon: boolean, valueperlevel:number, upgradeMetalBaseCost: number, upgradePolymerBaseCost:number, upgradeRPBaseCost:number, upgradeAetherBaseCost:number, tech:EquipmentTechnology, upgradeButton:HTMLElement, upgrade10Button:HTMLElement, prestigeButton:HTMLElement) {
+  infusePower: number
+
+  constructor(name: string, weapon: boolean, valueperlevel:number, upgradeMetalBaseCost: number, upgradePolymerBaseCost:number, upgradeRPBaseCost:number, upgradeAetherBaseCost:number, tech:EquipmentTechnology, upgradeButton:HTMLElement, upgrade10Button:HTMLElement, prestigeButton:HTMLElement, infusePower:number) {
     this.name = name;
     this.weapon = weapon;
     this.valuePerLevel = valueperlevel;
@@ -1115,6 +1101,7 @@ class EquipmentBase {
     this.upgradeButton = upgradeButton;
     this.upgrade10Button = upgrade10Button;
     this.prestigeButton = prestigeButton;
+    this.infusePower = infusePower;
     if (weapon) {
       this.buttonclass = 'btn-warning';
     } else if (this.name == 'Shield') {
@@ -1170,22 +1157,21 @@ class EquipmentBase {
       str = ' hit points';
     }
 
-    return ('<br /><br /><small>Adds ' + prettify(this.getValuePerUpgrade() * amt) + str + '<br />M:' + prettify(this.metalForUpgrade(amt)) + '<br />P:' + prettify(this.polymerForUpgrade(amt)) + '<br />RP:' + prettify(this.rpForUpgrade(amt)) + '</small>');
+    return (this.name + '(' + amt + ')<br /><br /><small>Adds ' + prettify(this.getValuePerUpgrade() * amt) + str + '<br />M:' + prettify(this.metalForUpgrade(amt)) + '<br />P:' + prettify(this.polymerForUpgrade(amt)) + '<br />RP:' + prettify(this.rpForUpgrade(amt)) + '</small>');
   }
 
-  PrestigeString() { return ('Upgrade<br />This will improve our ' + this.name + '<br />Metal Cost:' + prettify(this.metalForPrestige()) + '<br />Polymer Cost:' + prettify(this.polymerForPrestige()) + '<br />RP Cost:' + prettify(this.rpForPrestige()) + '<br />Aether Cost:' + prettify(this.aetherForPrestige())); }
+  PrestigeString() { return ('Upgrade ' + this.name + '<small><br /><br />Metal Cost:' + prettify(this.metalForPrestige()) + '<br />Polymer Cost:' + prettify(this.polymerForPrestige()) + '<br />RP Cost:' + prettify(this.rpForPrestige()) + '<br />Aether Cost:' + prettify(this.aetherForPrestige()) + '</small>'); }
 
-  updateUpgradeText() { this.upgradeButton.innerHTML = (this.name + ' (' + (this.technology.upgrade) + ')' + this.upgradeString()); }
+  updateUpgradeText() { this.upgradeButton.innerHTML = (this.name + ' (' + (this.technology.upgrade) + ')'); }
 
   updatePrestigeText() { this.prestigeButton.innerHTML = 'U'; } //   'Infuse Railgun ' + (gameData.technologies.railgunPrestigeLevelBought + 1)); },
-
 
   canAffordUpgrade(amt:number = 1) { return (gameData.resources.metal >= this.metalForUpgrade(amt)) && (gameData.resources.polymer >= this.polymerForUpgrade(amt)) && (gameData.resources.researchPoints >= this.rpForUpgrade(amt)); }
 
   canAffordPrestige() { return (gameData.resources.metal >= this.metalForPrestige()) && (gameData.resources.polymer >= this.polymerForPrestige()) && (gameData.resources.researchPoints >= this.rpForPrestige()) && (gameData.resources.aether >= this.aetherForPrestige()); }
 
   getValuePerUpgrade() {
-    var value = this.valuePerLevel * Math.pow(10, this.technology.prestigeBought - 1) * gameData.playership.size;
+    var value = this.valuePerLevel * Math.pow(this.infusePower, this.technology.prestigeBought - 1) * gameData.playership.size;
     if (this.weapon) {
       value *= achievementMultiplier;
       value *= gamePerks.damager.getBonus();
@@ -1248,6 +1234,7 @@ class EquipmentBase {
   }
 
   buyUpgrade(amt:number = 1) {
+    document.getElementById('tooltip').innerHTML = this.upgradeString(amt);
     if (this.canAffordUpgrade(amt)) {
       for (let index = 0; index < amt; index++) {
         gameData.resources.metal -= this.metalForUpgrade();
@@ -1259,6 +1246,7 @@ class EquipmentBase {
   }
 
   buyPrestige() {
+    document.getElementById('tooltip').innerHTML = this.PrestigeString();
     if (this.canAffordPrestige()) {
       gameData.resources.metal -= this.metalForPrestige();
       gameData.resources.polymer -= this.polymerForPrestige();
@@ -1270,11 +1258,11 @@ class EquipmentBase {
 }
 
 var gameEquipment = {
-  railgun: new EquipmentBase('Railgun', true, RAILGUN_UPGRADE_BASE_IMPROVEMENT, RAILGUN_UPGRADE_METAL_BASE_COST, RAILGUN_UPGRADE_POLYMER_BASE_COST, RAILGUN_UPGRADE_RP_BASE_COST, RAILGUN_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnRailgunUpgrade'), document.getElementById('btnRailgunUpgrade10'), document.getElementById('btnRailgunPrestige')),
-  laser: new EquipmentBase('Laser', true, LASER_UPGRADE_BASE_IMPROVEMENT, LASER_UPGRADE_METAL_BASE_COST, LASER_UPGRADE_POLYMER_BASE_COST, LASER_UPGRADE_RP_BASE_COST, LASER_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnLaserUpgrade'), document.getElementById('btnLaserUpgrade10'), document.getElementById('btnLaserPrestige')),
-  missile: new EquipmentBase('Missile', true, MISSILE_UPGRADE_BASE_IMPROVEMENT, MISSILE_UPGRADE_METAL_BASE_COST, MISSILE_UPGRADE_POLYMER_BASE_COST, MISSILE_UPGRADE_RP_BASE_COST, MISSILE_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnMissileUpgrade'), document.getElementById('btnMissileUpgrade10'), document.getElementById('btnMissilePrestige')),
-  armor: new EquipmentBase('Armor', false, ARMOR_UPGRADE_BASE_IMPROVEMENT, ARMOR_UPGRADE_METAL_BASE_COST, ARMOR_UPGRADE_POLYMER_BASE_COST, ARMOR_UPGRADE_RP_BASE_COST, ARMOR_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnArmorUpgrade'), document.getElementById('btnArmorUpgrade10'), document.getElementById('btnArmorPrestige')),
-  shield: new EquipmentBase('Shield', false, SHIELD_UPGRADE_BASE_IMPROVEMENT, SHIELD_UPGRADE_METAL_BASE_COST, SHIELD_UPGRADE_POLYMER_BASE_COST, SHIELD_UPGRADE_RP_BASE_COST, SHIELD_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnShieldUpgrade'), document.getElementById('btnShieldUpgrade10'), document.getElementById('btnShieldPrestige'))
+  railgun: new EquipmentBase('Railgun', true, RAILGUN_UPGRADE_BASE_IMPROVEMENT, RAILGUN_UPGRADE_METAL_BASE_COST, RAILGUN_UPGRADE_POLYMER_BASE_COST, RAILGUN_UPGRADE_RP_BASE_COST, RAILGUN_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnRailgunUpgrade'), document.getElementById('btnRailgunUpgrade10'), document.getElementById('btnRailgunPrestige'), 10),
+  laser: new EquipmentBase('Laser', true, LASER_UPGRADE_BASE_IMPROVEMENT, LASER_UPGRADE_METAL_BASE_COST, LASER_UPGRADE_POLYMER_BASE_COST, LASER_UPGRADE_RP_BASE_COST, LASER_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnLaserUpgrade'), document.getElementById('btnLaserUpgrade10'), document.getElementById('btnLaserPrestige'), 10),
+  missile: new EquipmentBase('Missile', true, MISSILE_UPGRADE_BASE_IMPROVEMENT, MISSILE_UPGRADE_METAL_BASE_COST, MISSILE_UPGRADE_POLYMER_BASE_COST, MISSILE_UPGRADE_RP_BASE_COST, MISSILE_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnMissileUpgrade'), document.getElementById('btnMissileUpgrade10'), document.getElementById('btnMissilePrestige'), 10),
+  armor: new EquipmentBase('Armor', false, ARMOR_UPGRADE_BASE_IMPROVEMENT, ARMOR_UPGRADE_METAL_BASE_COST, ARMOR_UPGRADE_POLYMER_BASE_COST, ARMOR_UPGRADE_RP_BASE_COST, ARMOR_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnArmorUpgrade'), document.getElementById('btnArmorUpgrade10'), document.getElementById('btnArmorPrestige'), 12),
+  shield: new EquipmentBase('Shield', false, SHIELD_UPGRADE_BASE_IMPROVEMENT, SHIELD_UPGRADE_METAL_BASE_COST, SHIELD_UPGRADE_POLYMER_BASE_COST, SHIELD_UPGRADE_RP_BASE_COST, SHIELD_UPGRADE_AETHER_BASE_COST, new EquipmentTechnology(1, 1, 1), document.getElementById('btnShieldUpgrade'), document.getElementById('btnShieldUpgrade10'), document.getElementById('btnShieldPrestige'), 12)
 };
 
 
@@ -1377,7 +1365,7 @@ class BuildingBase {
   buyButtonBaseText() { return this.name + ': ' + prettify(this.buildinginfo.count); }
 
   costString(amt:number = 1) {
-    var rtn = '<br /><small>Costs:';
+    var rtn = '<small><br />Costs:';
     if (this.metalCost(amt) > 0) {
       rtn += '<br />M:' + prettify(this.metalCost(amt));
     }
@@ -1457,14 +1445,15 @@ class PowerBuilding extends BuildingBase {
 
   totalPowerCreated() { return (this.buildinginfo.count * this.powerPer()); }
 
-  costString(amt:number = 1) { return '<small><br /><br />Creates ' + prettify(this.powerPer(amt)) + ' power</small>' + super.costString(amt); }
+  costString(amt:number = 1) { return this.name + '(' + amt + ')<small><br /><br />Creates ' + prettify(this.powerPer(amt)) + ' power</small>' + super.costString(amt); }
 
   updateBuyButtonText() {
-    this.buyButton.innerHTML = super.buyButtonBaseText() + this.costString();
+    this.buyButton.innerHTML = super.buyButtonBaseText();
     this.buy10Button.innerHTML = '10';
   }
 
   buy(amt:number = 1) {
+    document.getElementById('tooltip').innerHTML = this.costString(amt);
     super.buy(amt);
     this.updateBuyButtonText();
   }
@@ -1484,10 +1473,10 @@ class ResourceBuilding extends BuildingBase {
     this.proficiencyBaseRate = proficiencyBaseRate;
   }
 
-  costString(amt: number = 1) { return '<small><br /><br />Creates ' + prettify(this.productionPerSecond() * amt / this.buildinginfo.count) + '/s</small>' + super.costString(amt); }
+  costString(amt:number = 1) { return this.name + '(' + amt + ')<small><br /><br />Creates ' + prettify(this.productionPerSecond() * amt / this.buildinginfo.count) + '/s</small>' + super.costString(amt); }
 
   updateBuyButtonText() {
-    this.buyButton.innerHTML = super.buyButtonBaseText() + this.costString();
+    this.buyButton.innerHTML = super.buyButtonBaseText();
     this.buy10Button.innerHTML = '10';
   }
 
@@ -1502,6 +1491,7 @@ class ResourceBuilding extends BuildingBase {
   }
 
   buy(amt: number = 1) {
+    document.getElementById('tooltip').innerHTML = this.costString(amt);
     super.buy(amt);
     this.technology.unlocked = Math.floor(this.buildinginfo.count / 10);
     this.updateBuyButtonText();
@@ -1517,10 +1507,10 @@ class PowerConverterBuilding extends BuildingBase {
     this.tacticalChoices = tacticalChoice;
   }
 
-  costString(amt: number = 1) { return ('<small><br /><br />' + prettify(this.getBonus(amt) * 100) + '% efficiency</small>') + super.costString(amt); }
+  costString(amt: number = 1) { return this.name + '(' + amt + ')<small><br /><br />' + prettify(this.getBonus(amt) * 100) + '% efficiency</small>' + super.costString(amt); }
 
   updateBuyButtonText() {
-    this.buyButton.innerHTML = super.buyButtonBaseText() + this.costString();
+    this.buyButton.innerHTML = super.buyButtonBaseText();
     this.buy10Button.innerHTML = '10';
   }
 
@@ -1531,6 +1521,7 @@ class PowerConverterBuilding extends BuildingBase {
   }
 
   buy(amt: number = 1) {
+    document.getElementById('tooltip').innerHTML = this.costString(amt);
     if (this.tacticalChoices.count > 0) {
       super.buy(amt);
       this.updateBuyButtonText();
@@ -1548,10 +1539,10 @@ class TacticBuilding extends BuildingBase {
     this.tacticalChoices = tacticalChoice;
   }
 
-  costString(amt: number = 1) { return ('<small><br /><br />Buying will set value to ' + prettify(this.getBonus(amt) * 100) + '% efficiency</small>') + super.costString(amt); }
+  costString(amt: number = 1) { return this.name + '(' + amt + ')<small><br /><br />Buying will set value to ' + prettify(this.getBonus(amt) * 100) + '% efficiency</small>' + super.costString(amt); }
 
   updateBuyButtonText() {
-    this.buyButton.innerHTML = super.buyButtonBaseText() + this.costString();
+    this.buyButton.innerHTML = super.buyButtonBaseText();
     this.buy10Button.innerHTML = '10';
   }
 
@@ -1566,6 +1557,7 @@ class TacticBuilding extends BuildingBase {
   }
 
   buy(amt: number = 1) {
+    document.getElementById('tooltip').innerHTML = this.costString(amt);
     if (this.tacticalChoices.count > 0) {
       super.buy(amt);
       this.updateBuyButtonText();
@@ -1595,9 +1587,9 @@ var gameBuildings = {
     rpCost: function() { return (SHIPYARD_RP_BASE_COST * Math.pow(SHIPYARD_RP_GROWTH_FACTOR, gameData.buildings.shipyard.count)); },
     powerCost: function() { return (SHIPYARD_POWER_USAGE * Math.pow(SHIPYARD_POWER_GROWTH_USAGE, gameData.buildings.shipyard.count)); },
     powerSpent: function() { return sumOfExponents(gameData.buildings.shipyard.count, SHIPYARD_POWER_USAGE, SHIPYARD_POWER_GROWTH_USAGE); },
-    CostString: function() { return ('<br /><br /><small>Increases ship size by 25%<br />M:' + prettify(this.metalCost()) + '<br />P:' + prettify(this.polymerCost()) + '<br />R:' + prettify(this.rpCost()) + '<br />P: ' + prettify(this.powerCost()) + '</small>'); },
+    costString: function() { return ('Shipyard<br /><br /><small>Increases ship size by 25%<br />M:' + prettify(this.metalCost()) + '<br />P:' + prettify(this.polymerCost()) + '<br />R:' + prettify(this.rpCost()) + '<br />Power:' + prettify(this.powerCost()) + '</small>'); },
     canAffordBuy: function() { return (gameData.resources.metal >= this.metalCost() && gameData.resources.polymer >= this.polymerCost() && gameData.resources.researchPoints >= this.rpCost() && CheckPower(this.powerCost())); },
-    updateBuyButtonText: function() { document.getElementById('btnBuyShipyard').innerHTML = ('Shipyard(' + (gameData.buildings.shipyard.count) + ')' + this.CostString()); },
+    updateBuyButtonText: function() { document.getElementById('btnBuyShipyard').innerHTML = ('Shipyard(' + (gameData.buildings.shipyard.count) + ')'); },
     showBuyButton: function() { $('#btnBuyShipyard').removeClass('hidden'); },
     determineShowAffordBuy: function() {
       if (gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard.count) {
@@ -1612,6 +1604,7 @@ var gameBuildings = {
       }
     },
     buy: function() {
+      document.getElementById('tooltip').innerHTML = this.costString();
       if (this.canAffordBuy() && gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard.count) {
         gameData.resources.metal -= this.metalCost();
         gameData.resources.polymer -= this.polymerCost();
@@ -1822,12 +1815,12 @@ function init(gatewayReset: boolean, activeChallenge: string, oldsave:saveGameDa
   // debugText += '\n6. Current achievements are limited.';
   // debugText += '\n7. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.';
   possibleEnemies = [];
-  possibleEnemies.push(new PossibleEnemy('Raider', 1, 1, 1));
-  possibleEnemies.push(new PossibleEnemy('Tank', 0.5, 2, 1));
-  possibleEnemies.push(new PossibleEnemy('Wizard', 2, 0.5, 1));
-  possibleEnemies.push(new PossibleEnemy('Paladin', 1.5, 0.7, 1));
-  possibleEnemies.push(new PossibleEnemy('Ranger', 0.7, 1.5, 1));
-  possibleEnemies.push(new PossibleEnemy('Raider', 1, 1, 1));
+  possibleEnemies.push(new PossibleEnemy('Raider', 1, 1, 0.5));
+  possibleEnemies.push(new PossibleEnemy('Tank', 0.5, 2, 0.5));
+  possibleEnemies.push(new PossibleEnemy('Wizard', 2, 0.5, 0.5));
+  possibleEnemies.push(new PossibleEnemy('Paladin', 1.5, 0.7, 0.5));
+  possibleEnemies.push(new PossibleEnemy('Ranger', 0.7, 1.5, 0.5));
+  possibleEnemies.push(new PossibleEnemy('Raider', 1, 1, 0.5));
   textToDisplay = [];
   textGameSaved = [];
   textLoot = [];
@@ -2111,16 +2104,6 @@ function init(gatewayReset: boolean, activeChallenge: string, oldsave:saveGameDa
   }
 
   $('#btnAutoFight').attr('title', 'Metal Cost:' + AUTOFIGHT_METAL_COST + '\nPolymer Cost:' + AUTOFIGHT_POLYMER_COST + '\nResarch Point Cost:' + AUTOFIGHT_RP_COST);
-  $('#btnMetalTech').attr('title', 'Increases Metal production by 50%\nMetal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiency.bought))) +
-    '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiency.bought))));
-  $('#btnPolymerTech').attr('title', 'Increases Polymer production by 50%\nPolymer Cost:' + prettify(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiency.bought)) +
-    '\nResearch Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiency.bought)));
-  $('#btnResearchTech').attr('title', 'Increases Research production by 50%\nMetal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)) +
-    '\nPolymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)) +
-    '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)));
-  $('#btnAetherTech').attr('title', 'Increases Aether production by 50%\nMetal Cost:' + prettify(AETHER_PROFIECIENCY_METAL_COST * Math.pow(AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought)) +
-    '\nPolymer Cost:' + prettify(AETHER_PROFIECIENCY_POLYMER_COST * Math.pow(AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought)) +
-    '\nResearch Cost:' + prettify(AETHER_PROFIECIENCY_RP_COST * Math.pow(AETHER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought)));
 
   gameEquipment.railgun.updateUpgradeText();
   gameEquipment.laser.updateUpgradeText();
@@ -2494,16 +2477,16 @@ function runRules() {
     if (gameBuildings.panel.canAffordBuy(powercost)) {
       gameBuildings.panel.buy(1);
     }
-    if (gameBuildings.generator.canAffordBuy(powercost)) {
+    if (gameBuildings.generator.canAffordBuy(powercost) && gameBuildings.generator.unlocked) {
       gameBuildings.generator.buy(1);
     }
-    if (gameBuildings.plant.canAffordBuy(powercost)) {
+    if (gameBuildings.plant.canAffordBuy(powercost) && gameBuildings.plant.unlocked) {
       gameBuildings.plant.buy(1);
     }
-    if (gameBuildings.aetherPlant.canAffordBuy(powercost)) {
+    if (gameBuildings.aetherPlant.canAffordBuy(powercost) && gameBuildings.aetherPlant.unlocked) {
       gameBuildings.aetherPlant.buy(1);
     }
-    if (gameBuildings.fusionPlant.canAffordBuy(powercost)) {
+    if (gameBuildings.fusionPlant.canAffordBuy(powercost) && gameBuildings.fusionPlant.unlocked) {
       gameBuildings.fusionPlant.buy(1);
     }
   }
@@ -2511,13 +2494,13 @@ function runRules() {
     if (gameBuildings.mine.canAffordBuy(resourcecost)) {
       gameBuildings.mine.buy(1);
     }
-    if (gameBuildings.factory.canAffordBuy(resourcecost)) {
+    if (gameBuildings.factory.canAffordBuy(resourcecost) && gameBuildings.factory.unlocked) {
       gameBuildings.factory.buy(1);
     }
-    if (gameBuildings.lab.canAffordBuy(resourcecost)) {
+    if (gameBuildings.lab.canAffordBuy(resourcecost) && gameBuildings.lab.unlocked) {
       gameBuildings.lab.buy(1);
     }
-    if (gameBuildings.refinery.canAffordBuy(resourcecost)) {
+    if (gameBuildings.refinery.canAffordBuy(resourcecost) && gameBuildings.refinery.unlocked) {
       gameBuildings.refinery.buy(1);
     }
   }
@@ -2534,33 +2517,43 @@ function runRules() {
   }
 
   if (doshipyard) {
-    gameBuildings.shipyard.buy();
+    if (gameBuildings.shipyard.canAffordBuy()) {
+      gameBuildings.shipyard.buy();
+    }
   }
 
   if (doresearch) {
-    buyResearchProficiency();
-    buyMetalProficiency();
-    buyPolymerProficiency();
-    buyAetherProficiency();
+    if (canAffordResearchProfieciency && gameData.technologies.researchProficiency.unlocked > gameData.technologies.researchProficiency.bought) {
+      buyResearchProficiency();
+    }
+    if (canAffordMetalProfieciency && gameData.technologies.metalProficiency.unlocked > gameData.technologies.metalProficiency.bought) {
+      buyMetalProficiency();
+    }
+    if (canAffordPolymerProfieciency && gameData.technologies.polymerProficiency.unlocked > gameData.technologies.polymerProficiency.bought) {
+      buyPolymerProficiency();
+    }
+    if (canAffordAetherProfieciency && gameData.technologies.aetherProficiency.unlocked > gameData.technologies.aetherProficiency.bought) {
+      buyAetherProficiency();
+    }
     if ((gameData.technologies.autofightBought === 0 && gameData.technologies.autofightUnlock > 0)) {
       buyAutoFight();
     }
   }
 
   if (doequipment) {
-    if (gameEquipment.railgun.technology.prestigeUnlocked > gameEquipment.railgun.technology.prestigeBought) {
+    if (gameEquipment.railgun.technology.prestigeUnlocked > gameEquipment.railgun.technology.prestigeBought && gameEquipment.railgun.canAffordPrestige()) {
       gameEquipment.railgun.buyPrestige();
     }
-    if (gameEquipment.armor.technology.prestigeUnlocked > gameEquipment.armor.technology.prestigeBought) {
+    if (gameEquipment.armor.technology.prestigeUnlocked > gameEquipment.armor.technology.prestigeBought && gameEquipment.armor.canAffordPrestige()) {
       gameEquipment.armor.buyPrestige();
     }
-    if (gameEquipment.laser.technology.prestigeUnlocked > gameEquipment.laser.technology.prestigeBought) {
+    if (gameEquipment.laser.technology.prestigeUnlocked > gameEquipment.laser.technology.prestigeBought && gameEquipment.laser.canAffordPrestige()) {
       gameEquipment.laser.buyPrestige();
     }
-    if (gameEquipment.shield.technology.prestigeUnlocked > gameEquipment.shield.technology.prestigeBought) {
+    if (gameEquipment.shield.technology.prestigeUnlocked > gameEquipment.shield.technology.prestigeBought && gameEquipment.shield.canAffordPrestige()) {
       gameEquipment.shield.buyPrestige();
     }
-    if (gameEquipment.missile.technology.prestigeUnlocked > gameEquipment.missile.technology.prestigeBought) {
+    if (gameEquipment.missile.technology.prestigeUnlocked > gameEquipment.missile.technology.prestigeBought && gameEquipment.missile.canAffordPrestige()) {
       gameEquipment.missile.buyPrestige();
     }
   }
@@ -2897,7 +2890,6 @@ function updateGUI() {
     $('#fightcontrols').removeClass('hidden');
 
   } else {
-    $('#chronotoncontainer').addClass('hidden');
     $('#btnAbilities').addClass('hidden');
   }
 
@@ -3221,6 +3213,8 @@ function choosePowerConverter(choice:number) { // eslint-disable-line no-unused-
 }
 
 function buyMetalProficiency() { // eslint-disable-line no-unused-vars
+  document.getElementById('tooltip').innerHTML = 'Increases Metal by 50%<br /><br /><small>Metal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiency.bought))) +
+    '<br />Research Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiency.bought))) + '</small>';
   if (gameData.technologies.metalProficiency.bought >= gameData.technologies.metalProficiency.unlocked) {
     return;
   }
@@ -3232,13 +3226,13 @@ function buyMetalProficiency() { // eslint-disable-line no-unused-vars
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.polymer -= nextPolymerCost;
     gameData.resources.researchPoints -= nextRPCost;
-    $('#btnMetalTech').attr('title', 'This research will increase our metal production by 50% multiplicative\nMetal Cost:' + prettify((METAL_PROFIECIENCY_METAL_COST * Math.pow(METAL_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.metalProficiency.bought))) +
-      '\nResearch Cost:' + prettify((METAL_PROFIECIENCY_RP_COST * Math.pow(METAL_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.metalProficiency.bought))));
     gameBuildings.mine.updateBuyButtonText();
   }
 }
 
 function buyPolymerProficiency() { // eslint-disable-line no-unused-vars
+  document.getElementById('tooltip').innerHTML = 'Upgrade polymer by 50%<br /><br /><small>Polymer Cost:' + prettify(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiency.bought)) +
+  '<br />Research Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiency.bought)) + '</small>';
   if (gameData.technologies.polymerProficiency.bought >= gameData.technologies.polymerProficiency.unlocked) {
     return;
   }
@@ -3250,13 +3244,14 @@ function buyPolymerProficiency() { // eslint-disable-line no-unused-vars
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.polymer -= nextPolymerCost;
     gameData.resources.researchPoints -= nextRPCost;
-    $('#btnPolymerTech').attr('title', 'This research will increase our polymer production by 50% multiplicative\nPolymer Cost:' + prettify(POLYMER_PROFIECIENCY_POLYMER_COST * Math.pow(POLYMER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.polymerProficiency.bought)) +
-      '\nResearch Cost:' + prettify(POLYMER_PROFIECIENCY_RP_COST * Math.pow(POLYMER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.polymerProficiency.bought)));
     gameBuildings.factory.updateBuyButtonText();
   }
 }
 
 function buyResearchProficiency() { // eslint-disable-line no-unused-vars
+  document.getElementById('tooltip').innerHTML = 'Upgrade Research by 50%<br /><br /><small>Metal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)) +
+  '<br />Polymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)) +
+  '<br />Research Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)) + '</small>';
   if (gameData.technologies.researchProficiency.bought >= gameData.technologies.researchProficiency.unlocked) {
     return;
   }
@@ -3268,14 +3263,14 @@ function buyResearchProficiency() { // eslint-disable-line no-unused-vars
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.polymer -= nextPolymerCost;
     gameData.resources.researchPoints -= nextRPCost;
-    $('#btnResearchTech').attr('title', 'This research will increase our research production by 50% multiplicative\nMetal Cost:' + prettify(RESEARCH_PROFIECIENCY_METAL_COST * Math.pow(RESEARCH_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)) +
-      '\nPolymer Cost:' + prettify(RESEARCH_PROFIECIENCY_POLYMER_COST * Math.pow(RESEARCH_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)) +
-      '\nResearch Cost:' + prettify(RESEARCH_PROFIECIENCY_RP_COST * Math.pow(RESEARCH_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.researchProficiency.bought)));
     gameBuildings.lab.updateBuyButtonText();
   }
 }
 
 function buyAetherProficiency() { // eslint-disable-line no-unused-vars
+  document.getElementById('tooltip').innerHTML = 'Upgrade Aether by 50% <br /><br /><small>Metal Cost:' + prettify((AETHER_PROFIECIENCY_METAL_COST * Math.pow(AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought))) +
+  '<br />Polymer Cost:' + prettify((AETHER_PROFIECIENCY_POLYMER_COST * Math.pow(AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought))) +
+  '<br />Research Cost:' + prettify((AETHER_PROFIECIENCY_RP_COST * Math.pow(AETHER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought))) + '</small>';
   if (gameData.technologies.aetherProficiency.bought >= gameData.technologies.aetherProficiency.unlocked) {
     return;
   }
@@ -3287,9 +3282,6 @@ function buyAetherProficiency() { // eslint-disable-line no-unused-vars
     gameData.resources.metal -= nextMetalCost;
     gameData.resources.polymer -= nextPolymerCost;
     gameData.resources.researchPoints -= nextRPCost;
-    $('#btnAetherTech').attr('title', 'This research will increase our aether production by 50% multiplicative\nMetal Cost:' + prettify((AETHER_PROFIECIENCY_METAL_COST * Math.pow(AETHER_PROFIECIENCY_METAL_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought))) +
-      '\nPolymer Cost:' + prettify((AETHER_PROFIECIENCY_POLYMER_COST * Math.pow(AETHER_PROFIECIENCY_POLYMER_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought))) +
-      '\nResearch Cost:' + prettify((AETHER_PROFIECIENCY_RP_COST * Math.pow(AETHER_PROFIECIENCY_RP_GROWTH_FACTOR, gameData.technologies.aetherProficiency.bought))));
     gameBuildings.refinery.updateBuyButtonText();
   }
 }
