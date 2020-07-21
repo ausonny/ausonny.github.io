@@ -2517,7 +2517,7 @@ function runRules() {
   }
 
   if (doshipyard) {
-    if (gameBuildings.shipyard.canAffordBuy()) {
+    if (gameBuildings.shipyard.canAffordBuy() && gameData.technologies.shipyardTechUnlock > gameData.buildings.shipyard.count) {
       gameBuildings.shipyard.buy();
     }
   }
