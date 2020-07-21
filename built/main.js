@@ -1003,7 +1003,7 @@ class PowerBuilding extends BuildingBase {
         this.technology = technology;
     }
     powerPer(amt = 1) {
-        var rtn = (this.basePowerPer * Math.pow(2, this.technology.count) * gamePerks.power.getBonus()) * amt;
+        var rtn = (this.basePowerPer * Math.pow(2, this.technology.count) * Math.pow(1.1, gamePerks.power.perkData.count)) * amt;
         if (gameData.world.currentChallenge === 'Power') {
             rtn /= 2;
         }
