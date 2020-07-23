@@ -287,7 +287,7 @@ class saveGameData {
         var criticality = new challenge('Criticality', 'The enemy has gained the ability to unleash massive amounts of critical damage from time to time.  Completing Galaxy 30 will complete the challenge and unlock the criticality ability.  Learning this ability will be incredibly helpful.', 30, 30, document.getElementById('btnConfirmCriticality'));
         var condenser = new challenge('Condenser', 'You are about to enter another dimension.  A dimension not only of sight and sound but of big maps.  Each map is 150 zones in size.   Completing Galaxy 35 will complete the challenge and unlock the condenser ability.  Each level bought will decrease Mission(not Galaxy) sizes by one.', 35, 35, document.getElementById('btnConfirmCondenser'));
         var streamline = new challenge('Streamline', 'You are about to enter another dimension.  A dimension not only of sight and sound but of expensive equipment.  Each piece of equipment or infusion is twice as expensive.   Completing Galaxy 40 will complete the challenge and unlock the streamline ability.  Streamline will reduce equipment and infusion costs.', 40, 40, document.getElementById('btnConfirmStreamline'));
-        var automap = new challenge('AutoMap', 'You are about to enter another dimension.  A dimension not only of sight and sound but of no missions.  No missions will be available.   Completing Galaxy 25 will complete the challenge and unlock the automation skill AutoMap.  Automap autocompletes maps more than x levels lower than the current galaxy.', 45, 25, document.getElementById('btnConfirmAutoMap'));
+        var automap = new challenge('AutoMap', 'You are about to enter another dimension.  A dimension not only of sight and sound but of no missions.  No missions will be available.   Completing Galaxy 20 will complete the challenge and unlock the automation skill AutoMap.  Automap autocompletes maps more than x levels lower than the current galaxy.', 45, 20, document.getElementById('btnConfirmAutoMap'));
         this.challenges = [];
         this.challenges.push(consistency);
         this.challenges.push(power);
@@ -2748,6 +2748,7 @@ function CheckPower(powerRequirement) {
 function buyAutoFight() {
     if ((gameData.resources.metal >= AUTOFIGHT_METAL_COST) && (gameData.resources.researchPoints >= AUTOFIGHT_RP_COST) && (gameData.resources.polymer >= AUTOFIGHT_POLYMER_COST)) {
         gameData.technologies.autofightBought = 1;
+        gameData.technologies.autofightOn = 1;
         gameData.resources.metal -= AUTOFIGHT_METAL_COST;
         gameData.resources.polymer -= AUTOFIGHT_POLYMER_COST;
         gameData.resources.researchPoints -= AUTOFIGHT_RP_COST;
