@@ -1343,12 +1343,12 @@ function init(gatewayReset, activeChallenge, oldsave = null) {
     // debugText += '\n6. Current achievements are limited.';
     // debugText += '\n7. I\'d like a visual representation of how far the player has advanced in the current mission/galaxy.';
     possibleEnemies = [];
-    possibleEnemies.push(new PossibleEnemy('Raider', 1, 1, 0.5));
-    possibleEnemies.push(new PossibleEnemy('Tank', 0.5, 2, 0.5));
-    possibleEnemies.push(new PossibleEnemy('Wizard', 2, 0.5, 0.5));
-    possibleEnemies.push(new PossibleEnemy('Paladin', 1.5, 0.7, 0.5));
-    possibleEnemies.push(new PossibleEnemy('Ranger', 0.7, 1.5, 0.5));
-    possibleEnemies.push(new PossibleEnemy('Raider', 1, 1, 0.5));
+    possibleEnemies.push(new PossibleEnemy('Raider', 1, 1, 0.1));
+    possibleEnemies.push(new PossibleEnemy('Tank', 0.5, 2, 0.1));
+    possibleEnemies.push(new PossibleEnemy('Wizard', 2, 0.5, 0.1));
+    possibleEnemies.push(new PossibleEnemy('Paladin', 1.5, 0.7, 0.1));
+    possibleEnemies.push(new PossibleEnemy('Ranger', 0.7, 1.5, 0.1));
+    possibleEnemies.push(new PossibleEnemy('Raider', 1, 1, 0.1));
     textToDisplay = [];
     textGameSaved = [];
     textLoot = [];
