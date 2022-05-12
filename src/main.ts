@@ -1,4 +1,4 @@
-/* globals $, localStorage, location, Decimal */
+
 var notationDisplayOptions = ["Scientific Notation", "Standard Formatting", "Engineering Notation", "Alphabetic Notation", "Hybrid Notation", "Logarithmic Notation"];
 
 var textToDisplay: DisplayItem[];
