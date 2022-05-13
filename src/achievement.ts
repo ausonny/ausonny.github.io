@@ -89,7 +89,7 @@ class achievement {
         }
       }
 
-      if (this.name.slice(0, 16) === "TierNoManagers") {
+      if (this.name.slice(0, 14) === "TierNoManagers") {
         if (gameData.world.currentWave > 100) {
           if (gameData.world.currentTier >= this.aValue.ToNumber()) {
             if (gameData.derivatives[3].owned.equals(0)) {

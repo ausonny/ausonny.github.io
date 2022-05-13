@@ -1,3 +1,8 @@
+class story {
+    constructor(text) {
+        this.text = text;
+    }
+}
 class saveGameData {
     constructor(name) {
         this.name = name;
@@ -105,7 +110,7 @@ class saveGameData {
         this.rockUpgrades.push(new Upgrade("Upgrade7", 'Reduce Cost Multiplier of Producer<br />', 10, 10, this.resources.rocks, document.getElementById("btnBuyRockUpgrade7"), 8, 1));
         this.rockUpgrades.push(new Upgrade("Upgrade8", 'Increase Health bonuses<br />', 1, 10, this.resources.rocks, document.getElementById("btnBuyRockUpgrade8"), 10, 1));
         this.rockUpgrades.push(new Upgrade("Upgrade9", 'Increase Heal bonuses<br />', 5, 10, this.resources.rocks, document.getElementById("btnBuyRockUpgrade9"), 10, 1));
-        this.rockUpgrades.push(new Upgrade("Upgrade10", 'Increase shooting speed bonuses', 10, 10, this.resources.rocks, document.getElementById("btnBuyRockUpgrade10"), 10, 1));
+        this.rockUpgrades.push(new Upgrade("Upgrade10", 'Increase shooting speed bonuses<br />', 10, 10, this.resources.rocks, document.getElementById("btnBuyRockUpgrade10"), 10, 1));
         this.rockUpgrades.push(new Upgrade("Upgrade11", 'Each unlocked Metal producer begins with 1 owned per rock prestige', 1, 1, this.resources.rocks, document.getElementById("btnBuyRockUpgrade11"), 1, 1));
         this.rockUpgrades.push(new Upgrade("Upgrade12", 'Each wave contains one fewer drone<br />', 1, 0, this.resources.rocks, document.getElementById("btnBuyRockUpgrade12"), 100, 1));
         this.rockUpgrades.push(new Upgrade("Upgrade13", 'Particles gain bonus from run time<br />', 1, 1, this.resources.rocks, document.getElementById("btnBuyRockUpgrade13"), 1, 5));
@@ -264,12 +269,16 @@ class saveGameData {
         this.achievements.push(new achievement(90, "3Prestige1000", "Boulder Prestige 500 times", 1, 500));
         this.tier1Feats = [];
         this.tier1Feats.push(new achievement(1, 'CompleteTier1', 'Complete Tier 1', 1, 1));
-        this.tier1Feats.push(new achievement(2, 'TierNoPresidents1', 'Complete Tier 1 with no Managers', 1, 1));
+        this.tier1Feats.push(new achievement(2, 'TierNoManagers1', 'Complete Tier 1 with no Managers', 1, 1));
         this.tier1Feats.push(new achievement(3, 'TierChallenge1', 'Complete Tier 1 with a challenge active', 1, 1));
         this.tier2Feats = [];
         this.tier2Feats.push(new achievement(1, 'CompleteTier2', 'Complete Tier 2', 1, 2));
-        this.tier2Feats.push(new achievement(2, 'TierNoPresidents2', 'Complete Tier 2 with no Managers', 1, 2));
+        this.tier2Feats.push(new achievement(2, 'TierNoManagers2', 'Complete Tier 2 with no Managers', 1, 2));
         this.tier2Feats.push(new achievement(3, 'TierChallenge2', 'Complete Tier 2 with a challenge active', 1, 2));
+        this.storyElements = [];
+        this.storyElements.push(new story('Welcome to Continuous! Continuous is a tower defense game with incremental and idle elements.  In the center you see a green square.  This is your tower. You may see white boxes moving torwards it.  When they are close enough your tower will shoot at them. And if they get even closer they will shoot your tower.  Eventually as the enemy grows in strength your tower will be defeated.  All is not lost however. After defeating you the enemy will withdraw. You can improve your tower at anytime that you can afford it, including the withdrawal period. How you ask? You will need metal to improve the tower.  Under the resources tab in the bottom half of the screen you will a line of information on Miners. The button under the word buy tells you the cost of your next miner.  The button will be blue if you can afford it, red if not.  Buy a miner if you have not.'));
+        this.storyElements.push(new story('Buying a miner will unlock supervisors.  Supervisors create miners for free. Foremen create supervisors for free. Additional layers may be unlocked later.  I recommend continuing to improve your metal production until you have at least one foreman.'));
+        this.storyElements.push(new story('Once you have over a hundred metal you can afford an upgrade to your tower.  The tower tab works much the same as the resouces tab.  You can currently improve your towers attack and health.'));
     }
 }
 function saveGame(currentTime) {

@@ -143,4 +143,25 @@ function changeNotation() {
     }
     $("#btnNotation").text(notationDisplayOptions[gameData.options.standardNotation]);
 }
+function PrettyRatePerTime(amt, ticks) {
+    var base = amt.divide(ticks).multiply(1000);
+    // if (base.greaterThan(1)) {
+    //   return base.ToString() + ' /sec'
+    // }
+    base = base.multiply(60);
+    // if(base.greaterThan(1)) {
+    //   return base.ToString() + ' /min'
+    // }
+    base = base.multiply(60);
+    // if(base.greaterThan(1)) {
+    //   return base.ToString() + ' /hr'
+    // }
+    return base.ToString() + ' /hr';
+    base = base.multiply(24);
+    if (base.greaterThan(1)) {
+        return base.ToString() + ' /day';
+    }
+    base = base.multiply(365);
+    return base.ToString() + ' /yr';
+}
 //# sourceMappingURL=displayUtils.js.map

@@ -394,6 +394,22 @@ function getTimeParticleBonus() {
     return particlebonus;
 }
 function updateGUI() {
+    if (!gameData.storyElements[0].printed) {
+        addToDisplay(gameData.storyElements[0].text, 'story');
+        gameData.storyElements[0].printed = true;
+    }
+    if (!gameData.storyElements[1].printed) {
+        if (gameData.derivatives[0].bought > 0) {
+            addToDisplay(gameData.storyElements[1].text, 'story');
+            gameData.storyElements[1].printed = true;
+        }
+    }
+    if (!gameData.storyElements[2].printed) {
+        if (gameData.derivatives[3].bought > 0) {
+            addToDisplay(gameData.storyElements[2].text, 'story');
+            gameData.storyElements[2].printed = true;
+        }
+    }
     document.getElementById("dust").innerHTML = gameData.resources.dust.amount.ToString();
     document.getElementById("metal").innerHTML = gameData.resources.metal.amount.ToString();
     document.getElementById("pebbles").innerHTML = gameData.resources.pebbles.amount.ToString();
@@ -1072,26 +1088,6 @@ function updateGUI() {
     }
     document.getElementById("prestige3history").innerHTML = prestige3history;
 }
-function PrettyRatePerTime(amt, ticks) {
-    var base = amt.divide(ticks).multiply(1000);
-    if (base.greaterThan(1)) {
-        return base.ToString() + ' /sec';
-    }
-    base = base.multiply(60);
-    if (base.greaterThan(1)) {
-        return base.ToString() + ' /min';
-    }
-    base = base.multiply(60);
-    if (base.greaterThan(1)) {
-        return base.ToString() + ' /hr';
-    }
-    base = base.multiply(24);
-    if (base.greaterThan(1)) {
-        return base.ToString() + ' /day';
-    }
-    base = base.multiply(365);
-    return base.ToString() + ' /yr';
-}
 function changeTier(value) {
     CheckAchievementCompletions();
     if (value === "Down") {
@@ -1358,7 +1354,6 @@ function resetSpawns(killexistingenemies = true) {
     if (gameData.world.enemiesToSpawn < getSpecialsCount()) {
         gameData.world.enemiesToSpawn = getSpecialsCount();
     }
-    CheckAchievementCompletions();
 }
 function CheckAchievementCompletions() {
     lastachievementcount = 0;
@@ -1531,6 +1526,12 @@ function init(prestigelevel = 0) {
         var savegame = JSON.parse(localStorage.getItem("save"));
         if (savegame !== null) {
             gameData.name = savegame.name;
+            if (typeof savegame.storyElements != "undefined") {
+                for (let index = 0; index < savegame.storyElements.length; index++) {
+                    const element = savegame.storyElements[index];
+                    gameData.storyElements[index].printed = element.printed;
+                }
+            }
             if (typeof savegame.stats.prestige2 != "undefined") {
                 gameData.stats.bestPrestige2Rate.mantissa = savegame.stats.bestPrestige2Rate.mantissa;
                 gameData.stats.bestPrestige2Rate.exponent = savegame.stats.bestPrestige2Rate.exponent;
@@ -1799,6 +1800,12 @@ function saveGameClick() {
 function getAchievementBonus() {
     var value = getAchievementsOnlyBonus();
     return (value * getTier1FeatBonus() * getTier2FeatBonus());
+}
+function resetStoryElements() {
+    for (let index = 0; index < gameData.storyElements.length; index++) {
+        const element = gameData.storyElements[index];
+        element.printed = false;
+    }
 }
 window.setInterval(function () {
     try {
