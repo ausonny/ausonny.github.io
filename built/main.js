@@ -770,6 +770,9 @@ function updateGUI() {
         canvas.height = dimensions.height * dpr;
         let ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
         var ctx = canvas.getContext("2d");
+        var scrollwidth = canvas.scrollWidth;
+        var scrollheight = canvas.scrollHeight;
+        addToDisplay(scrollheight.toFixed(3) + ' ' + scrollwidth.toFixed(3), 'story');
         ctx.scale(ratio * dpr * 1.0, ratio * dpr * 1.0); //adjust this!
         const squareSize = 520;
         ctx.fillStyle = "black";
