@@ -795,10 +795,11 @@ function updateGUI() {
 
     let ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
     var ctx = canvas.getContext("2d");
-    var scrollwidth = canvas.width;
-    var scrollheight = canvas.height;
-    addToDisplay(scrollheight.toFixed(3) + ' ' + scrollwidth.toFixed(3), 'story');
-    ctx.scale(ratio * dpr * 1.0, ratio * dpr * 1.0); //adjust this!
+    var height = canvas.width;
+    var width = canvas.height;
+    var scrollheight = canvas.scrollWidth;
+    var scrollwidth = canvas.scrollHeight;
+    ctx.scale(ratio * dpr * height / scrollheight, ratio * dpr * height / scrollheight); //adjust this!
 
     const squareSize = 520;
 
