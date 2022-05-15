@@ -770,7 +770,7 @@ function updateGUI() {
         canvas.height = dimensions.height * dpr;
         let ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
         var ctx = canvas.getContext("2d");
-        ctx.scale(ratio * dpr * 1.5, ratio * dpr * 1.5); //adjust this!
+        ctx.scale(ratio * dpr * 1.0, ratio * dpr * 1.0); //adjust this!
         const squareSize = 520;
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, squareSize, squareSize);
@@ -1769,11 +1769,11 @@ function init(prestigelevel = 0) {
     initted = true;
 }
 function getAchievementsOnlyBonus() {
-    if (achievementbonusarray.length < lastachievementcount) {
+    if (achievementbonusarray.length <= lastachievementcount) {
         addToDisplay("Consider upping the initial achievementbonusarray", "story");
         achievementbonusarray = [];
         var total = 0;
-        for (let index = 0; index <= lastachievementcount; index++) {
+        for (let index = 0; index <= (lastachievementcount * 1.1); index++) {
             total += index;
             achievementbonusarray.push(total);
         }

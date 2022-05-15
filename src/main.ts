@@ -795,7 +795,7 @@ function updateGUI() {
 
     let ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
     var ctx = canvas.getContext("2d");
-    ctx.scale(ratio * dpr * 1.5, ratio * dpr * 1.5); //adjust this!
+    ctx.scale(ratio * dpr * 1.0, ratio * dpr * 1.0); //adjust this!
 
     const squareSize = 520;
 

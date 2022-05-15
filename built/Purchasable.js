@@ -44,7 +44,7 @@ class Purchasable {
             addToDisplay('Consider upping the initial internalinflationarray', 'story');
             internalInflationArray = [];
             var total = 0;
-            for (let index = 1; index <= increase; index++) {
+            for (let index = 1; index <= (increase * 1.1); index++) {
                 total += Math.ceil(Math.sqrt(index));
                 internalInflationArray.push(total);
             }
