@@ -40,7 +40,7 @@ class Purchasable {
         return ret;
     }
     internalInflationCost(increase) {
-        if (internalInflationArray.length < increase) {
+        if (internalInflationArray.length <= increase) {
             addToDisplay('Consider upping the initial internalinflationarray', 'story');
             internalInflationArray = [];
             var total = 0;

@@ -404,6 +404,13 @@ function updateGUI() {
     }
   }
 
+  if(!gameData.storyElements[3].printed) {
+    if (gameData.resources.dust.amount.greaterThan(0)) {
+      addToDisplay(gameData.storyElements[3].text, 'story');
+      gameData.storyElements[3].printed = true;
+    }
+  }
+
 
   document.getElementById("dust").innerHTML = gameData.resources.dust.amount.ToString();
   document.getElementById("metal").innerHTML = gameData.resources.metal.amount.ToString();
@@ -1597,7 +1604,7 @@ function init(prestigelevel: number = 0) {
   if (prestigelevel === 0) {
     gameData = new saveGameData("new");
     var total = 0;
-    for (let index = 1; index <= 1000; index++) {
+    for (let index = 1; index <= 10000; index++) {
       total += Math.ceil(Math.sqrt(index));
       internalInflationArray.push(total);
     }
@@ -1868,11 +1875,11 @@ function init(prestigelevel: number = 0) {
 }
 
 function getAchievementsOnlyBonus() {
-  if (achievementbonusarray.length < lastachievementcount) {
+  if (achievementbonusarray.length <= lastachievementcount) {
     addToDisplay("Consider upping the initial achievementbonusarray", "story");
     achievementbonusarray = [];
     var total = 0;
-    for (let index = 0; index <= lastachievementcount; index++) {
+    for (let index = 0; index <= (lastachievementcount * 1.1); index++) {
       total += index;
       achievementbonusarray.push(total);
     }
