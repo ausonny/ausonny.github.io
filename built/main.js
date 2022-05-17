@@ -1,20 +1,18 @@
-var notationDisplayOptions = ["Scientific Notation", "Standard Formatting", "Engineering Notation", "Alphabetic Notation", "Hybrid Notation", "Logarithmic Notation"];
-var textToDisplay;
-var textToDisplaygamesave;
-var textToDisplayachievement;
-var textToDisplayloot;
-var textToDisplaychallenge;
-var textToDisplaystory;
-var displayindex;
-var initted = false;
-var gameData;
-var internalInflationArray;
+// eslint-disable-next-line no-unused-vars
+/* global JBDecimal, addToDisplay $, Enemy, Automation, Purchasable, Resource, getDisplayText, getPrettyTimeFromMilliSeconds, PrettyRatePerTime, textToDisplay, textToDisplayachievement, textToDisplaychallenge, logMyErrors, SaveGameData, saveGame, textToDisplayloot, textToDisplaygamesave, displayindex, textToDisplaystory, Bullet */
+// eslint-disable-next-line no-unused-vars
+const notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
+let initted = false;
+// eslint-disable-next-line no-undef
+let gameData;
+let internalInflationArray;
+// eslint-disable-next-line prefer-const
 internalInflationArray = [];
-var lastachievementcount;
+let lastachievementcount;
 lastachievementcount = 0;
-var achievementbonusarray;
+let achievementbonusarray;
 achievementbonusarray = [];
-const isFixedString = (s) => !isNaN(+s) && isFinite(+s) && !/e/i.test(s);
+// const isFixedString = (s: string) => !isNaN(+s) && isFinite(+s) && !/e/i.test(s);
 function getCurrentPebbleRate() {
     return pebblesFromPrestige().multiply(3600000).divide(gameData.stats.prestige1ticks);
 }
@@ -24,6 +22,9 @@ function getCurrentRockRate() {
 function getCurrentBoulderRate() {
     return bouldersFromPrestige().multiply(3600000).divide(gameData.stats.prestige3ticks);
 }
+// eslint-disable-next-line no-unused-vars
+function AchievementClick() {
+}
 function processStuff(ticks) {
     gameData.stats.prestige1ticks += ticks;
     gameData.stats.prestige2ticks += ticks;
@@ -31,15 +32,15 @@ function processStuff(ticks) {
     gameData.world.currentTickLength = ticks;
     gameData.world.ticksToNextSpawn -= ticks;
     gameData.producer.costMultiplier = 10 - gameData.rockUpgrades[7].bought;
-    var currentPebbleRate = getCurrentPebbleRate();
+    const currentPebbleRate = getCurrentPebbleRate();
     if (currentPebbleRate.greaterThan(gameData.stats.bestPrestige1Rate)) {
         gameData.stats.bestPrestige1Rate = new JBDecimal(currentPebbleRate);
     }
-    var currentRockRate = getCurrentRockRate();
+    const currentRockRate = getCurrentRockRate();
     if (currentRockRate.greaterThan(gameData.stats.bestPrestige2Rate)) {
         gameData.stats.bestPrestige2Rate = new JBDecimal(currentRockRate);
     }
-    var currentBoulderRate = getCurrentBoulderRate();
+    const currentBoulderRate = getCurrentBoulderRate();
     if (currentBoulderRate.greaterThan(gameData.stats.bestPrestige3Rate)) {
         gameData.stats.bestPrestige3Rate = new JBDecimal(currentBoulderRate);
     }
@@ -64,7 +65,7 @@ function processStuff(ticks) {
     gameData.timeDerivatives[3].owned = gameData.timeDerivatives[3].owned.add(gameData.timeDerivatives[4].production());
     gameData.timeDerivatives[4].owned = gameData.timeDerivatives[4].owned.add(gameData.timeDerivatives[5].production());
     gameData.tower.act();
-    for (let index = 0; index < 12; index++) {
+    for (let index = 0; index < 12; index++) { // this resets only the first 12 pebbleupgrade limits, hence the unusual for loop
         const element = gameData.upgrades[index];
         element.addedlimit = 0;
     }
@@ -80,39 +81,39 @@ function processStuff(ticks) {
             element.addedlimit += 10;
         }
     }
-    for (var index = gameData.enemies.length - 1; index >= 0; index--) {
+    for (let index = gameData.enemies.length - 1; index >= 0; index--) {
         const e = gameData.enemies[index];
         e.act();
         if (e.CurrentHitPoints().lessThanOrEqualTo(0)) {
             if (gameData.world.currentWave >= gameData.world.highestWaveCompleted) {
-                var dustGained = new JBDecimal(0);
-                var lootupgrade = new JBDecimal(0.1).multiply(gameData.upgrades[6].bought).multiply(gameData.rockUpgrades[6].getBonus()).add(1);
-                if (e.type != "") {
+                let dustGained = new JBDecimal(0);
+                const lootupgrade = new JBDecimal(0.1).multiply(gameData.upgrades[6].bought).multiply(gameData.rockUpgrades[6].getBonus()).add(1);
+                if (e.type !== '') {
                     dustGained = new JBDecimal(1.05).pow(gameData.world.currentWave);
                     dustGained = dustGained.multiply(lootupgrade);
                     dustGained = dustGained.multiply(new JBDecimal(2).pow(gameData.world.currentTier - 1));
-                    if (e.type === "Boss") {
+                    if (e.type === 'Boss') {
                         dustGained = dustGained.multiply(5);
                     }
                     if (dustGained.greaterThan(0)) {
                         gameData.resources.dust.add(dustGained);
-                        addToDisplay(dustGained.ToString() + " dust gained", "loot");
+                        addToDisplay(dustGained.ToString() + ' dust gained', 'loot');
                     }
                 }
             }
             else {
-                var metalGained = new JBDecimal(0);
-                var lootupgrade = new JBDecimal(0.1).multiply(gameData.upgrades[6].bought).add(1);
-                if (e.type != "") {
+                let metalGained = new JBDecimal(0);
+                const lootupgrade = new JBDecimal(0.1).multiply(gameData.upgrades[6].bought).add(1);
+                if (e.type !== '') {
                     metalGained = new JBDecimal(gameData.derivatives[0].production(10000));
                     metalGained = metalGained.multiply(lootupgrade);
                     metalGained = metalGained.multiply(new JBDecimal(2).pow(gameData.world.currentTier - 1));
-                    if (e.type === "Boss") {
+                    if (e.type === 'Boss') {
                         metalGained = metalGained.multiply(5);
                     }
                     if (metalGained.greaterThan(0)) {
                         gameData.resources.metal.add(metalGained);
-                        addToDisplay(metalGained.ToString() + " metal gained", "loot");
+                        addToDisplay(metalGained.ToString() + ' metal gained', 'loot');
                     }
                 }
             }
@@ -121,100 +122,100 @@ function processStuff(ticks) {
     }
     if (gameData.world.ticksToNextSpawn <= 0) {
         if (gameData.world.enemiesToSpawn > 0) {
-            var enemyindex = gameData.world.currentWave + 10 - gameData.world.enemiesToSpawn; // keeps visual index from counting down.
-            var newEnemy = new Enemy(gameData.world.currentWave, enemyindex);
+            const enemyindex = gameData.world.currentWave + 10 - gameData.world.enemiesToSpawn; // keeps visual index from counting down.
+            const newEnemy = new Enemy(gameData.world.currentWave, enemyindex);
             if (Math.random() * gameData.world.enemiesToSpawn < getSpecialsCount()) {
-                var choicesArr = getSpecialsArray();
-                var i = Math.floor(Math.random() * choicesArr.length);
-                if (choicesArr[i] === "F") {
+                const choicesArr = getSpecialsArray();
+                const i = Math.floor(Math.random() * choicesArr.length);
+                if (choicesArr[i] === 'F') {
                     gameData.world.fastEnemiesToSpawn -= 1;
                     newEnemy.movementPerSec *= 3;
-                    newEnemy.type = "Fast";
+                    newEnemy.type = 'Fast';
                 }
-                else if (choicesArr[i] === "T") {
+                else if (choicesArr[i] === 'T') {
                     gameData.world.tankEnemiesToSpawn -= 1;
                     newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(3);
-                    newEnemy.type = "Tank";
+                    newEnemy.type = 'Tank';
                 }
-                else if (choicesArr[i] === "R") {
+                else if (choicesArr[i] === 'R') {
                     gameData.world.rangedEnemiesToSpawn -= 1;
-                    newEnemy.type = "Ranged";
+                    newEnemy.type = 'Ranged';
                     newEnemy.baseRange = 10;
                 }
-                else if (choicesArr[i] === "C") {
+                else if (choicesArr[i] === 'C') {
                     gameData.world.cannonEnemiesToSpawn -= 1;
-                    newEnemy.type = "Cannon";
+                    newEnemy.type = 'Cannon';
                     newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
                 }
-                else if (choicesArr[i] === "b") {
+                else if (choicesArr[i] === 'b') {
                     gameData.world.bradleyEnemiesToSpawn -= 1;
-                    newEnemy.type = "Bradley";
+                    newEnemy.type = 'Bradley';
                     newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
                     newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(3);
                 }
-                else if (choicesArr[i] === "t") {
+                else if (choicesArr[i] === 't') {
                     gameData.world.triremeEnemiesToSpawn -= 1;
-                    newEnemy.type = "Trireme";
+                    newEnemy.type = 'Trireme';
                     newEnemy.baseRange = 10;
                     newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(3);
                 }
-                else if (choicesArr[i] === "c") {
+                else if (choicesArr[i] === 'c') {
                     gameData.world.cavalierEnemiesToSpwan -= 1;
-                    newEnemy.type = "Cavalier";
+                    newEnemy.type = 'Cavalier';
                     newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(3);
                     newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
                 }
-                else if (choicesArr[i] === "S") {
+                else if (choicesArr[i] === 'S') {
                     gameData.world.scorpionEnemiesToSpawn -= 1;
-                    newEnemy.type = "Scorpion";
+                    newEnemy.type = 'Scorpion';
                     newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
                     newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
                 }
-                else if (choicesArr[i] === "P") {
+                else if (choicesArr[i] === 'P') {
                     gameData.world.paladinEnemiesToSpawn -= 1;
-                    newEnemy.type = "Paladin";
+                    newEnemy.type = 'Paladin';
                     newEnemy.baseRange = 10;
                     newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
                 }
-                else if (choicesArr[i] === "O") {
+                else if (choicesArr[i] === 'O') {
                     gameData.world.oliphantEnemiesToSpawn -= 1;
-                    newEnemy.type = "Oliphant";
+                    newEnemy.type = 'Oliphant';
                     newEnemy.baseRange = 10;
                     newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
                     newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(5);
                 }
-                else if (choicesArr[i] === "z") {
+                else if (choicesArr[i] === 'z') {
                     gameData.world.blitzEnemiesToSpawn -= 1;
-                    newEnemy.type = "Blitz";
+                    newEnemy.type = 'Blitz';
                     newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
                     newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
                     newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(5);
                 }
-                else if (choicesArr[i] === "f") {
+                else if (choicesArr[i] === 'f') {
                     gameData.world.falconEnemiesToSpawn -= 1;
-                    newEnemy.type = "Falcon";
+                    newEnemy.type = 'Falcon';
                     newEnemy.baseRange = 10;
                     newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
                     newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(5);
                 }
-                else if (choicesArr[i] === "a") {
+                else if (choicesArr[i] === 'a') {
                     gameData.world.archerEnemiesToSpawn -= 1;
-                    newEnemy.type = "Archer";
+                    newEnemy.type = 'Archer';
                     newEnemy.baseRange = 10;
                     newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
                 }
-                else if (choicesArr[i] === "t") {
+                else if (choicesArr[i] === 't') {
                     gameData.world.archerEnemiesToSpawn -= 1;
-                    newEnemy.type = "Titan";
+                    newEnemy.type = 'Titan';
                     newEnemy.baseRange = 10;
                     newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
                     newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
                 }
-                else if (choicesArr[i] === "B") {
+                else if (choicesArr[i] === 'B') {
                     gameData.world.bossEnemiesToSpawn -= 1;
-                    newEnemy.type = "Boss";
+                    newEnemy.type = 'Boss';
                     newEnemy.baseRange = 10;
-                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 0.5; //slower makes him more deadly, giving him more time to shoot efore entering range
+                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 0.5; // slower makes him more deadly, giving him more time to shoot efore entering range
                     newEnemy.baseAttack = newEnemy.baseAttack.multiply(5);
                     newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(5);
                 }
@@ -224,16 +225,13 @@ function processStuff(ticks) {
             gameData.world.enemiesToSpawn -= 1;
         }
     }
-    var autoprestige1 = document.getElementById("autoprestige1");
+    const autoprestige1 = document.getElementById('autoprestige1');
     if (gameData.tower.CurrentHitPoints().lessThanOrEqualTo(0)) {
         gameData.tower.damagetaken = new JBDecimal(0);
-        for (let index = 0; index < gameData.challenges.length; index++) {
-            const element = gameData.challenges[index];
-            element.active = false;
-        }
+        gameData.challenges.forEach((ch) => { ch.active = false; });
         if (autoprestige1.checked && pebblesFromPrestige().greaterThan(0)) {
             init(1);
-            addToDisplay("Dust. But I still need more.", "story");
+            addToDisplay('Dust. But I still need more.', 'story');
         }
         else {
             gameData.world.currentWave -= 11;
@@ -242,7 +240,7 @@ function processStuff(ticks) {
             }
             gameData.world.deathlevel++;
             resetSpawns(true);
-            addToDisplay("You have been overcome.  The pressure lessens.", "story");
+            addToDisplay('You have been overcome.  The pressure lessens.', 'story');
         }
     }
     if (gameData.world.enemiesToSpawn === 0 && gameData.enemies.length < 1) {
@@ -254,12 +252,11 @@ function processStuff(ticks) {
         }
         resetSpawns(false);
     }
-    for (let index = 0; index < gameData.challenges.length; index++) {
-        const element = gameData.challenges[index];
-        if (element.active) {
-            element.checkForCompletion();
+    gameData.challenges.forEach((ch) => {
+        if (ch.active) {
+            ch.checkForCompletion();
         }
-    }
+    });
     if (gameData.stats.highestEverWave >= 20) {
         if (autoprestige1.checked) {
             gameData.automation[0].item = 1;
@@ -267,88 +264,89 @@ function processStuff(ticks) {
         else {
             gameData.automation[0].item = 0;
         }
-        var highestwavemultiplier = 5 - (gameData.rockUpgrades[2].bought + gameData.boulderUpgrades[2].bought);
-        for (let index = 1; index < gameData.automation.length; index++) {
-            const element = gameData.automation[index];
-            var itemName = "automation" + index + "item";
-            var valueName = "automation" + index + "value";
-            const autoitem = document.getElementById(itemName);
-            const autovalue = document.getElementById(valueName);
-            element.item = parseFloat(autoitem.options[autoitem.selectedIndex].value);
-            element.value = parseFloat(autovalue.options[autovalue.selectedIndex].value);
-            if (gameData.stats.highestEverWave >= index * highestwavemultiplier) {
-                if (element.item === 1 && gameData.challenges[3].completed > 0) {
-                    runAutomationRule(element, gameData.producer, gameData.resources.metal, true);
-                }
-                else if (element.item === 2) {
-                    runAutomationRule(element, gameData.derivatives[0], gameData.resources.metal, true);
-                }
-                else if (element.item === 3) {
-                    runAutomationRule(element, gameData.derivatives[1], gameData.resources.metal, true);
-                }
-                else if (element.item === 4) {
-                    runAutomationRule(element, gameData.derivatives[2], gameData.resources.metal, true);
-                }
-                else if (element.item === 5 && gameData.upgrades[12].bought > 0) {
-                    runAutomationRule(element, gameData.derivatives[3], gameData.resources.metal, true);
-                }
-                else if (element.item === 6 && gameData.upgrades[12].bought > 1) {
-                    runAutomationRule(element, gameData.derivatives[4], gameData.resources.metal, true);
-                }
-                else if (element.item === 7 && gameData.upgrades[12].bought > 2) {
-                    runAutomationRule(element, gameData.derivatives[5], gameData.resources.metal, true);
-                }
-                else if (element.item === 8 && gameData.upgrades[12].bought > 3) {
-                    runAutomationRule(element, gameData.derivatives[6], gameData.resources.metal, true);
-                }
-                else if (element.item === 9 && gameData.upgrades[12].bought > 4) {
-                    runAutomationRule(element, gameData.derivatives[7], gameData.resources.metal, true);
-                }
-                else if (element.item === 10 && gameData.challenges[3].completed > 0) {
-                    runAutomationRule(element, gameData.producer, gameData.resources.dust, false);
-                }
-                else if (element.item === 11) {
-                    runAutomationRule(element, gameData.derivatives[0], gameData.resources.dust, false);
-                }
-                else if (element.item === 12) {
-                    runAutomationRule(element, gameData.derivatives[1], gameData.resources.dust, false);
-                }
-                else if (element.item === 13) {
-                    runAutomationRule(element, gameData.derivatives[2], gameData.resources.dust, false);
-                }
-                else if (element.item === 14 && gameData.upgrades[12].bought > 0) {
-                    runAutomationRule(element, gameData.derivatives[3], gameData.resources.dust, false);
-                }
-                else if (element.item === 15 && gameData.upgrades[12].bought > 1) {
-                    runAutomationRule(element, gameData.derivatives[4], gameData.resources.dust, false);
-                }
-                else if (element.item === 16 && gameData.upgrades[12].bought > 2) {
-                    runAutomationRule(element, gameData.derivatives[5], gameData.resources.dust, false);
-                }
-                else if (element.item === 17 && gameData.upgrades[12].bought > 3) {
-                    runAutomationRule(element, gameData.derivatives[6], gameData.resources.dust, false);
-                }
-                else if (element.item === 18 && gameData.upgrades[12].bought > 4) {
-                    runAutomationRule(element, gameData.derivatives[7], gameData.resources.dust, false);
-                }
-                else if (element.item === 19) {
-                    runAutomationRule(element, gameData.equipment[0], gameData.resources.metal, true);
-                }
-                else if (element.item === 20) {
-                    runAutomationRule(element, gameData.equipment[1], gameData.resources.metal, true);
-                }
-                else if (element.item === 21) {
-                    runAutomationRule(element, gameData.equipment[0], gameData.resources.dust, false);
-                }
-                else if (element.item === 22) {
-                    runAutomationRule(element, gameData.equipment[1], gameData.resources.dust, false);
+        const highestwavemultiplier = 5 - (gameData.rockUpgrades[2].bought + gameData.boulderUpgrades[2].bought);
+        gameData.automation.forEach((element, index) => {
+            if (index > 0) { // index 0 is the auto prestige check box.
+                const itemName = 'automation' + (index).toString() + 'item';
+                const valueName = 'automation' + (index).toString() + 'value';
+                const autoitem = document.getElementById(itemName);
+                const autovalue = document.getElementById(valueName);
+                element.item = parseFloat(autoitem.options[autoitem.selectedIndex].value);
+                element.value = parseFloat(autovalue.options[autovalue.selectedIndex].value);
+                if (gameData.stats.highestEverWave >= index * highestwavemultiplier) {
+                    if (element.item === 1 && gameData.challenges[3].completed > 0) {
+                        runAutomationRule(element, gameData.producer, gameData.resources.metal, true);
+                    }
+                    else if (element.item === 2) {
+                        runAutomationRule(element, gameData.derivatives[0], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 3) {
+                        runAutomationRule(element, gameData.derivatives[1], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 4) {
+                        runAutomationRule(element, gameData.derivatives[2], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 5 && gameData.upgrades[12].bought > 0) {
+                        runAutomationRule(element, gameData.derivatives[3], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 6 && gameData.upgrades[12].bought > 1) {
+                        runAutomationRule(element, gameData.derivatives[4], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 7 && gameData.upgrades[12].bought > 2) {
+                        runAutomationRule(element, gameData.derivatives[5], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 8 && gameData.upgrades[12].bought > 3) {
+                        runAutomationRule(element, gameData.derivatives[6], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 9 && gameData.upgrades[12].bought > 4) {
+                        runAutomationRule(element, gameData.derivatives[7], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 10 && gameData.challenges[3].completed > 0) {
+                        runAutomationRule(element, gameData.producer, gameData.resources.dust, false);
+                    }
+                    else if (element.item === 11) {
+                        runAutomationRule(element, gameData.derivatives[0], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 12) {
+                        runAutomationRule(element, gameData.derivatives[1], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 13) {
+                        runAutomationRule(element, gameData.derivatives[2], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 14 && gameData.upgrades[12].bought > 0) {
+                        runAutomationRule(element, gameData.derivatives[3], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 15 && gameData.upgrades[12].bought > 1) {
+                        runAutomationRule(element, gameData.derivatives[4], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 16 && gameData.upgrades[12].bought > 2) {
+                        runAutomationRule(element, gameData.derivatives[5], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 17 && gameData.upgrades[12].bought > 3) {
+                        runAutomationRule(element, gameData.derivatives[6], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 18 && gameData.upgrades[12].bought > 4) {
+                        runAutomationRule(element, gameData.derivatives[7], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 19) {
+                        runAutomationRule(element, gameData.equipment[0], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 20) {
+                        runAutomationRule(element, gameData.equipment[1], gameData.resources.metal, true);
+                    }
+                    else if (element.item === 21) {
+                        runAutomationRule(element, gameData.equipment[0], gameData.resources.dust, false);
+                    }
+                    else if (element.item === 22) {
+                        runAutomationRule(element, gameData.equipment[1], gameData.resources.dust, false);
+                    }
                 }
             }
-        }
+        });
     }
 }
 function runAutomationRule(rule, actioner, resource, notupgrade = true) {
-    var cost = new JBDecimal(0);
+    let cost = new JBDecimal(0);
     if (notupgrade) {
         cost = new JBDecimal(actioner.buyCost());
     }
@@ -380,14 +378,14 @@ function runAutomationRule(rule, actioner, resource, notupgrade = true) {
     }
 }
 function getParticleBonus() {
-    var particlebonus = new JBDecimal(gameData.resources.particles.amount.exponent + (gameData.resources.particles.amount.mantissa / 10)).pow(2);
+    let particlebonus = new JBDecimal(gameData.resources.particles.amount.exponent + (gameData.resources.particles.amount.mantissa / 10)).pow(2);
     if (particlebonus.lessThan(1)) {
         particlebonus = new JBDecimal(1);
     }
     return particlebonus;
 }
 function getTimeParticleBonus() {
-    var particlebonus = new JBDecimal(gameData.resources.timeparticles.amount.exponent + (gameData.resources.timeparticles.amount.mantissa / 10)).pow(2);
+    let particlebonus = new JBDecimal(gameData.resources.timeparticles.amount.exponent + (gameData.resources.timeparticles.amount.mantissa / 10)).pow(2);
     if (particlebonus.lessThan(1)) {
         particlebonus = new JBDecimal(1);
     }
@@ -416,211 +414,202 @@ function updateGUI() {
             gameData.storyElements[3].printed = true;
         }
     }
-    document.getElementById("dust").innerHTML = gameData.resources.dust.amount.ToString();
-    document.getElementById("metal").innerHTML = gameData.resources.metal.amount.ToString();
-    document.getElementById("pebbles").innerHTML = gameData.resources.pebbles.amount.ToString();
-    document.getElementById("rocks").innerHTML = gameData.resources.rocks.amount.ToString();
-    document.getElementById("boulders").innerHTML = gameData.resources.boulders.amount.ToString();
-    document.getElementById("particlesamount").innerHTML = gameData.resources.particles.amount.ToString();
-    document.getElementById("particlesb").innerHTML = getParticleBonus().ToString();
-    document.getElementById("timeparticles").innerHTML = gameData.resources.timeparticles.amount.ToString();
-    document.getElementById("timeparticlesbonus").innerHTML = getTimeParticleBonus().ToString();
+    document.getElementById('dust').innerHTML = gameData.resources.dust.amount.ToString();
+    document.getElementById('metal').innerHTML = gameData.resources.metal.amount.ToString();
+    document.getElementById('pebbles').innerHTML = gameData.resources.pebbles.amount.ToString();
+    document.getElementById('rocks').innerHTML = gameData.resources.rocks.amount.ToString();
+    document.getElementById('boulders').innerHTML = gameData.resources.boulders.amount.ToString();
+    document.getElementById('particlesamount').innerHTML = gameData.resources.particles.amount.ToString();
+    document.getElementById('particlesb').innerHTML = getParticleBonus().ToString();
+    document.getElementById('timeparticles').innerHTML = gameData.resources.timeparticles.amount.ToString();
+    document.getElementById('timeparticlesbonus').innerHTML = getTimeParticleBonus().ToString();
     if (gameData.challenges[3].active || gameData.challenges[3].completed < 1) {
-        $("#productionderivative").addClass("hidden");
+        $('#productionderivative').addClass('hidden');
     }
     else {
-        $("#productionderivative").removeClass("hidden");
+        $('#productionderivative').removeClass('hidden');
     }
     if (gameData.derivatives[0].owned.greaterThan(0)) {
-        $("#supervisorderivative").removeClass("hidden");
+        $('#supervisorderivative').removeClass('hidden');
     }
     else {
-        $("#supervisorderivative").addClass("hidden");
+        $('#supervisorderivative').addClass('hidden');
     }
     if (gameData.derivatives[1].owned.greaterThan(0)) {
-        $("#foremanderivative").removeClass("hidden");
+        $('#foremanderivative').removeClass('hidden');
     }
     else {
-        $("#foremanderivative").addClass("hidden");
+        $('#foremanderivative').addClass('hidden');
     }
-    $("#managerderivative").addClass("hidden");
-    $("#btnBuyUpgrade7").addClass("hidden");
+    $('#managerderivative').addClass('hidden');
+    $('#btnBuyUpgrade7').addClass('hidden');
     if (gameData.upgrades[12].owned.greaterThan(0)) {
-        $("#btnBuyUpgrade7").removeClass("hidden");
+        $('#btnBuyUpgrade7').removeClass('hidden');
         if (gameData.derivatives[2].owned.greaterThan(0)) {
-            $("#managerderivative").removeClass("hidden");
+            $('#managerderivative').removeClass('hidden');
         }
     }
-    $("#middlemanagementderivative").addClass("hidden");
-    $("#btnBuyUpgrade8").addClass("hidden");
+    $('#middlemanagementderivative').addClass('hidden');
+    $('#btnBuyUpgrade8').addClass('hidden');
     if (gameData.upgrades[12].owned.greaterThan(1)) {
-        $("#btnBuyUpgrade8").removeClass("hidden");
+        $('#btnBuyUpgrade8').removeClass('hidden');
         if (gameData.derivatives[3].owned.greaterThan(0)) {
-            $("#middlemanagementderivative").removeClass("hidden");
+            $('#middlemanagementderivative').removeClass('hidden');
         }
     }
-    $("#uppermanagementderivative").addClass("hidden");
-    $("#btnBuyUpgrade9").addClass("hidden");
+    $('#uppermanagementderivative').addClass('hidden');
+    $('#btnBuyUpgrade9').addClass('hidden');
     if (gameData.upgrades[12].owned.greaterThan(2)) {
-        $("#btnBuyUpgrade9").removeClass("hidden");
+        $('#btnBuyUpgrade9').removeClass('hidden');
         if (gameData.derivatives[4].owned.greaterThan(0)) {
-            $("#uppermanagementderivative").removeClass("hidden");
+            $('#uppermanagementderivative').removeClass('hidden');
         }
     }
-    $("#vicepresidentderivative").addClass("hidden");
-    $("#btnBuyUpgrade10").addClass("hidden");
+    $('#vicepresidentderivative').addClass('hidden');
+    $('#btnBuyUpgrade10').addClass('hidden');
     if (gameData.upgrades[12].owned.greaterThan(3)) {
-        $("#btnBuyUpgrade10").removeClass("hidden");
+        $('#btnBuyUpgrade10').removeClass('hidden');
         if (gameData.derivatives[5].owned.greaterThan(0)) {
-            $("#vicepresidentderivative").removeClass("hidden");
+            $('#vicepresidentderivative').removeClass('hidden');
         }
     }
-    $("#presidentderivative").addClass("hidden");
-    $("#btnBuyUpgrade11").addClass("hidden");
+    $('#presidentderivative').addClass('hidden');
+    $('#btnBuyUpgrade11').addClass('hidden');
     if (gameData.upgrades[12].owned.greaterThan(4)) {
-        $("#btnBuyUpgrade11").removeClass("hidden");
+        $('#btnBuyUpgrade11').removeClass('hidden');
         if (gameData.derivatives[6].owned.greaterThan(0)) {
-            $("#presidentderivative").removeClass("hidden");
+            $('#presidentderivative').removeClass('hidden');
         }
     }
-    $("#particles").addClass("hidden");
-    $("#accelerationderivative").addClass("hidden");
-    $("#jerkderivative").addClass("hidden");
-    $("#snapderivative").addClass("hidden");
-    $("#cracklederivative").addClass("hidden");
-    $("#popderivative").addClass("hidden");
+    $('#particles').addClass('hidden');
+    $('#accelerationderivative').addClass('hidden');
+    $('#jerkderivative').addClass('hidden');
+    $('#snapderivative').addClass('hidden');
+    $('#cracklederivative').addClass('hidden');
+    $('#popderivative').addClass('hidden');
     if (gameData.stats.prestige2 > 0) {
-        $("#particles").removeClass("hidden");
+        $('#particles').removeClass('hidden');
         if (gameData.speedDerivatives[0].owned.greaterThan(0)) {
-            $("#accelerationderivative").removeClass("hidden");
+            $('#accelerationderivative').removeClass('hidden');
         }
         if (gameData.speedDerivatives[1].owned.greaterThan(0)) {
-            $("#jerkderivative").removeClass("hidden");
+            $('#jerkderivative').removeClass('hidden');
         }
         if (gameData.speedDerivatives[2].owned.greaterThan(0)) {
-            $("#snapderivative").removeClass("hidden");
+            $('#snapderivative').removeClass('hidden');
         }
         if (gameData.speedDerivatives[3].owned.greaterThan(0)) {
-            $("#cracklederivative").removeClass("hidden");
+            $('#cracklederivative').removeClass('hidden');
         }
         if (gameData.speedDerivatives[4].owned.greaterThan(0)) {
-            $("#popderivative").removeClass("hidden");
+            $('#popderivative').removeClass('hidden');
         }
     }
-    $("#time").addClass("hidden");
-    $("#time2derivative").addClass("hidden");
-    $("#time3derivative").addClass("hidden");
-    $("#time4derivative").addClass("hidden");
-    $("#time5derivative").addClass("hidden");
-    $("#time6derivative").addClass("hidden");
+    $('#time').addClass('hidden');
+    $('#time2derivative').addClass('hidden');
+    $('#time3derivative').addClass('hidden');
+    $('#time4derivative').addClass('hidden');
+    $('#time5derivative').addClass('hidden');
+    $('#time6derivative').addClass('hidden');
     if (gameData.stats.prestige3 > 0) {
-        $("#time").removeClass("hidden");
+        $('#time').removeClass('hidden');
         if (gameData.timeDerivatives[0].owned.greaterThan(0)) {
-            $("#time2derivative").removeClass("hidden");
+            $('#time2derivative').removeClass('hidden');
         }
         if (gameData.timeDerivatives[1].owned.greaterThan(0)) {
-            $("#time3derivative").removeClass("hidden");
+            $('#time3derivative').removeClass('hidden');
         }
         if (gameData.timeDerivatives[2].owned.greaterThan(0)) {
-            $("#time4derivative").removeClass("hidden");
+            $('#time4derivative').removeClass('hidden');
         }
         if (gameData.timeDerivatives[3].owned.greaterThan(0)) {
-            $("#time5derivative").removeClass("hidden");
+            $('#time5derivative').removeClass('hidden');
         }
         if (gameData.timeDerivatives[4].owned.greaterThan(0)) {
-            $("#time6derivative").removeClass("hidden");
+            $('#time6derivative').removeClass('hidden');
         }
     }
-    document.getElementById("producitonproduction").innerHTML = gameData.producer.productionPerSecDisplay().ToString();
-    document.getElementById("productionbought").innerHTML = gameData.producer.bought.toString();
-    document.getElementById("productionowned").innerHTML = gameData.producer.owned.ToString();
-    document.getElementById("minerbought").innerHTML = gameData.derivatives[0].bought.toString();
-    document.getElementById("minerowned").innerHTML = gameData.derivatives[0].owned.ToString();
-    document.getElementById("minerproduction").innerHTML = gameData.derivatives[0].productionPerSecDisplay().ToString();
-    document.getElementById("supervisorbought").innerHTML = gameData.derivatives[1].bought.toString();
-    document.getElementById("supervisorowned").innerHTML = gameData.derivatives[1].owned.ToString();
-    document.getElementById("supervisorproduction").innerHTML = gameData.derivatives[1].productionPerSecDisplay().ToString();
-    document.getElementById("foremanbought").innerHTML = gameData.derivatives[2].bought.toString();
-    document.getElementById("foremanowned").innerHTML = gameData.derivatives[2].owned.ToString();
-    document.getElementById("foremanproduction").innerHTML = gameData.derivatives[2].productionPerSecDisplay().ToString();
-    document.getElementById("managerbought").innerHTML = gameData.derivatives[3].bought.toString();
-    document.getElementById("managerowned").innerHTML = gameData.derivatives[3].owned.ToString();
-    document.getElementById("managerproduction").innerHTML = gameData.derivatives[3].productionPerSecDisplay().ToString();
-    document.getElementById("middlemanagementbought").innerHTML = gameData.derivatives[4].bought.toString();
-    document.getElementById("middlemanagementowned").innerHTML = gameData.derivatives[4].owned.ToString();
-    document.getElementById("middlemanagementproduction").innerHTML = gameData.derivatives[4].productionPerSecDisplay().ToString();
-    document.getElementById("uppermanagementbought").innerHTML = gameData.derivatives[5].bought.toString();
-    document.getElementById("uppermanagementowned").innerHTML = gameData.derivatives[5].owned.ToString();
-    document.getElementById("uppermanagementproduction").innerHTML = gameData.derivatives[5].productionPerSecDisplay().ToString();
-    document.getElementById("vicepresidentbought").innerHTML = gameData.derivatives[6].bought.toString();
-    document.getElementById("vicepresidentowned").innerHTML = gameData.derivatives[6].owned.ToString();
-    document.getElementById("vicepresidentproduction").innerHTML = gameData.derivatives[6].productionPerSecDisplay().ToString();
-    document.getElementById("presidentbought").innerHTML = gameData.derivatives[7].bought.toString();
-    document.getElementById("presidentowned").innerHTML = gameData.derivatives[7].owned.ToString();
-    document.getElementById("presidentproduction").innerHTML = gameData.derivatives[7].productionPerSecDisplay().ToString();
-    document.getElementById("speedbought").innerHTML = gameData.speedDerivatives[0].bought.toString();
-    document.getElementById("speedowned").innerHTML = gameData.speedDerivatives[0].owned.ToString();
-    document.getElementById("speedproduction").innerHTML = gameData.speedDerivatives[0].productionPerSecDisplay().ToString();
-    document.getElementById("accelerationbought").innerHTML = gameData.speedDerivatives[1].bought.toString();
-    document.getElementById("accelerationowned").innerHTML = gameData.speedDerivatives[1].owned.ToString();
-    document.getElementById("accelerationproduction").innerHTML = gameData.speedDerivatives[1].productionPerSecDisplay().ToString();
-    document.getElementById("jerkbought").innerHTML = gameData.speedDerivatives[2].bought.toString();
-    document.getElementById("jerkowned").innerHTML = gameData.speedDerivatives[2].owned.ToString();
-    document.getElementById("jerkproduction").innerHTML = gameData.speedDerivatives[2].productionPerSecDisplay().ToString();
-    document.getElementById("snapbought").innerHTML = gameData.speedDerivatives[3].bought.toString();
-    document.getElementById("snapowned").innerHTML = gameData.speedDerivatives[3].owned.ToString();
-    document.getElementById("snapproduction").innerHTML = gameData.speedDerivatives[3].productionPerSecDisplay().ToString();
-    document.getElementById("cracklebought").innerHTML = gameData.speedDerivatives[4].bought.toString();
-    document.getElementById("crackleowned").innerHTML = gameData.speedDerivatives[4].owned.ToString();
-    document.getElementById("crackleproduction").innerHTML = gameData.speedDerivatives[4].productionPerSecDisplay().ToString();
-    document.getElementById("popbought").innerHTML = gameData.speedDerivatives[5].bought.toString();
-    document.getElementById("popowned").innerHTML = gameData.speedDerivatives[5].owned.ToString();
-    document.getElementById("popproduction").innerHTML = gameData.speedDerivatives[5].productionPerSecDisplay().ToString();
-    document.getElementById("time1bought").innerHTML = gameData.timeDerivatives[0].bought.toString();
-    document.getElementById("time1owned").innerHTML = gameData.timeDerivatives[0].owned.ToString();
-    document.getElementById("time1production").innerHTML = gameData.timeDerivatives[0].productionPerSecDisplay().ToString();
-    document.getElementById("time2bought").innerHTML = gameData.timeDerivatives[1].bought.toString();
-    document.getElementById("time2owned").innerHTML = gameData.timeDerivatives[1].owned.ToString();
-    document.getElementById("time2production").innerHTML = gameData.timeDerivatives[1].productionPerSecDisplay().ToString();
-    document.getElementById("time3bought").innerHTML = gameData.timeDerivatives[2].bought.toString();
-    document.getElementById("time3owned").innerHTML = gameData.timeDerivatives[2].owned.ToString();
-    document.getElementById("time3production").innerHTML = gameData.timeDerivatives[2].productionPerSecDisplay().ToString();
-    document.getElementById("time4bought").innerHTML = gameData.timeDerivatives[3].bought.toString();
-    document.getElementById("time4owned").innerHTML = gameData.timeDerivatives[3].owned.ToString();
-    document.getElementById("time4production").innerHTML = gameData.timeDerivatives[3].productionPerSecDisplay().ToString();
-    document.getElementById("time5bought").innerHTML = gameData.timeDerivatives[4].bought.toString();
-    document.getElementById("time5owned").innerHTML = gameData.timeDerivatives[4].owned.ToString();
-    document.getElementById("time5production").innerHTML = gameData.timeDerivatives[4].productionPerSecDisplay().ToString();
-    document.getElementById("time6bought").innerHTML = gameData.timeDerivatives[5].bought.toString();
-    document.getElementById("time6owned").innerHTML = gameData.timeDerivatives[5].owned.ToString();
-    document.getElementById("time6production").innerHTML = gameData.timeDerivatives[5].productionPerSecDisplay().ToString();
-    document.getElementById("totalachievementbonus").innerHTML = new JBDecimal(getAchievementBonus()).ToString();
-    document.getElementById("achievementbonus").innerHTML = new JBDecimal(getAchievementsOnlyBonus()).ToString();
-    document.getElementById("tier1bonus").innerHTML = new JBDecimal(getTier1FeatBonus()).ToString();
-    document.getElementById("tier2bonus").innerHTML = new JBDecimal(getTier2FeatBonus()).ToString();
-    document.getElementById("attackbought").innerHTML = gameData.equipment[0].bought.toString();
-    document.getElementById("attackproducing").innerHTML = gameData.equipment[0].productionPerUnit().multiply(gameData.tower.baseAttack).ToString();
-    document.getElementById("hullbought").innerHTML = gameData.equipment[1].bought.toString();
-    document.getElementById("hullproducing").innerHTML = gameData.equipment[1].productionPerUnit().multiply(gameData.tower.baseMaxHitPoints).ToString();
-    document.getElementById("textToDisplay").innerHTML = getDisplayText();
-    for (let index = 0; index < gameData.derivatives.length; index++) {
-        const element = gameData.derivatives[index];
-        element.updateDisplay();
-    }
-    for (let index = 0; index < gameData.speedDerivatives.length; index++) {
-        const element = gameData.speedDerivatives[index];
-        element.updateDisplay();
-    }
-    for (let index = 0; index < gameData.timeDerivatives.length; index++) {
-        const element = gameData.timeDerivatives[index];
-        element.updateDisplay();
-    }
+    document.getElementById('producitonproduction').innerHTML = gameData.producer.productionPerSecDisplay().ToString();
+    document.getElementById('productionbought').innerHTML = gameData.producer.bought.toString();
+    document.getElementById('productionowned').innerHTML = gameData.producer.owned.ToString();
+    document.getElementById('minerbought').innerHTML = gameData.derivatives[0].bought.toString();
+    document.getElementById('minerowned').innerHTML = gameData.derivatives[0].owned.ToString();
+    document.getElementById('minerproduction').innerHTML = gameData.derivatives[0].productionPerSecDisplay().ToString();
+    document.getElementById('supervisorbought').innerHTML = gameData.derivatives[1].bought.toString();
+    document.getElementById('supervisorowned').innerHTML = gameData.derivatives[1].owned.ToString();
+    document.getElementById('supervisorproduction').innerHTML = gameData.derivatives[1].productionPerSecDisplay().ToString();
+    document.getElementById('foremanbought').innerHTML = gameData.derivatives[2].bought.toString();
+    document.getElementById('foremanowned').innerHTML = gameData.derivatives[2].owned.ToString();
+    document.getElementById('foremanproduction').innerHTML = gameData.derivatives[2].productionPerSecDisplay().ToString();
+    document.getElementById('managerbought').innerHTML = gameData.derivatives[3].bought.toString();
+    document.getElementById('managerowned').innerHTML = gameData.derivatives[3].owned.ToString();
+    document.getElementById('managerproduction').innerHTML = gameData.derivatives[3].productionPerSecDisplay().ToString();
+    document.getElementById('middlemanagementbought').innerHTML = gameData.derivatives[4].bought.toString();
+    document.getElementById('middlemanagementowned').innerHTML = gameData.derivatives[4].owned.ToString();
+    document.getElementById('middlemanagementproduction').innerHTML = gameData.derivatives[4].productionPerSecDisplay().ToString();
+    document.getElementById('uppermanagementbought').innerHTML = gameData.derivatives[5].bought.toString();
+    document.getElementById('uppermanagementowned').innerHTML = gameData.derivatives[5].owned.ToString();
+    document.getElementById('uppermanagementproduction').innerHTML = gameData.derivatives[5].productionPerSecDisplay().ToString();
+    document.getElementById('vicepresidentbought').innerHTML = gameData.derivatives[6].bought.toString();
+    document.getElementById('vicepresidentowned').innerHTML = gameData.derivatives[6].owned.ToString();
+    document.getElementById('vicepresidentproduction').innerHTML = gameData.derivatives[6].productionPerSecDisplay().ToString();
+    document.getElementById('presidentbought').innerHTML = gameData.derivatives[7].bought.toString();
+    document.getElementById('presidentowned').innerHTML = gameData.derivatives[7].owned.ToString();
+    document.getElementById('presidentproduction').innerHTML = gameData.derivatives[7].productionPerSecDisplay().ToString();
+    document.getElementById('speedbought').innerHTML = gameData.speedDerivatives[0].bought.toString();
+    document.getElementById('speedowned').innerHTML = gameData.speedDerivatives[0].owned.ToString();
+    document.getElementById('speedproduction').innerHTML = gameData.speedDerivatives[0].productionPerSecDisplay().ToString();
+    document.getElementById('accelerationbought').innerHTML = gameData.speedDerivatives[1].bought.toString();
+    document.getElementById('accelerationowned').innerHTML = gameData.speedDerivatives[1].owned.ToString();
+    document.getElementById('accelerationproduction').innerHTML = gameData.speedDerivatives[1].productionPerSecDisplay().ToString();
+    document.getElementById('jerkbought').innerHTML = gameData.speedDerivatives[2].bought.toString();
+    document.getElementById('jerkowned').innerHTML = gameData.speedDerivatives[2].owned.ToString();
+    document.getElementById('jerkproduction').innerHTML = gameData.speedDerivatives[2].productionPerSecDisplay().ToString();
+    document.getElementById('snapbought').innerHTML = gameData.speedDerivatives[3].bought.toString();
+    document.getElementById('snapowned').innerHTML = gameData.speedDerivatives[3].owned.ToString();
+    document.getElementById('snapproduction').innerHTML = gameData.speedDerivatives[3].productionPerSecDisplay().ToString();
+    document.getElementById('cracklebought').innerHTML = gameData.speedDerivatives[4].bought.toString();
+    document.getElementById('crackleowned').innerHTML = gameData.speedDerivatives[4].owned.ToString();
+    document.getElementById('crackleproduction').innerHTML = gameData.speedDerivatives[4].productionPerSecDisplay().ToString();
+    document.getElementById('popbought').innerHTML = gameData.speedDerivatives[5].bought.toString();
+    document.getElementById('popowned').innerHTML = gameData.speedDerivatives[5].owned.ToString();
+    document.getElementById('popproduction').innerHTML = gameData.speedDerivatives[5].productionPerSecDisplay().ToString();
+    document.getElementById('time1bought').innerHTML = gameData.timeDerivatives[0].bought.toString();
+    document.getElementById('time1owned').innerHTML = gameData.timeDerivatives[0].owned.ToString();
+    document.getElementById('time1production').innerHTML = gameData.timeDerivatives[0].productionPerSecDisplay().ToString();
+    document.getElementById('time2bought').innerHTML = gameData.timeDerivatives[1].bought.toString();
+    document.getElementById('time2owned').innerHTML = gameData.timeDerivatives[1].owned.ToString();
+    document.getElementById('time2production').innerHTML = gameData.timeDerivatives[1].productionPerSecDisplay().ToString();
+    document.getElementById('time3bought').innerHTML = gameData.timeDerivatives[2].bought.toString();
+    document.getElementById('time3owned').innerHTML = gameData.timeDerivatives[2].owned.ToString();
+    document.getElementById('time3production').innerHTML = gameData.timeDerivatives[2].productionPerSecDisplay().ToString();
+    document.getElementById('time4bought').innerHTML = gameData.timeDerivatives[3].bought.toString();
+    document.getElementById('time4owned').innerHTML = gameData.timeDerivatives[3].owned.ToString();
+    document.getElementById('time4production').innerHTML = gameData.timeDerivatives[3].productionPerSecDisplay().ToString();
+    document.getElementById('time5bought').innerHTML = gameData.timeDerivatives[4].bought.toString();
+    document.getElementById('time5owned').innerHTML = gameData.timeDerivatives[4].owned.ToString();
+    document.getElementById('time5production').innerHTML = gameData.timeDerivatives[4].productionPerSecDisplay().ToString();
+    document.getElementById('time6bought').innerHTML = gameData.timeDerivatives[5].bought.toString();
+    document.getElementById('time6owned').innerHTML = gameData.timeDerivatives[5].owned.ToString();
+    document.getElementById('time6production').innerHTML = gameData.timeDerivatives[5].productionPerSecDisplay().ToString();
+    document.getElementById('totalachievementbonus').innerHTML = new JBDecimal(getAchievementBonus()).ToString();
+    document.getElementById('achievementbonus').innerHTML = new JBDecimal(getAchievementsOnlyBonus()).ToString();
+    document.getElementById('tier1bonus').innerHTML = new JBDecimal(getTier1FeatBonus()).ToString();
+    document.getElementById('tier2bonus').innerHTML = new JBDecimal(getTier2FeatBonus()).ToString();
+    document.getElementById('attackbought').innerHTML = gameData.equipment[0].bought.toString();
+    document.getElementById('attackproducing').innerHTML = gameData.equipment[0].productionPerUnit().multiply(gameData.tower.baseAttack).ToString();
+    document.getElementById('hullbought').innerHTML = gameData.equipment[1].bought.toString();
+    document.getElementById('hullproducing').innerHTML = gameData.equipment[1].productionPerUnit().multiply(gameData.tower.baseMaxHitPoints).ToString();
+    document.getElementById('textToDisplay').innerHTML = getDisplayText();
+    gameData.derivatives.forEach((d) => { d.updateDisplay(); });
+    gameData.speedDerivatives.forEach((d) => { d.updateDisplay(); });
+    gameData.timeDerivatives.forEach((d) => { d.updateDisplay(); });
     gameData.producer.updateDisplay();
-    for (let index = 0; index < gameData.equipment.length; index++) {
-        const element = gameData.equipment[index];
-        element.updateDisplay();
-    }
-    var towerstats = '<b> Attack:' + gameData.tower.Attack().ToString() + '</b><br />';
+    gameData.equipment.forEach((e) => { e.updateDisplay(); });
+    gameData.upgrades.forEach((u) => { u.updateDisplay(); });
+    gameData.rockUpgrades.forEach((u) => { u.updateDisplay(); });
+    gameData.boulderUpgrades.forEach((u) => { u.updateDisplay(); });
+    let towerstats = '<b> Attack:' + gameData.tower.Attack().ToString() + '</b><br />';
     towerstats += 'Shoots: ' + new JBDecimal(gameData.tower.ShotsPerSecond()).ToString() + '/s<br />';
     towerstats += 'Range: ' + new JBDecimal(gameData.tower.Range()).ToString() + '<br />';
     if (gameData.challenges[6].completed > 0) {
@@ -628,7 +617,7 @@ function updateGUI() {
         towerstats += 'Crit Multiplier: ' + new JBDecimal(gameData.tower.critMultiplier(true)).ToString() + '<br />';
     }
     towerstats += '<br />';
-    towerstats += '<b>Health: ' + gameData.tower.CurrentHitPoints().ToString() + "/" + gameData.tower.MaxHitPoints().ToString() + '</b><br />';
+    towerstats += '<b>Health: ' + gameData.tower.CurrentHitPoints().ToString() + '/' + gameData.tower.MaxHitPoints().ToString() + '</b><br />';
     if (gameData.challenges[2].completed > 0) {
         towerstats += 'Heal: ' + new JBDecimal(gameData.tower.Heal()).ToString() + '%<br />';
     }
@@ -638,15 +627,15 @@ function updateGUI() {
     if (gameData.challenges[7].completed > 0) {
         towerstats += 'Slow: ' + new JBDecimal(gameData.tower.Slow()).ToString() + '%<br />';
     }
-    document.getElementById("towerStatsText").innerHTML = towerstats;
-    document.getElementById("tierinfo").classList.add("hidden");
-    var btndown = document.getElementById("btntierdown");
+    document.getElementById('towerStatsText').innerHTML = towerstats;
+    document.getElementById('tierinfo').classList.add('hidden');
+    const btndown = document.getElementById('btntierdown');
     btndown.disabled = false;
-    var btnup = document.getElementById("btntierup");
+    const btnup = document.getElementById('btntierup');
     btnup.disabled = false;
     if (gameData.world.tierUnlocked > 1) {
-        document.getElementById("currenttier").innerHTML = gameData.world.currentTier.toFixed(0);
-        document.getElementById("tierinfo").classList.remove("hidden");
+        document.getElementById('currenttier').innerHTML = gameData.world.currentTier.toFixed(0);
+        document.getElementById('tierinfo').classList.remove('hidden');
         if (gameData.world.currentTier === 1) {
             btndown.disabled = true;
         }
@@ -654,459 +643,434 @@ function updateGUI() {
             btnup.disabled = true;
         }
     }
-    document.getElementById("particles-tab").classList.add("hidden");
-    document.getElementById("rockupgrades-tab").classList.add("hidden");
+    document.getElementById('particles-tab').classList.add('hidden');
+    document.getElementById('rockupgrades-tab').classList.add('hidden');
     if (gameData.stats.prestige2 > 0) {
-        document.getElementById("particles-tab").classList.remove("hidden");
-        document.getElementById("rockupgrades-tab").classList.remove("hidden");
+        document.getElementById('particles-tab').classList.remove('hidden');
+        document.getElementById('rockupgrades-tab').classList.remove('hidden');
     }
-    document.getElementById("time-tab").classList.add("hidden");
-    document.getElementById("boulderupgrades-tab").classList.add("hidden");
+    document.getElementById('time-tab').classList.add('hidden');
+    document.getElementById('boulderupgrades-tab').classList.add('hidden');
     if (gameData.stats.prestige3 > 0) {
-        document.getElementById("time-tab").classList.remove("hidden");
-        document.getElementById("boulderupgrades-tab").classList.remove("hidden");
-    }
-    for (let index = 0; index < gameData.upgrades.length; index++) {
-        const element = gameData.upgrades[index];
-        element.updateDisplay();
-    }
-    for (let index = 0; index < gameData.rockUpgrades.length; index++) {
-        const element = gameData.rockUpgrades[index];
-        element.updateDisplay();
-    }
-    for (let index = 0; index < gameData.boulderUpgrades.length; index++) {
-        const element = gameData.boulderUpgrades[index];
-        element.updateDisplay();
+        document.getElementById('time-tab').classList.remove('hidden');
+        document.getElementById('boulderupgrades-tab').classList.remove('hidden');
     }
     if (pebblesFromPrestige().greaterThan(0)) {
-        $("#btnPrestige1").removeClass("hidden");
-        document.getElementById("btnPrestige1").innerHTML = "Prestige for " + pebblesFromPrestige().ToString() + " pebbles<br>Current: " + getCurrentPebbleRate().ToString() + " /hr<br>Best:" + gameData.stats.bestPrestige1Rate.ToString() + "/hr";
+        $('#btnPrestige1').removeClass('hidden');
+        document.getElementById('btnPrestige1').innerHTML = 'Prestige for ' + pebblesFromPrestige().ToString() + ' pebbles<br>Current: ' + getCurrentPebbleRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige1Rate.ToString() + '/hr';
     }
     else {
-        $("#btnPrestige1").addClass("hidden");
+        $('#btnPrestige1').addClass('hidden');
     }
     if (rocksFromPrestige().greaterThan(0)) {
-        $("#btnPrestige2").removeClass("hidden");
-        document.getElementById("btnPrestige2").innerHTML = "Ascend for " + rocksFromPrestige().ToString() + " rocks<br>Current: " + getCurrentRockRate().ToString() + " /hr<br>Best:" + gameData.stats.bestPrestige2Rate.ToString() + "/hr";
+        $('#btnPrestige2').removeClass('hidden');
+        document.getElementById('btnPrestige2').innerHTML = 'Ascend for ' + rocksFromPrestige().ToString() + ' rocks<br>Current: ' + getCurrentRockRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige2Rate.ToString() + '/hr';
     }
     else {
-        $("#btnPrestige2").addClass("hidden");
+        $('#btnPrestige2').addClass('hidden');
     }
     if (bouldersFromPrestige().greaterThan(0)) {
-        $("#btnPrestige3").removeClass("hidden");
-        document.getElementById("btnPrestige3").innerHTML =
-            "Transform for " + bouldersFromPrestige().ToString() + " boulders<br>Current: " + getCurrentBoulderRate().ToString() + " /hr<br>Best:" + gameData.stats.bestPrestige3Rate.ToString() + "/hr";
+        $('#btnPrestige3').removeClass('hidden');
+        document.getElementById('btnPrestige3').innerHTML =
+            'Transform for ' + bouldersFromPrestige().ToString() + ' boulders<br>Current: ' + getCurrentBoulderRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige3Rate.ToString() + '/hr';
     }
     else {
-        $("#btnPrestige3").addClass("hidden");
+        $('#btnPrestige3').addClass('hidden');
     }
-    for (let index = 0; index < gameData.achievements.length; index++) {
-        const element = gameData.achievements[index];
-        const elementName = "btnAchievement" + (index + 1).toString();
-        if (element.completed) {
-            document.getElementById(elementName).classList.remove("btn-danger");
-            document.getElementById(elementName).classList.add("btn-success");
+    gameData.Achievements.forEach((a, index) => {
+        const elementName = 'btnAchievement' + (index + 1).toString();
+        if (a.completed) {
+            document.getElementById(elementName).classList.remove('btn-danger');
+            document.getElementById(elementName).classList.add('btn-success');
         }
         else {
-            document.getElementById(elementName).classList.add("btn-danger");
-            document.getElementById(elementName).classList.remove("btn-success");
+            document.getElementById(elementName).classList.add('btn-danger');
+            document.getElementById(elementName).classList.remove('btn-success');
         }
-    }
-    for (let index = 0; index < gameData.tier1Feats.length; index++) {
-        const element = gameData.tier1Feats[index];
-        const elementName = "btn1Tier" + (index + 1).toString();
-        if (element.completed) {
-            document.getElementById(elementName).classList.remove("btn-danger");
-            document.getElementById(elementName).classList.add("btn-success");
-        }
-        else {
-            document.getElementById(elementName).classList.add("btn-danger");
-            document.getElementById(elementName).classList.remove("btn-success");
-        }
-    }
-    for (let index = 0; index < gameData.tier2Feats.length; index++) {
-        const element = gameData.tier2Feats[index];
-        const elementName = "btn2Tier" + (index + 1).toString();
-        if (element.completed) {
-            document.getElementById(elementName).classList.remove("btn-danger");
-            document.getElementById(elementName).classList.add("btn-success");
+    });
+    gameData.tier1Feats.forEach((a, index) => {
+        const elementName = 'btn1Tier' + (index + 1).toString();
+        if (a.completed) {
+            document.getElementById(elementName).classList.remove('btn-danger');
+            document.getElementById(elementName).classList.add('btn-success');
         }
         else {
-            document.getElementById(elementName).classList.add("btn-danger");
-            document.getElementById(elementName).classList.remove("btn-success");
+            document.getElementById(elementName).classList.add('btn-danger');
+            document.getElementById(elementName).classList.remove('btn-success');
         }
-    }
+    });
+    gameData.tier2Feats.forEach((a, index) => {
+        const elementName = 'btn2Tier' + (index + 1).toString();
+        if (a.completed) {
+            document.getElementById(elementName).classList.remove('btn-danger');
+            document.getElementById(elementName).classList.add('btn-success');
+        }
+        else {
+            document.getElementById(elementName).classList.add('btn-danger');
+            document.getElementById(elementName).classList.remove('btn-success');
+        }
+    });
     if (gameData.stats.prestige2 < 1 && gameData.stats.prestige3 < 1) {
-        document.getElementById("shieldchallenge").classList.add("hidden");
-        document.getElementById("rangechallenge").classList.add("hidden");
+        document.getElementById('shieldchallenge').classList.add('hidden');
+        document.getElementById('rangechallenge').classList.add('hidden');
     }
     else {
-        document.getElementById("shieldchallenge").classList.remove("hidden");
-        document.getElementById("rangechallenge").classList.remove("hidden");
+        document.getElementById('shieldchallenge').classList.remove('hidden');
+        document.getElementById('rangechallenge').classList.remove('hidden');
     }
     if (gameData.stats.prestige3 < 1) {
-        document.getElementById("critchallenge").classList.add("hidden");
-        document.getElementById("slowchallenge").classList.add("hidden");
+        document.getElementById('critchallenge').classList.add('hidden');
+        document.getElementById('slowchallenge').classList.add('hidden');
     }
     else {
-        document.getElementById("critchallenge").classList.remove("hidden");
-        document.getElementById("slowchallenge").classList.remove("hidden");
+        document.getElementById('critchallenge').classList.remove('hidden');
+        document.getElementById('slowchallenge').classList.remove('hidden');
     }
-    document.getElementById("tier1div").classList.add("hidden");
+    document.getElementById('tier1div').classList.add('hidden');
     if (gameData.world.tierUnlocked > 0) {
-        document.getElementById("tier1div").classList.remove("hidden");
+        document.getElementById('tier1div').classList.remove('hidden');
     }
-    document.getElementById("tier2div").classList.add("hidden");
+    document.getElementById('tier2div').classList.add('hidden');
     if (gameData.world.tierUnlocked > 1) {
-        document.getElementById("tier2div").classList.remove("hidden");
+        document.getElementById('tier2div').classList.remove('hidden');
     }
-    var canvas = document.getElementById("gameBoard");
+    const canvas = document.getElementById('gameBoard');
     if (canvas.getContext) {
         const originalHeight = canvas.height;
         const originalWidth = canvas.width;
-        let dimensions = getObjectFitSize(true, canvas.clientWidth, canvas.clientHeight, canvas.width, canvas.height);
+        const dimensions = getObjectFitSize(true, canvas.clientWidth, canvas.clientHeight, canvas.width, canvas.height);
         const dpr = window.devicePixelRatio || 1;
         canvas.width = dimensions.width * dpr;
         canvas.height = dimensions.height * dpr;
-        let ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
-        var ctx = canvas.getContext("2d");
-        var height = canvas.width;
-        var width = canvas.height;
-        var scrollheight = canvas.scrollWidth;
-        var scrollwidth = canvas.scrollHeight;
-        ctx.scale(ratio * dpr * height / scrollheight, ratio * dpr * height / scrollheight); //adjust this!
+        const ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
+        const ctx = canvas.getContext('2d');
+        const height = canvas.width;
+        const width = canvas.height;
+        const scrollheight = canvas.scrollWidth;
+        const scrollwidth = canvas.scrollHeight;
+        ctx.scale(ratio * dpr * height / scrollheight, ratio * dpr * width / scrollwidth); // adjust this!
         const squareSize = 520;
-        ctx.fillStyle = "black";
+        ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, squareSize, squareSize);
         ctx.globalAlpha = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).ToNumber();
         if (ctx.globalAlpha < 0.1) {
             ctx.globalAlpha = 0.1;
         }
-        DrawSolidSquare(ctx, gameData.tower.CurrentHitPoints(), gameData.tower.MaxHitPoints(), squareSize, 20, 0, 0, "lime");
-        for (let index = 0; index < gameData.tower.bullets.length; index++) {
-            const b = gameData.tower.bullets[index];
-            DrawSolidSquare(ctx, new JBDecimal(100), new JBDecimal(100), squareSize, 4, b.pos.x, b.pos.y, "white");
-        }
-        for (let index = 0; index < gameData.enemies.length; index++) {
-            const e = gameData.enemies[index];
-            for (let index2 = 0; index2 < e.bullets.length; index2++) {
-                const b = e.bullets[index2];
-                var bulletColor = 'white';
+        DrawSolidSquare(ctx, gameData.tower.CurrentHitPoints(), gameData.tower.MaxHitPoints(), squareSize, 20, 0, 0, 'lime');
+        gameData.tower.bullets.forEach((b) => { DrawSolidSquare(ctx, new JBDecimal(100), new JBDecimal(100), squareSize, 4, b.pos.x, b.pos.y, 'white'); });
+        gameData.enemies.forEach((e) => {
+            e.bullets.forEach((b) => {
+                let bulletColor = 'white';
                 if (b.crit) {
                     bulletColor = 'red';
                 }
                 DrawSolidSquare(ctx, new JBDecimal(100), new JBDecimal(100), squareSize, 4, b.pos.x, b.pos.y, bulletColor);
+            });
+            if (e.type === '') {
+                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'white');
             }
-            let s = 10;
-            if (e.type === "") {
-                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, "white");
+            else if (e.type === 'Fast') {
+                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'yellow');
             }
-            else if (e.type === "Fast") {
-                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, "yellow");
+            else if (e.type === 'Ranged') {
+                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'white');
             }
-            else if (e.type === "Ranged") {
-                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, "white");
+            else if (e.type === 'Cannon') {
+                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'blue');
             }
-            else if (e.type === "Cannon") {
-                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, "blue");
+            else if (e.type === 'Bradley') {
+                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'yellow');
             }
-            else if (e.type === "Bradley") {
-                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, "yellow");
+            else if (e.type === 'Trireme') {
+                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'white');
             }
-            else if (e.type === "Trireme") {
-                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, "white");
+            else if (e.type === 'Tank') {
+                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'white');
             }
-            else if (e.type === "Tank") {
-                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, "white");
+            else if (e.type === 'Cavalier') {
+                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'blue');
             }
-            else if (e.type === "Cavalier") {
-                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, "blue");
+            else if (e.type === 'Scorpion') {
+                DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'yellow', 'blue');
             }
-            else if (e.type === "Scorpion") {
-                DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, "yellow", "blue");
+            else if (e.type === 'Paladin') {
+                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'blue');
             }
-            else if (e.type === "Paladin") {
-                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, "blue");
+            else if (e.type === 'Oliphant') {
+                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'yellow');
             }
-            else if (e.type === "Oliphant") {
-                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, "yellow");
+            else if (e.type === 'Blitz') {
+                DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'yellow', 'blue');
             }
-            else if (e.type === "Blitz") {
-                DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, "yellow", "blue");
+            else if (e.type === 'Falcon') {
+                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'blue');
             }
-            else if (e.type === "Falcon") {
-                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, "blue");
+            else if (e.type === 'Archer') {
+                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'yellow');
             }
-            else if (e.type === "Archer") {
-                DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, "yellow");
+            else if (e.type === 'Titan') {
+                DrawTwoColorDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'yellow', 'blue');
             }
-            else if (e.type === "Titan") {
-                DrawTwoColorDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, "yellow", "blue");
+            else if (e.type === 'Boss') {
+                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 30, e.pos.x, e.pos.y, 'red');
             }
-            else if (e.type === "Boss") {
-                DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 30, e.pos.x, e.pos.y, "red");
-            }
-        }
+        });
         ctx.globalAlpha = 1;
-        var e = new Enemy(gameData.world.currentWave, 1);
+        const e = new Enemy(gameData.world.currentWave, 1);
         // ctx.fillStyle = "red";
         // ctx.fillRect(0,442,180,45);
-        ctx.font = "bold 15px Arial";
-        ctx.fillStyle = "red";
+        ctx.font = 'bold 15px Arial';
+        ctx.fillStyle = 'red';
         ctx.fillText('Drone Attack: ' + e.Attack().ToString(), 10, 460);
         ctx.fillText('Drone Hp: ' + e.MaxHitPoints().ToString(), 10, 480);
-        ctx.font = "10px Arial";
-        ctx.fillStyle = "white";
-        ctx.fillText(gameData.world.currentTickLength + "ms", 10, 510);
+        ctx.font = '10px Arial';
+        ctx.fillStyle = 'white';
+        ctx.fillText(gameData.world.currentTickLength + 'ms', 10, 510);
         if (gameData.world.ticksLeftOver > 50) {
-            ctx.fillText(getPrettyTimeFromMilliSeconds(gameData.world.ticksLeftOver) + " banked", 10, 500);
+            ctx.fillText(getPrettyTimeFromMilliSeconds(gameData.world.ticksLeftOver) + ' banked', 10, 500);
         }
-        ctx.font = "15px Arial";
-        ctx.fillText("Wave: " + gameData.world.currentWave, 230, 15);
-        ctx.fillText("Unspawned: " + gameData.world.enemiesToSpawn.toString() + "(" + getSpecialsCount().toString() + ")", 10, 15);
+        ctx.font = '15px Arial';
+        ctx.fillText('Wave: ' + gameData.world.currentWave, 230, 15);
+        ctx.fillText('Unspawned: ' + gameData.world.enemiesToSpawn.toString() + '(' + getSpecialsCount().toString() + ')', 10, 15);
         if (gameData.world.ticksToNextSpawn > 1000) {
-            ctx.fillStyle = "red";
-            ctx.fillText("Time to next enemy: " + getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn), 10, 30);
+            ctx.fillStyle = 'red';
+            ctx.fillText('Time to next enemy: ' + getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn), 10, 30);
         }
-        ctx.font = "12px Arial";
-        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -7.5, "white");
-        ctx.fillText("Drone", 32, 68);
+        ctx.font = '12px Arial';
+        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -7.5, 'white');
+        ctx.fillText('Drone', 32, 68);
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 5) {
-            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -6.6, "yellow");
+            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -6.6, 'yellow');
             ctx.fillStyle = 'white';
-            ctx.fillText("Fast", 32, 91);
+            ctx.fillText('Fast', 32, 91);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 10) {
-            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -5.7, "white");
+            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -5.7, 'white');
             ctx.fillStyle = 'white';
-            ctx.fillText("Tough", 32, 115);
+            ctx.fillText('Tough', 32, 115);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 15) {
-            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -4.8, "white");
+            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -4.8, 'white');
             ctx.fillStyle = 'white';
-            ctx.fillText("Ranged", 32, 138);
+            ctx.fillText('Ranged', 32, 138);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 20) {
-            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -3.9, "blue");
+            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -3.9, 'blue');
             ctx.fillStyle = 'white';
-            ctx.fillText("Strong", 32, 161);
+            ctx.fillText('Strong', 32, 161);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 25) {
-            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -3.0, "yellow");
+            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -3.0, 'yellow');
             ctx.fillStyle = 'white';
-            ctx.fillText("Fast/Ranged", 32, 184);
+            ctx.fillText('Fast/Ranged', 32, 184);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 30) {
-            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -2.1, "yellow");
+            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -2.1, 'yellow');
             ctx.fillStyle = 'white';
-            ctx.fillText("Fast/Tough", 32, 208);
+            ctx.fillText('Fast/Tough', 32, 208);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 35) {
-            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -1.2, "white");
+            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -1.2, 'white');
             ctx.fillStyle = 'white';
-            ctx.fillText("Ranged/Tough", 32, 231);
+            ctx.fillText('Ranged/Tough', 32, 231);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 40) {
-            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -0.3, "blue");
+            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -0.3, 'blue');
             ctx.fillStyle = 'white';
-            ctx.fillText("Strong/Tough", 32, 255);
+            ctx.fillText('Strong/Tough', 32, 255);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 45) {
-            DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, 0.6, "yellow", "blue");
+            DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, 0.6, 'yellow', 'blue');
             ctx.fillStyle = 'white';
-            ctx.fillText("Fast/Strong", 32, 278);
+            ctx.fillText('Fast/Strong', 32, 278);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 50) {
-            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, 1.5, "blue");
+            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, 1.5, 'blue');
             ctx.fillStyle = 'white';
-            ctx.fillText("Ranged/Strong", 32, 303);
+            ctx.fillText('Ranged/Strong', 32, 303);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 55) {
-            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 2.4, "yellow");
+            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 2.4, 'yellow');
             ctx.fillStyle = 'white';
-            ctx.fillText("Fast/Ranged/Tough", 32, 326);
+            ctx.fillText('Fast/Ranged/Tough', 32, 326);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 60) {
-            DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 3.3, "yellow", "blue");
+            DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 3.3, 'yellow', 'blue');
             ctx.fillStyle = 'white';
-            ctx.fillText("Fast/Strong/Tough", 32, 350);
+            ctx.fillText('Fast/Strong/Tough', 32, 350);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 65) {
-            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 4.2, "blue");
+            DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 4.2, 'blue');
             ctx.fillStyle = 'white';
-            ctx.fillText("Ranged/Strong/Tough", 32, 375);
+            ctx.fillText('Ranged/Strong/Tough', 32, 375);
         }
         if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 70) {
-            DrawTwoColorDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.40, 5.1, "yellow", "blue");
+            DrawTwoColorDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.40, 5.1, 'yellow', 'blue');
             ctx.fillStyle = 'white';
-            ctx.fillText("Fast/Strong/Ranged", 32, 399);
+            ctx.fillText('Fast/Strong/Ranged', 32, 399);
         }
         if (gameData.world.currentWave % 10 === 0) {
-            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 30, -9.5, 6.0, "red");
+            DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 30, -9.5, 6.0, 'red');
             ctx.fillStyle = 'white';
-            ctx.fillText("Boss", 32, 423);
+            ctx.fillText('Boss', 32, 423);
         }
     }
-    document.getElementById("auto1").classList.add("hidden");
-    document.getElementById("auto2").classList.add("hidden");
-    document.getElementById("auto3").classList.add("hidden");
-    document.getElementById("auto4").classList.add("hidden");
-    document.getElementById("auto5").classList.add("hidden");
-    document.getElementById("auto6").classList.add("hidden");
-    document.getElementById("auto7").classList.add("hidden");
-    document.getElementById("auto8").classList.add("hidden");
-    document.getElementById("auto9").classList.add("hidden");
-    document.getElementById("auto10").classList.add("hidden");
-    document.getElementById("auto11").classList.add("hidden");
-    document.getElementById("auto12").classList.add("hidden");
-    document.getElementById("auto13").classList.add("hidden");
-    document.getElementById("auto14").classList.add("hidden");
-    document.getElementById("auto15").classList.add("hidden");
-    document.getElementById("auto16").classList.add("hidden");
-    document.getElementById("auto17").classList.add("hidden");
-    document.getElementById("auto18").classList.add("hidden");
-    document.getElementById("auto19").classList.add("hidden");
-    document.getElementById("auto20").classList.add("hidden");
-    document.getElementById("auto21").classList.add("hidden");
-    document.getElementById("auto22").classList.add("hidden");
-    var highestwavemultiplier = 5 - gameData.rockUpgrades[2].bought - gameData.boulderUpgrades[2].bought;
+    document.getElementById('auto1').classList.add('hidden');
+    document.getElementById('auto2').classList.add('hidden');
+    document.getElementById('auto3').classList.add('hidden');
+    document.getElementById('auto4').classList.add('hidden');
+    document.getElementById('auto5').classList.add('hidden');
+    document.getElementById('auto6').classList.add('hidden');
+    document.getElementById('auto7').classList.add('hidden');
+    document.getElementById('auto8').classList.add('hidden');
+    document.getElementById('auto9').classList.add('hidden');
+    document.getElementById('auto10').classList.add('hidden');
+    document.getElementById('auto11').classList.add('hidden');
+    document.getElementById('auto12').classList.add('hidden');
+    document.getElementById('auto13').classList.add('hidden');
+    document.getElementById('auto14').classList.add('hidden');
+    document.getElementById('auto15').classList.add('hidden');
+    document.getElementById('auto16').classList.add('hidden');
+    document.getElementById('auto17').classList.add('hidden');
+    document.getElementById('auto18').classList.add('hidden');
+    document.getElementById('auto19').classList.add('hidden');
+    document.getElementById('auto20').classList.add('hidden');
+    document.getElementById('auto21').classList.add('hidden');
+    document.getElementById('auto22').classList.add('hidden');
+    const highestwavemultiplier = 5 - gameData.rockUpgrades[2].bought - gameData.boulderUpgrades[2].bought;
     if (gameData.stats.highestEverWave >= 4 * highestwavemultiplier) {
-        document.getElementById("auto1").classList.remove("hidden");
-        document.getElementById("auto2").classList.remove("hidden");
-        document.getElementById("auto3").classList.remove("hidden");
-        document.getElementById("auto4").classList.remove("hidden");
+        document.getElementById('auto1').classList.remove('hidden');
+        document.getElementById('auto2').classList.remove('hidden');
+        document.getElementById('auto3').classList.remove('hidden');
+        document.getElementById('auto4').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 5 * highestwavemultiplier) {
-        document.getElementById("auto5").classList.remove("hidden");
+        document.getElementById('auto5').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 6 * highestwavemultiplier) {
-        document.getElementById("auto6").classList.remove("hidden");
+        document.getElementById('auto6').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 7 * highestwavemultiplier) {
-        document.getElementById("auto7").classList.remove("hidden");
+        document.getElementById('auto7').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 8 * highestwavemultiplier) {
-        document.getElementById("auto8").classList.remove("hidden");
+        document.getElementById('auto8').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 9 * highestwavemultiplier) {
-        document.getElementById("auto9").classList.remove("hidden");
+        document.getElementById('auto9').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 10 * highestwavemultiplier) {
-        document.getElementById("auto10").classList.remove("hidden");
+        document.getElementById('auto10').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 11 * highestwavemultiplier) {
-        document.getElementById("auto11").classList.remove("hidden");
+        document.getElementById('auto11').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 12 * highestwavemultiplier) {
-        document.getElementById("auto12").classList.remove("hidden");
+        document.getElementById('auto12').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 13 * highestwavemultiplier) {
-        document.getElementById("auto13").classList.remove("hidden");
+        document.getElementById('auto13').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 14 * highestwavemultiplier) {
-        document.getElementById("auto14").classList.remove("hidden");
+        document.getElementById('auto14').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 15 * highestwavemultiplier) {
-        document.getElementById("auto15").classList.remove("hidden");
+        document.getElementById('auto15').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 16 * highestwavemultiplier) {
-        document.getElementById("auto16").classList.remove("hidden");
+        document.getElementById('auto16').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 17 * highestwavemultiplier) {
-        document.getElementById("auto17").classList.remove("hidden");
+        document.getElementById('auto17').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 18 * highestwavemultiplier) {
-        document.getElementById("auto18").classList.remove("hidden");
+        document.getElementById('auto18').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 19 * highestwavemultiplier) {
-        document.getElementById("auto19").classList.remove("hidden");
+        document.getElementById('auto19').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 20 * highestwavemultiplier) {
-        document.getElementById("auto20").classList.remove("hidden");
+        document.getElementById('auto20').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 21 * highestwavemultiplier) {
-        document.getElementById("auto21").classList.remove("hidden");
+        document.getElementById('auto21').classList.remove('hidden');
     }
     if (gameData.stats.highestEverWave >= 22 * highestwavemultiplier) {
-        document.getElementById("auto22").classList.remove("hidden");
+        document.getElementById('auto22').classList.remove('hidden');
     }
-    document.getElementById("btnChallengeQuit").classList.add("hidden");
-    for (let index = 0; index < gameData.challenges.length; index++) {
-        const element = gameData.challenges[index];
-        if (element.active) {
-            document.getElementById("btnChallengeQuit").classList.remove("hidden");
+    document.getElementById('btnChallengeQuit').classList.add('hidden');
+    gameData.challenges.forEach((ch, index) => {
+        if (ch.active) {
+            document.getElementById('btnChallengeQuit').classList.remove('hidden');
         }
-        var spanName = "challenge" + index.toString() + "Description";
-        document.getElementById(spanName).innerHTML = element.description;
-        spanName = "challenge" + index.toString() + "Bonus";
-        document.getElementById(spanName).innerHTML = element.bonusDescription;
-        spanName = "challenge" + index.toString() + "Completed";
-        document.getElementById(spanName).innerHTML = element.completed.toString();
-        spanName = "challenge" + index.toString() + "DustNeeded";
-        document.getElementById(spanName).innerHTML = element.waveRequiredforCompletion().toString();
-        var startName = "btnChallenge" + index.toString() + "Start";
-        if (element.active) {
-            document.getElementById(startName).classList.add("hidden");
+        let spanName = 'challenge' + index.toString() + 'Description';
+        document.getElementById(spanName).innerHTML = ch.description;
+        spanName = 'challenge' + index.toString() + 'Bonus';
+        document.getElementById(spanName).innerHTML = ch.bonusDescription;
+        spanName = 'challenge' + index.toString() + 'Completed';
+        document.getElementById(spanName).innerHTML = ch.completed.toString();
+        spanName = 'challenge' + index.toString() + 'DustNeeded';
+        document.getElementById(spanName).innerHTML = ch.waveRequiredforCompletion().toString();
+        const startName = 'btnChallenge' + index.toString() + 'Start';
+        if (ch.active) {
+            document.getElementById(startName).classList.add('hidden');
         }
         else {
-            document.getElementById(startName).classList.remove("hidden");
+            document.getElementById(startName).classList.remove('hidden');
         }
-    }
-    document.getElementById("prestige1count").innerHTML = gameData.stats.prestige1.toString();
-    document.getElementById("prestige1time").innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige1ticks);
-    document.getElementById("prestige2count").innerHTML = gameData.stats.prestige2.toString();
-    document.getElementById("prestige2time").innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige2ticks);
-    document.getElementById("prestige3count").innerHTML = gameData.stats.prestige3.toString();
-    document.getElementById("prestige3time").innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige3ticks);
-    document.getElementById("highestwavereached").innerHTML = gameData.stats.highestEverWave.toString();
-    var prestige1history = "<br />";
-    for (let index = 0; index < gameData.stats.last10Prestige1amounts.length; index++) {
-        const amt = gameData.stats.last10Prestige1amounts[index];
+    });
+    document.getElementById('prestige1count').innerHTML = gameData.stats.prestige1.toString();
+    document.getElementById('prestige1time').innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige1ticks);
+    document.getElementById('prestige2count').innerHTML = gameData.stats.prestige2.toString();
+    document.getElementById('prestige2time').innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige2ticks);
+    document.getElementById('prestige3count').innerHTML = gameData.stats.prestige3.toString();
+    document.getElementById('prestige3time').innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige3ticks);
+    document.getElementById('highestwavereached').innerHTML = gameData.stats.highestEverWave.toString();
+    let prestige1history = '<br />';
+    gameData.stats.last10Prestige1amounts.forEach((amt, index) => {
         const ticks = gameData.stats.last10Prestige1times[index];
         const tier = gameData.stats.last10Prestige1tier[index];
         const waves = gameData.stats.last10Prestige1waves[index];
         const rate = PrettyRatePerTime(amt, ticks);
-        var newline = index.toString() +
-            " reached tier " +
+        const newline = index.toString() +
+            ' reached tier ' +
             tier.toString() +
-            " wave " +
+            ' wave ' +
             waves.toString() +
-            " took " +
+            ' took ' +
             getPrettyTimeFromMilliSeconds(ticks) +
-            " and gave " +
+            ' and gave ' +
             amt.ToString() +
-            " for an average of: " + rate;
-        prestige1history += newline + "</br />";
-    }
-    document.getElementById("prestige1history").innerHTML = prestige1history;
-    var prestige2history = "<br />";
-    for (let index = 0; index < gameData.stats.last10Prestige2amounts.length; index++) {
-        const amt = gameData.stats.last10Prestige2amounts[index];
+            ' for an average of: ' + rate;
+        prestige1history += newline + '</br />';
+    });
+    document.getElementById('prestige1history').innerHTML = prestige1history;
+    let prestige2history = '<br />';
+    gameData.stats.last10Prestige2amounts.forEach((amt, index) => {
         const ticks = gameData.stats.last10Prestige2times[index];
         const rate = PrettyRatePerTime(amt, ticks);
-        var newline = index.toString() + " took " + getPrettyTimeFromMilliSeconds(ticks) + " and gave " + amt.ToString() + " for an average of " + rate;
-        prestige2history += newline + "</br />";
-    }
-    document.getElementById("prestige2history").innerHTML = prestige2history;
-    var prestige3history = "<br />";
-    for (let index = 0; index < gameData.stats.last10Prestige3amounts.length; index++) {
-        const amt = gameData.stats.last10Prestige3amounts[index];
+        const newline = index.toString() + ' took ' + getPrettyTimeFromMilliSeconds(ticks) + ' and gave ' + amt.ToString() + ' for an average of ' + rate;
+        prestige2history += newline + '</br />';
+    });
+    document.getElementById('prestige2history').innerHTML = prestige2history;
+    let prestige3history = '<br />';
+    gameData.stats.last10Prestige3amounts.forEach((amt, index) => {
         const ticks = gameData.stats.last10Prestige3times[index];
         const rate = PrettyRatePerTime(amt, ticks);
-        var newline = index.toString() + " took " + getPrettyTimeFromMilliSeconds(ticks) + " and gave " + amt.ToString() + " for an average of " + rate;
-        prestige3history += newline + "</br />";
-    }
-    document.getElementById("prestige3history").innerHTML = prestige3history;
+        const newline = index.toString() + ' took ' + getPrettyTimeFromMilliSeconds(ticks) + ' and gave ' + amt.ToString() + ' for an average of ' + rate;
+        prestige3history += newline + '</br />';
+    });
+    document.getElementById('prestige3history').innerHTML = prestige3history;
 }
 function changeTier(value) {
     CheckAchievementCompletions();
-    if (value === "Down") {
+    if (value === 'Down') {
         gameData.world.currentTier--;
         if (gameData.world.currentTier < 1) {
             gameData.world.currentTier = 1;
         }
     }
-    if (value === "Up") {
+    if (value === 'Up') {
         gameData.world.currentTier++;
         if (gameData.world.currentTier > gameData.world.tierUnlocked) {
             gameData.world.tierUnlocked = gameData.world.currentTier;
@@ -1116,11 +1080,11 @@ function changeTier(value) {
 }
 // adapted from: https://www.npmjs.com/package/intrinsic-scale
 function getObjectFitSize(contains /* true = contain, false = cover */, containerWidth, containerHeight, width, height) {
-    var doRatio = width / height;
-    var cRatio = containerWidth / containerHeight;
-    var targetWidth = 0;
-    var targetHeight = 0;
-    var test = contains ? doRatio > cRatio : doRatio < cRatio;
+    const doRatio = width / height;
+    const cRatio = containerWidth / containerHeight;
+    let targetWidth = 0;
+    let targetHeight = 0;
+    const test = contains ? doRatio > cRatio : doRatio < cRatio;
     if (test) {
         targetWidth = containerWidth;
         targetHeight = targetWidth / doRatio;
@@ -1133,7 +1097,7 @@ function getObjectFitSize(contains /* true = contain, false = cover */, containe
         width: targetWidth,
         height: targetHeight,
         x: (containerWidth - targetWidth) / 2,
-        y: (containerHeight - targetHeight) / 2,
+        y: (containerHeight - targetHeight) / 2
     };
 }
 function DrawSolidDiamond(ctx, CurrentHitPoints, MaxHitPoints, squareSize, enemysize, x, y, enemycolor) {
@@ -1142,10 +1106,10 @@ function DrawSolidDiamond(ctx, CurrentHitPoints, MaxHitPoints, squareSize, enemy
         ctx.globalAlpha = 0.1;
     }
     ctx.fillStyle = enemycolor;
-    var top = (x + 10) * (squareSize / 20) - (enemysize / 1.8);
-    var bottom = (x + 10) * (squareSize / 20) + (enemysize / 1.8);
-    var left = (y + 10) * (squareSize / 20) - (enemysize / 1.8);
-    var right = (y + 10) * (squareSize / 20) + (enemysize / 1.8);
+    const top = (x + 10) * (squareSize / 20) - (enemysize / 1.8);
+    const bottom = (x + 10) * (squareSize / 20) + (enemysize / 1.8);
+    const left = (y + 10) * (squareSize / 20) - (enemysize / 1.8);
+    const right = (y + 10) * (squareSize / 20) + (enemysize / 1.8);
     ctx.beginPath();
     ctx.moveTo(top, (y + 10) * (squareSize / 20));
     ctx.lineTo((x + 10) * (squareSize / 20), right);
@@ -1158,9 +1122,9 @@ function DrawTwoColorDiamond(ctx, CurrentHitPoints, MaxHitPoints, squareSize, en
     if (ctx.globalAlpha < 0.1) {
         ctx.globalAlpha = 0.1;
     }
-    var top = (x + 10) * (squareSize / 20) - (enemysize / 1.8);
-    var left = (y + 10) * (squareSize / 20) - (enemysize / 1.8);
-    var right = (y + 10) * (squareSize / 20) + (enemysize / 1.8);
+    const top = (x + 10) * (squareSize / 20) - (enemysize / 1.8);
+    const left = (y + 10) * (squareSize / 20) - (enemysize / 1.8);
+    const right = (y + 10) * (squareSize / 20) + (enemysize / 1.8);
     DrawSolidDiamond(ctx, CurrentHitPoints, MaxHitPoints, squareSize, enemysize, x, y, rightcolor);
     ctx.fillStyle = leftcolor;
     ctx.beginPath();
@@ -1188,59 +1152,38 @@ function DrawTwoColorSquare(ctx, CurrentHitPoints, MaxHitPoints, squareSize, ene
     ctx.fillRect((x + 10) * (squareSize / 20), (y + 10) * (squareSize / 20) - enemysize / 2, enemysize / 2, enemysize);
 }
 function quitChallenges() {
-    for (let index = 0; index < gameData.challenges.length; index++) {
-        const element = gameData.challenges[index];
-        if (element.active) {
-            element.quit();
+    gameData.challenges.forEach((ch) => {
+        if (ch.active) {
+            ch.quit();
         }
-    }
+    });
 }
 function pebblesFromPrestige() {
-    var divisor = 10 - gameData.rockUpgrades[1].bought;
-    var ret = gameData.resources.dust.amount.divide(divisor).floor();
-    return ret;
+    return gameData.resources.dust.amount.divide(10 - gameData.rockUpgrades[1].bought).floor();
 }
 function rocksFromPrestige() {
-    var divisor = 1000 - (gameData.boulderUpgrades[1].bought * 10);
-    var ret = gameData.resources.pebbles.amount;
-    ret = ret.add(pebblesFromPrestige());
-    ret = ret.divide(divisor).floor();
-    return ret;
+    return gameData.resources.pebbles.amount.add(pebblesFromPrestige()).divide(1000 - (gameData.boulderUpgrades[1].bought * 10)).floor();
+    ;
 }
 function bouldersFromPrestige() {
-    var divisor = 1000 - (gameData.boulderUpgrades[1].bought * 10);
-    var ret = gameData.resources.rocks.amount;
-    ret = ret.add(rocksFromPrestige());
-    ret = ret.divide(divisor).floor();
-    return ret;
+    return gameData.resources.rocks.amount.add(rocksFromPrestige()).divide(1000 - (gameData.boulderUpgrades[1].bought * 10)).floor();
 }
+// eslint-disable-next-line no-unused-vars
 function prestige1() {
-    for (let index = 0; index < gameData.challenges.length; index++) {
-        const element = gameData.challenges[index];
-        if (element.active) {
-            element.quit();
-        }
-    }
+    quitChallenges();
     init(1);
 }
+// eslint-disable-next-line no-unused-vars
 function prestige2() {
-    for (let index = 0; index < gameData.challenges.length; index++) {
-        const element = gameData.challenges[index];
-        if (element.active) {
-            element.quit();
-        }
-    }
+    quitChallenges();
     init(2);
 }
+// eslint-disable-next-line no-unused-vars
 function prestige3() {
-    for (let index = 0; index < gameData.challenges.length; index++) {
-        const element = gameData.challenges[index];
-        if (element.active) {
-            element.quit();
-        }
-    }
+    quitChallenges();
     init(3);
 }
+// eslint-disable-next-line no-unused-vars
 function resetGame() {
     localStorage.clear();
     location.reload();
@@ -1263,57 +1206,56 @@ function getSpecialsCount() {
         gameData.world.titanEnemiesToSpawn);
 }
 function getSpecialsArray() {
-    var choicesArr = [];
+    const choicesArr = [];
     for (let index = 0; index < gameData.world.fastEnemiesToSpawn; index++) {
-        choicesArr.push("F");
+        choicesArr.push('F');
     }
     for (let index = 0; index < gameData.world.tankEnemiesToSpawn; index++) {
-        choicesArr.push("T");
+        choicesArr.push('T');
     }
     for (let index = 0; index < gameData.world.rangedEnemiesToSpawn; index++) {
-        choicesArr.push("R");
+        choicesArr.push('R');
     }
     for (let index = 0; index < gameData.world.bossEnemiesToSpawn; index++) {
-        choicesArr.push("B");
+        choicesArr.push('B');
     }
     for (let index = 0; index < gameData.world.cannonEnemiesToSpawn; index++) {
-        choicesArr.push("C");
+        choicesArr.push('C');
     }
     for (let index = 0; index < gameData.world.bradleyEnemiesToSpawn; index++) {
-        choicesArr.push("b");
+        choicesArr.push('b');
     }
     for (let index = 0; index < gameData.world.triremeEnemiesToSpawn; index++) {
-        choicesArr.push("t");
+        choicesArr.push('t');
     }
     for (let index = 0; index < gameData.world.cavalierEnemiesToSpwan; index++) {
-        choicesArr.push("c");
+        choicesArr.push('c');
     }
     for (let index = 0; index < gameData.world.scorpionEnemiesToSpawn; index++) {
-        choicesArr.push("S");
+        choicesArr.push('S');
     }
     for (let index = 0; index < gameData.world.oliphantEnemiesToSpawn; index++) {
-        choicesArr.push("O");
+        choicesArr.push('O');
     }
     for (let index = 0; index < gameData.world.paladinEnemiesToSpawn; index++) {
-        choicesArr.push("P");
+        choicesArr.push('P');
     }
     for (let index = 0; index < gameData.world.blitzEnemiesToSpawn; index++) {
-        choicesArr.push("z");
+        choicesArr.push('z');
     }
     for (let index = 0; index < gameData.world.falconEnemiesToSpawn; index++) {
-        choicesArr.push("f");
+        choicesArr.push('f');
     }
     for (let index = 0; index < gameData.world.archerEnemiesToSpawn; index++) {
-        choicesArr.push("a");
+        choicesArr.push('a');
     }
     for (let index = 0; index < gameData.world.titanEnemiesToSpawn; index++) {
-        choicesArr.push("t");
+        choicesArr.push('t');
     }
     return choicesArr;
 }
 function getNumberOfEnemies(wave) {
-    var tier = gameData.world.currentTier - 1;
-    var div = wave - tier;
+    let div = wave - (gameData.world.currentTier - 1);
     if (div < 1) {
         div = 1;
     }
@@ -1321,10 +1263,11 @@ function getNumberOfEnemies(wave) {
 }
 function resetSpawns(killexistingenemies = true) {
     gameData.world.currentWave++;
+    CheckAchievementCompletions(); // check before resetting to new tier
     if (gameData.world.currentWave > 100) {
-        CheckAchievementCompletions(); //check before resetting to new tier
+        quitChallenges();
         if (gameData.world.currentTier === gameData.world.tierUnlocked) {
-            changeTier("Up");
+            changeTier('Up');
         }
         else {
             init(1);
@@ -1358,7 +1301,7 @@ function resetSpawns(killexistingenemies = true) {
         gameData.world.ticksToNextSpawn = 100000 * gameData.world.deathlevel;
     }
     else {
-        addToDisplay("Wave " + (gameData.world.currentWave - 1) + " completed!", "story");
+        addToDisplay('Wave ' + (gameData.world.currentWave - 1) + ' completed!', 'story');
         gameData.world.ticksToNextSpawn = 1000;
     }
     if (gameData.world.enemiesToSpawn < getSpecialsCount()) {
@@ -1367,45 +1310,38 @@ function resetSpawns(killexistingenemies = true) {
 }
 function CheckAchievementCompletions() {
     lastachievementcount = 0;
-    for (let index = 0; index < gameData.achievements.length; index++) {
-        const element = gameData.achievements[index];
-        element.checkforCompletion();
-        if (element.completed) {
+    gameData.Achievements.forEach((ch) => {
+        ch.checkforCompletion();
+        if (ch.completed) {
             lastachievementcount++;
         }
-    }
-    for (let index = 0; index < gameData.tier1Feats.length; index++) {
-        const element = gameData.tier1Feats[index];
-        element.checkforCompletion();
-    }
-    for (let index = 0; index < gameData.tier2Feats.length; index++) {
-        const element = gameData.tier2Feats[index];
-        element.checkforCompletion();
-    }
-}
-function getAchievementCompletedCount() {
-    var achievementcompleted = 0;
-    for (let index = 0; index < gameData.achievements.length; index++) {
-        const achievement = gameData.achievements[index];
-        if (achievement.completed) {
-            achievementcompleted++;
-        }
-    }
-    return achievementcompleted;
+    });
+    gameData.tier1Feats.forEach((ch) => { ch.checkforCompletion(); });
+    gameData.tier2Feats.forEach((ch) => { ch.checkforCompletion(); });
 }
 function init(prestigelevel = 0) {
-    if (typeof textToDisplay === "undefined") {
+    if (typeof textToDisplay === 'undefined') {
+        // eslint-disable-next-line no-global-assign
         textToDisplay = [];
+        // eslint-disable-next-line no-global-assign
         textToDisplayachievement = [];
+        // eslint-disable-next-line no-global-assign
         textToDisplaychallenge = [];
+        // eslint-disable-next-line no-global-assign
         textToDisplaygamesave = [];
+        // eslint-disable-next-line no-global-assign
         textToDisplayloot = [];
+        // eslint-disable-next-line no-global-assign
         textToDisplaystory = [];
+        // eslint-disable-next-line no-global-assign
         displayindex = 0;
     }
     if (prestigelevel >= 1) {
+        // eslint-disable-next-line no-global-assign
         textToDisplaygamesave = [];
+        // eslint-disable-next-line no-global-assign
         textToDisplayloot = [];
+        // eslint-disable-next-line no-global-assign
         textToDisplaystory = [];
         if (pebblesFromPrestige().greaterThan(0)) {
             gameData.stats.last10Prestige1amounts.unshift(pebblesFromPrestige());
@@ -1428,31 +1364,28 @@ function init(prestigelevel = 0) {
         gameData.world.currentWave = 0;
         gameData.world.highestWaveCompleted = 0;
         resetSpawns(true);
-        for (let index = 0; index < gameData.derivatives.length; index++) {
-            const element = gameData.derivatives[index];
-            element.bought = 0;
-            element.owned = new JBDecimal(0);
+        gameData.derivatives.forEach((d, index) => {
+            d.bought = 0;
             if (gameData.rockUpgrades[11].bought) {
                 if (index - 3 < gameData.upgrades[12].bought) {
-                    //ehich derivatives recieve intial invnetory is controlled by which are unlocked
-                    element.owned = new JBDecimal(gameData.stats.prestige2);
+                    // which derivatives recieve intial inventory is controlled by which are unlocked
+                    d.owned = new JBDecimal(gameData.stats.prestige2);
                 }
             }
-            element.upgradeLevel = 0;
-        }
-        for (let index = 0; index < gameData.speedDerivatives.length; index++) {
-            const element = gameData.speedDerivatives[index];
-            element.owned = new JBDecimal(element.bought);
-        }
+            else {
+                d.owned = new JBDecimal(0);
+            }
+            d.upgradeLevel = 0;
+        });
+        gameData.speedDerivatives.forEach((d) => { d.bought = 0; });
         gameData.producer.bought = 0;
         gameData.producer.owned = new JBDecimal(0);
         gameData.producer.upgradeLevel = 0;
-        for (let index = 0; index < gameData.equipment.length; index++) {
-            const element = gameData.equipment[index];
-            element.bought = 0;
-            element.owned = new JBDecimal(0);
-            element.upgradeLevel = 0;
-        }
+        gameData.equipment.forEach((e) => {
+            e.bought = 0;
+            e.owned = new JBDecimal(0);
+            e.upgradeLevel = 0;
+        });
     }
     if (prestigelevel >= 2) {
         if (rocksFromPrestige().greaterThan(0)) {
@@ -1461,6 +1394,7 @@ function init(prestigelevel = 0) {
             gameData.stats.last10Prestige2times.unshift(gameData.stats.prestige2ticks);
             gameData.stats.last10Prestige2times.splice(10);
         }
+        // eslint-disable-next-line no-global-assign
         textToDisplaychallenge = [];
         gameData.stats.bestPrestige2Rate = new JBDecimal(0.0000000001);
         gameData.stats.prestige2 += 1;
@@ -1468,27 +1402,24 @@ function init(prestigelevel = 0) {
         gameData.stats.prestige1 = 0;
         gameData.resources.rocks.add(rocksFromPrestige());
         gameData.resources.pebbles.amount = new JBDecimal(0);
-        for (let index = 0; index < gameData.challenges.length; index++) {
-            const element = gameData.challenges[index];
-            element.completed = 0;
-        }
-        for (let index = 0; index < gameData.upgrades.length; index++) {
-            const element = gameData.upgrades[index];
-            element.bought = 0;
-            element.owned = new JBDecimal(0);
-        }
-        for (let index = 0; index < gameData.derivatives.length; index++) {
-            const element = gameData.derivatives[index];
-            element.bought = 0;
-            element.owned = new JBDecimal(0);
+        gameData.challenges.forEach((c) => { c.completed = 0; });
+        gameData.upgrades.forEach((u) => {
+            u.bought = 0;
+            u.owned = new JBDecimal(0);
+        });
+        gameData.derivatives.forEach((d, index) => {
+            d.bought = 0;
             if (gameData.rockUpgrades[11].bought) {
                 if (index - 3 < gameData.upgrades[12].bought) {
-                    //ehich derivatives recieve intial invnetory is controlled by which are unlocked
-                    element.owned = new JBDecimal(gameData.stats.prestige2);
+                    // which derivatives recieve intial inventory is controlled by which are unlocked
+                    d.owned = new JBDecimal(gameData.stats.prestige2);
                 }
             }
-            element.upgradeLevel = 0;
-        }
+            else {
+                d.owned = new JBDecimal(0);
+            }
+            d.upgradeLevel = 0;
+        });
     }
     if (prestigelevel >= 3) {
         if (bouldersFromPrestige().greaterThan(0)) {
@@ -1503,27 +1434,25 @@ function init(prestigelevel = 0) {
         gameData.stats.prestige2 = 0;
         gameData.resources.boulders.add(bouldersFromPrestige());
         gameData.resources.rocks.amount = new JBDecimal(0);
-        for (let index = 0; index < gameData.rockUpgrades.length; index++) {
-            const element = gameData.rockUpgrades[index];
-            element.bought = 0;
-            element.owned = new JBDecimal(0);
-        }
-        for (let index = 0; index < gameData.derivatives.length; index++) {
-            const element = gameData.derivatives[index];
-            element.bought = 0;
-            element.owned = new JBDecimal(0);
-            element.upgradeLevel = 0;
-        }
-        for (let index = 0; index < gameData.speedDerivatives.length; index++) {
-            const element = gameData.speedDerivatives[index];
-            element.owned = new JBDecimal(0);
-            element.bought = 0;
-        }
+        gameData.rockUpgrades.forEach((u) => {
+            u.bought = 0;
+            u.owned = new JBDecimal(0);
+        });
+        gameData.derivatives.forEach((d) => {
+            d.bought = 0;
+            d.owned = new JBDecimal(0);
+            d.upgradeLevel = 0;
+        });
+        gameData.speedDerivatives.forEach((d) => {
+            d.bought = 0;
+            d.owned = new JBDecimal(0);
+            d.upgradeLevel = 0;
+        });
         gameData.world.currentTier = 1;
     }
     if (prestigelevel === 0) {
-        gameData = new saveGameData("new");
-        var total = 0;
+        gameData = new SaveGameData('new');
+        let total = 0;
         for (let index = 1; index <= 10000; index++) {
             total += Math.ceil(Math.sqrt(index));
             internalInflationArray.push(total);
@@ -1533,21 +1462,21 @@ function init(prestigelevel = 0) {
             total += index;
             achievementbonusarray.push(total);
         }
-        var savegame = JSON.parse(localStorage.getItem("save"));
+        const savegame = JSON.parse(localStorage.getItem('save'));
         if (savegame !== null) {
             gameData.name = savegame.name;
-            if (typeof savegame.storyElements != "undefined") {
+            if (typeof savegame.storyElements !== 'undefined') {
                 for (let index = 0; index < savegame.storyElements.length; index++) {
                     const element = savegame.storyElements[index];
                     gameData.storyElements[index].printed = element.printed;
                 }
             }
-            if (typeof savegame.stats.prestige2 != "undefined") {
+            if (typeof savegame.stats.prestige2 !== 'undefined') {
                 gameData.stats.bestPrestige2Rate.mantissa = savegame.stats.bestPrestige2Rate.mantissa;
                 gameData.stats.bestPrestige2Rate.exponent = savegame.stats.bestPrestige2Rate.exponent;
                 for (let index = 0; index < savegame.stats.last10Prestige2amounts.length; index++) {
                     const element = savegame.stats.last10Prestige2amounts[index];
-                    var item = new JBDecimal(1);
+                    const item = new JBDecimal(1);
                     item.mantissa = element.mantissa;
                     item.exponent = element.exponent;
                     gameData.stats.last10Prestige2amounts.push(item);
@@ -1556,12 +1485,12 @@ function init(prestigelevel = 0) {
                 gameData.stats.prestige2ticks = savegame.stats.prestige2ticks;
                 gameData.stats.prestige2 = savegame.stats.prestige2;
             }
-            if (typeof savegame.stats.prestige3 != "undefined") {
+            if (typeof savegame.stats.prestige3 !== 'undefined') {
                 gameData.stats.bestPrestige3Rate.mantissa = savegame.stats.bestPrestige3Rate.mantissa;
                 gameData.stats.bestPrestige3Rate.exponent = savegame.stats.bestPrestige3Rate.exponent;
                 for (let index = 0; index < savegame.stats.last10Prestige3amounts.length; index++) {
                     const element = savegame.stats.last10Prestige3amounts[index];
-                    var item = new JBDecimal(1);
+                    const item = new JBDecimal(1);
                     item.mantissa = element.mantissa;
                     item.exponent = element.exponent;
                     gameData.stats.last10Prestige3amounts.push(item);
@@ -1575,10 +1504,10 @@ function init(prestigelevel = 0) {
             gameData.stats.bestPrestige1Rate.mantissa = savegame.stats.bestPrestige1Rate.mantissa;
             gameData.stats.bestPrestige1Rate.exponent = savegame.stats.bestPrestige1Rate.exponent;
             gameData.stats.highestEverWave = savegame.stats.highestEverWave;
-            if (typeof savegame.stats.last10Prestige1tier != "undefined") {
+            if (typeof savegame.stats.last10Prestige1tier !== 'undefined') {
                 for (let index = 0; index < savegame.stats.last10Prestige1amounts.length; index++) {
                     const element = savegame.stats.last10Prestige1amounts[index];
-                    var item = new JBDecimal(1);
+                    const item = new JBDecimal(1);
                     item.mantissa = element.mantissa;
                     item.exponent = element.exponent;
                     gameData.stats.last10Prestige1amounts.push(item);
@@ -1608,10 +1537,10 @@ function init(prestigelevel = 0) {
             gameData.world.oliphantEnemiesToSpawn = savegame.world.oliphantEnemiesToSpawn;
             gameData.world.blitzEnemiesToSpawn = savegame.world.blitzEnemiesToSpawn;
             gameData.world.falconEnemiesToSpawn = savegame.world.falconEnemiesToSpawn;
-            if (typeof savegame.world.archerEnemiesToSpawn != "undefined") {
+            if (typeof savegame.world.archerEnemiesToSpawn !== 'undefined') {
                 gameData.world.archerEnemiesToSpawn = savegame.world.archerEnemiesToSpawn;
             }
-            if (typeof savegame.world.titanEnemiesToSpawn != "undefined") {
+            if (typeof savegame.world.titanEnemiesToSpawn !== 'undefined') {
                 gameData.world.titanEnemiesToSpawn = savegame.world.titanEnemiesToSpawn;
             }
             gameData.world.triremeEnemiesToSpawn = savegame.world.triremeEnemiesToSpawn;
@@ -1619,7 +1548,7 @@ function init(prestigelevel = 0) {
             gameData.world.ticksToNextSpawn = savegame.world.ticksToNextSpawn;
             for (let index = 0; index < savegame.enemies.length; index++) {
                 const element = savegame.enemies[index];
-                var newEnemy = new Enemy(element.wave, element.enemycount);
+                const newEnemy = new Enemy(element.wave, element.enemycount);
                 newEnemy.pos.x = element.pos.x;
                 newEnemy.pos.y = element.pos.y;
                 newEnemy.baseAttack.mantissa = element.baseAttack.mantissa;
@@ -1640,11 +1569,7 @@ function init(prestigelevel = 0) {
                 newEnemy.target.y = 0;
                 newEnemy.ticksToNextBullet = element.ticksToNextBullet;
                 newEnemy.type = element.type;
-                for (let index = 0; index < element.bullets.length; index++) {
-                    const b = element.bullets[index];
-                    var newBullet = new bullet(b.pos.x, b.pos.y, 0, 0, b.damage, b.crit);
-                    newEnemy.bullets.push(newBullet);
-                }
+                element.bullets.forEach(b => newEnemy.bullets.push(new Bullet(b.pos.x, b.pos.y, 0, 0, b.damage, b.crit)));
                 gameData.enemies.push(newEnemy);
             }
             gameData.tower.damagetaken.exponent = savegame.tower.damagetaken.exponent;
@@ -1658,15 +1583,15 @@ function init(prestigelevel = 0) {
             gameData.resources.pebbles.amount.exponent = savegame.resources.pebbles.amount.exponent;
             gameData.resources.rocks.amount.mantissa = savegame.resources.rocks.amount.mantissa;
             gameData.resources.rocks.amount.exponent = savegame.resources.rocks.amount.exponent;
-            if (typeof savegame.resources.boulders != "undefined") {
+            if (typeof savegame.resources.boulders !== 'undefined') {
                 gameData.resources.boulders.amount.mantissa = savegame.resources.boulders.amount.mantissa;
                 gameData.resources.boulders.amount.exponent = savegame.resources.boulders.amount.exponent;
             }
-            if (typeof savegame.resources.particles != "undefined") {
+            if (typeof savegame.resources.particles !== 'undefined') {
                 gameData.resources.particles.amount.mantissa = savegame.resources.particles.amount.mantissa;
                 gameData.resources.particles.amount.exponent = savegame.resources.particles.amount.exponent;
             }
-            if (typeof savegame.resources.timeparticles != "undefined") {
+            if (typeof savegame.resources.timeparticles !== 'undefined') {
                 gameData.resources.timeparticles.amount.mantissa = savegame.resources.timeparticles.amount.mantissa;
                 gameData.resources.timeparticles.amount.exponent = savegame.resources.timeparticles.amount.exponent;
             }
@@ -1676,7 +1601,7 @@ function init(prestigelevel = 0) {
                 gameData.upgrades[index].owned.exponent = element.owned.exponent;
                 gameData.upgrades[index].owned.mantissa = element.owned.mantissa;
             }
-            if (typeof savegame.rockUpgrades != "undefined") {
+            if (typeof savegame.rockUpgrades !== 'undefined') {
                 for (let index = 0; index < savegame.rockUpgrades.length; index++) {
                     const element = savegame.rockUpgrades[index];
                     gameData.rockUpgrades[index].bought = element.bought;
@@ -1684,7 +1609,7 @@ function init(prestigelevel = 0) {
                     gameData.rockUpgrades[index].owned.mantissa = element.owned.mantissa;
                 }
             }
-            if (typeof savegame.boulderUpgrades != "undefined") {
+            if (typeof savegame.boulderUpgrades !== 'undefined') {
                 for (let index = 0; index < savegame.boulderUpgrades.length; index++) {
                     const element = savegame.boulderUpgrades[index];
                     gameData.boulderUpgrades[index].bought = element.bought;
@@ -1706,7 +1631,7 @@ function init(prestigelevel = 0) {
                 element.owned.exponent = savegame.speedDerivatives[index].owned.exponent;
                 element.upgradeLevel = savegame.speedDerivatives[index].upgradeLevel;
             }
-            if (typeof savegame.timeDerivatives != "undefined") {
+            if (typeof savegame.timeDerivatives !== 'undefined') {
                 for (let index = 0; index < savegame.timeDerivatives.length; index++) {
                     const element = gameData.timeDerivatives[index];
                     element.bought = savegame.timeDerivatives[index].bought;
@@ -1731,25 +1656,25 @@ function init(prestigelevel = 0) {
                 element.active = savegame.challenges[index].active;
                 element.completed = savegame.challenges[index].completed;
             }
-            for (let index = 0; index < savegame.achievements.length; index++) {
-                const element = savegame.achievements[index];
-                gameData.achievements[index].completed = element.completed;
+            for (let index = 0; index < savegame.Achievements.length; index++) {
+                const element = savegame.Achievements[index];
+                gameData.Achievements[index].completed = element.completed;
             }
             for (let index = 0; index < savegame.tier1Feats.length; index++) {
                 const element = savegame.tier1Feats[index];
                 gameData.tier1Feats[index].completed = element.completed;
             }
-            if (typeof savegame.tier2Feats != "undefined") {
+            if (typeof savegame.tier2Feats !== 'undefined') {
                 for (let index = 0; index < savegame.tier2Feats.length; index++) {
                     const element = savegame.tier2Feats[index];
                     gameData.tier2Feats[index].completed = element.completed;
                 }
             }
-            if (typeof savegame.automation != "undefined") {
+            if (typeof savegame.automation !== 'undefined') {
                 for (let index = 0; index < savegame.automation.length; index++) {
                     const element = savegame.automation[index];
                     if (index === 0) {
-                        const autoprestige1 = document.getElementById("autoprestige1");
+                        const autoprestige1 = document.getElementById('autoprestige1');
                         if (element.item === 0) {
                             autoprestige1.checked = false;
                         }
@@ -1758,8 +1683,8 @@ function init(prestigelevel = 0) {
                         }
                     }
                     else {
-                        var itemName = "automation" + index + "item";
-                        var valueName = "automation" + index + "value";
+                        const itemName = 'automation' + (index).toString() + 'item';
+                        const valueName = 'automation' + (index).toString() + 'value';
                         const autoitem = document.getElementById(itemName);
                         const autovalue = document.getElementById(valueName);
                         autoitem.selectedIndex = element.item;
@@ -1774,9 +1699,9 @@ function init(prestigelevel = 0) {
 }
 function getAchievementsOnlyBonus() {
     if (achievementbonusarray.length <= lastachievementcount) {
-        addToDisplay("Consider upping the initial achievementbonusarray", "story");
+        addToDisplay('Consider upping the initial achievementbonusarray', 'story');
         achievementbonusarray = [];
-        var total = 0;
+        let total = 0;
         for (let index = 0; index <= (lastachievementcount * 1.1); index++) {
             total += index;
             achievementbonusarray.push(total);
@@ -1785,42 +1710,52 @@ function getAchievementsOnlyBonus() {
     return (achievementbonusarray[lastachievementcount] + 100) / 100;
 }
 function getTier1FeatBonus() {
-    var tier1completed = 1; //no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
-    for (let index = 0; index < gameData.tier1Feats.length; index++) {
-        const element = gameData.tier1Feats[index];
-        if (element.completed) {
+    let tier1completed = 1; // no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
+    gameData.tier1Feats.forEach((f) => {
+        if (f.completed) {
             tier1completed++;
         }
-    }
+    });
     return tier1completed;
 }
 function getTier2FeatBonus() {
-    var tier2completed = 1; //no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
-    for (let index = 0; index < gameData.tier2Feats.length; index++) {
-        const element = gameData.tier2Feats[index];
-        if (element.completed) {
-            tier2completed++;
+    let tiercompleted = 1; // no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
+    gameData.tier2Feats.forEach((f) => {
+        if (f.completed) {
+            tiercompleted++;
         }
-    }
-    return tier2completed;
+    });
+    return tiercompleted;
 }
+// eslint-disable-next-line no-unused-vars
 function saveGameClick() {
     gameData.world.nextSaveGameTime = new Date();
 }
 function getAchievementBonus() {
-    var value = getAchievementsOnlyBonus();
-    return (value * getTier1FeatBonus() * getTier2FeatBonus());
+    return (getAchievementsOnlyBonus() * getTier1FeatBonus() * getTier2FeatBonus());
 }
+// eslint-disable-next-line no-unused-vars
 function resetStoryElements() {
-    for (let index = 0; index < gameData.storyElements.length; index++) {
-        const element = gameData.storyElements[index];
-        element.printed = false;
+    // eslint-disable-next-line no-return-assign
+    gameData.storyElements.forEach((e) => e.printed = false);
+}
+// eslint-disable-next-line no-unused-vars
+function cheat1() {
+    if (gameData.resources.dust.amount.greaterThan(100)) {
+        gameData.resources.dust.amount = gameData.resources.dust.amount.multiply(2);
     }
+    else {
+        gameData.resources.dust.amount = new JBDecimal(100);
+    }
+}
+// eslint-disable-next-line no-unused-vars
+function cheat2() {
+    gameData.world.ticksLeftOver += 1000 * 60 * 60 * 24;
 }
 window.setInterval(function () {
     try {
         if (!initted) {
-            if (document.readyState === "complete") {
+            if (document.readyState === 'complete') {
                 init(); // this seeds the init function, which will overwrite default data with the save if there is one
             }
             return; // still waiting on pageload
@@ -1828,8 +1763,8 @@ window.setInterval(function () {
         if (gameData.world.paused) {
             return;
         }
-        var currentTime = new Date();
-        var ticksForCurrentTick = currentTime.getTime() - gameData.world.lastProcessTick.getTime() + gameData.world.ticksLeftOver;
+        const currentTime = new Date();
+        let ticksForCurrentTick = currentTime.getTime() - gameData.world.lastProcessTick.getTime() + gameData.world.ticksLeftOver;
         if (ticksForCurrentTick > 50) {
             gameData.world.ticksLeftOver = ticksForCurrentTick - 50;
             ticksForCurrentTick = 50;
@@ -1847,5 +1782,5 @@ window.setInterval(function () {
     catch (error) {
         logMyErrors(error);
     }
-}, 1);
+}, 0);
 //# sourceMappingURL=main.js.map

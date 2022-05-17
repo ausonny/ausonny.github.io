@@ -1,3 +1,5 @@
+/* global Upgrade, Purchasable, Resource, JBDecimal, gameData, getTimeParticleBonus, getParticleBonus  */
+// eslint-disable-next-line no-unused-vars
 class Derivative extends Purchasable {
   name: string;
 
@@ -5,13 +7,13 @@ class Derivative extends Purchasable {
 
   buyButton: HTMLElement;
 
-  //lastProduction: JBDecimal;
+  // lastProduction: JBDecimal;
 
   basicUpgrade: Upgrade;
 
   productionMultiplier: number;
 
-  constructor(
+  constructor (
     name: string,
     index: number,
     cost: number,
@@ -23,212 +25,169 @@ class Derivative extends Purchasable {
     basicUpgrade: Upgrade,
     inflationFloor: number,
     productionMultiplier: number,
-    upgradeable: boolean,
+    upgradeable: boolean
   ) {
     super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, upgradeable, upgradeButton);
     this.name = name;
     this.index = index;
-    //this.lastProduction = new JBDecimal(0);
-    this.basicUpgrade = basicUpgrade
+    // this.lastProduction = new JBDecimal(0);
+    this.basicUpgrade = basicUpgrade;
     this.productionMultiplier = productionMultiplier;
   }
 
-  production(ticks:number = gameData.world.currentTickLength) {
-    var val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
-    if(val.equals(0)) {
-      return new JBDecimal(0); 
+  production (ticks:number = gameData.world.currentTickLength) {
+    let val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
+    if (val.equals(0)) {
+      return new JBDecimal(0);
     }
     val = val.multiply(this.basicUpgrade.getBonus());
     val = val.multiply(new JBDecimal(10).pow(this.upgradeLevel));
-    var modifiedticks = getTimeParticleBonus().multiply(ticks)
+    const modifiedticks = getTimeParticleBonus().multiply(ticks);
     val = val.multiply(modifiedticks.divide(1000));
 
-    val = val.multiply(gameData.producer.production())
-    val = val.multiply(gameData.upgrades[13].getBonus())
-    val = val.multiply(gameData.upgrades[14].getBonus())
-    val = val.multiply(gameData.upgrades[15].getBonus())
+    val = val.multiply(gameData.producer.production());
+    val = val.multiply(gameData.upgrades[13].getBonus());
+    val = val.multiply(gameData.upgrades[14].getBonus());
+    val = val.multiply(gameData.upgrades[15].getBonus());
     val = val.multiply(this.productionMultiplier);
 
     val = val.multiply(getParticleBonus());
 
-    val = val.multiply(Math.pow(2, gameData.boulderUpgrades[4].bought))
-
-    if(gameData.upgrades[5].owned.greaterThan(0)){
-      var perlevel = gameData.upgrades[5].getBonus()
-      var qtymult = new JBDecimal(perlevel).multiply(this.bought)
-      qtymult = qtymult.add(1);
-      val = val.multiply(qtymult)
+    if (gameData.upgrades[5].owned.greaterThan(0)) {
+      const perlevel = gameData.upgrades[5].getBonus();
+      const qtymult = new JBDecimal(perlevel).multiply(this.bought).add(1);
+      val = val.multiply(qtymult);
     }
     return val;
   }
 
-  productionPerSecDisplay() {
-    var val = new JBDecimal(this.production(1000))
+  productionPerSecDisplay () {
+    const val = new JBDecimal(this.production(1000));
     return val;
   }
-
-  // percentageIncrease() {
-  //   if (this.lastProduction.mantissa === 0) {
-  //     return new JBDecimal(0);
-  //   }
-  //   var val = new JBDecimal(this.owned.subtract(this.lastProduction));
-  //   val = val.divide(this.lastProduction).multiply(gameData.world.currentTickLength).multiply(1000);
-  //   return val;
-  // }
-
-  // percentageIncreaseDisplay() {
-  //   var val = new JBDecimal(this.percentageIncrease());
-  //   return val;
-  // }
 }
-  
-  class Producer extends Purchasable {
-    name: string;
-  
-    index: number;
-  
-    buyButton: HTMLElement;
-  
-    lastProduction: JBDecimal;
-  
-    basicUpgrade: Upgrade;
-  
-    productionMultiplier: number
-  
-    constructor(
-      name: string,
-      index: number,
-      cost: number,
-      costMultiplier: number,
-      resource: Resource,
-      upgradeResource: Resource,
-      buyButton: HTMLElement,
-      upgradeButton: HTMLElement,
-      basicUpgrade: Upgrade,
-      inflationFloor: number
-    ) {
-      super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, true, upgradeButton);
-      this.name = name;
-      this.index = index;
-      this.lastProduction = new JBDecimal(0);
-      this.basicUpgrade = basicUpgrade;
-    }
-  
-    production() {
-      var val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
-      val = val.multiply(2);
-      if (gameData.challenges[3].active) {
-        return new JBDecimal(1);
-      }
-      var base = .01;
-      if(gameData.upgrades[16].bought > 0) {
-        base *= 2;
-      }
-      if(gameData.rockUpgrades[3].bought > 0) {
-        base *= 2;
-      }
-  
-  
-      var challengebonus = 1.1 + (base * ((gameData.challenges[3].completed/4) + this.upgradeLevel))
-      var ret = new JBDecimal(challengebonus).pow(val.ToNumber());
-      return ret;
-    }
-  
-    productionPerSecDisplay() {
-      var val = new JBDecimal(this.production())
-      return val;
-    }
-  
-    percentageIncrease() {
-      if (this.lastProduction.mantissa === 0) {
-        return new JBDecimal(0);
-      }
-      var val = new JBDecimal(this.owned.subtract(this.lastProduction));
-      val = val.divide(this.lastProduction).multiply(gameData.world.currentTickLength);
-      return val;
-    }
-  
-    percentageIncreaseDisplay() {
-      var val = new JBDecimal(this.percentageIncrease());
-      return val;
-    }
+
+// eslint-disable-next-line no-unused-vars
+class Producer extends Purchasable {
+  name: string;
+
+  index: number;
+
+  buyButton: HTMLElement;
+
+  lastProduction: JBDecimal;
+
+  basicUpgrade: Upgrade;
+
+  productionMultiplier: number;
+
+  constructor (
+    name: string,
+    index: number,
+    cost: number,
+    costMultiplier: number,
+    resource: Resource,
+    upgradeResource: Resource,
+    buyButton: HTMLElement,
+    upgradeButton: HTMLElement,
+    basicUpgrade: Upgrade,
+    inflationFloor: number
+  ) {
+    super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, true, upgradeButton);
+    this.name = name;
+    this.index = index;
+    this.lastProduction = new JBDecimal(0);
+    this.basicUpgrade = basicUpgrade;
   }
 
-  class Derivative2 extends Purchasable {
-    name: string;
-  
-    index: number;
-  
-    buyButton: HTMLElement;
-  
-    // lastProduction: JBDecimal;
-  
-    basicUpgrade: Upgrade;
-  
-    productionMultiplier: number;
-  
-    constructor(
-      name: string,
-      index: number,
-      cost: number,
-      costMultiplier: number,
-      resource: Resource,
-      upgradeResource: Resource,
-      buyButton: HTMLElement,
-      upgradeButton: HTMLElement,
-      basicUpgrade: Upgrade,
-      inflationFloor: number,
-      productionMultiplier: number,
-      upgradeable: boolean,
-    ) {
-      super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, upgradeable, upgradeButton);
-      this.name = name;
-      this.index = index;
-      //this.lastProduction = new JBDecimal(0);
-      this.basicUpgrade = basicUpgrade
-      this.productionMultiplier = productionMultiplier;
+  production () {
+    let val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
+    val = val.multiply(2);
+    if (gameData.challenges[3].active) {
+      return new JBDecimal(1);
     }
-  
-    production(ticks:number = gameData.world.currentTickLength) {
-      var val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
-      if(val.equals(0)) {
-        return new JBDecimal(0); 
-      }
-      //val = val.multiply(this.basicUpgrade.getBonus());
-      //val = val.multiply(new JBDecimal(2).pow(this.upgradeLevel));
-      val = val.multiply(ticks / 1000);
-  
-      val = val.multiply(gameData.rockUpgrades[13].getBonus())
-      // val = val.multiply(gameData.upgrades[14].getBonus())
-      // val = val.multiply(gameData.upgrades[15].getBonus())
+    let base = 0.01;
+    if (gameData.upgrades[16].bought > 0) {
+      base *= 2;
+    }
+    if (gameData.rockUpgrades[3].bought > 0) {
+      base *= 2;
+    }
 
-      val = val.multiply(this.productionMultiplier);
-  
-      // if(gameData.upgrades[5].owned.greaterThan(0)){
-      //   var perlevel = gameData.upgrades[5].getBonus()
-      //   var qtymult = new JBDecimal(perlevel).multiply(this.bought)
-      //   qtymult = qtymult.add(1);
-      //   val = val.multiply(qtymult)
-      // }
-      return val;
-    }
-  
-    productionPerSecDisplay() {
-      var val = new JBDecimal(this.production(1000))
-      return val;
-    }
-  
-    // percentageIncrease() {
-    //   if (this.lastProduction.mantissa === 0) {
-    //     return new JBDecimal(0);
-    //   }
-    //   var val = new JBDecimal(this.owned.subtract(this.lastProduction));
-    //   val = val.divide(this.lastProduction).multiply(gameData.world.currentTickLength).multiply(1000);
-    //   return val;
-    // }
-  
-    // percentageIncreaseDisplay() {
-    //   var val = new JBDecimal(this.percentageIncrease());
-    //   return val;
-    // }
+    const challengebonus = 1.1 + (base * ((gameData.challenges[3].completed / 4) + this.upgradeLevel));
+    const ret = new JBDecimal(challengebonus).pow(val.ToNumber());
+    return ret;
   }
+
+  productionPerSecDisplay () {
+    return new JBDecimal(this.production());
+  }
+
+  percentageIncrease () {
+    if (this.lastProduction.mantissa === 0) {
+      return new JBDecimal(0);
+    }
+    let val = new JBDecimal(this.owned.subtract(this.lastProduction));
+    val = val.divide(this.lastProduction).multiply(gameData.world.currentTickLength);
+    return val;
+  }
+
+  percentageIncreaseDisplay () {
+    return new JBDecimal(this.percentageIncrease()); ;
+  }
+}
+
+// eslint-disable-next-line no-unused-vars
+class Derivative2 extends Purchasable {
+  name: string;
+
+  index: number;
+
+  buyButton: HTMLElement;
+
+  // lastProduction: JBDecimal;
+
+  basicUpgrade: Upgrade;
+
+  productionMultiplier: number;
+
+  constructor (
+    name: string,
+    index: number,
+    cost: number,
+    costMultiplier: number,
+    resource: Resource,
+    upgradeResource: Resource,
+    buyButton: HTMLElement,
+    upgradeButton: HTMLElement,
+    basicUpgrade: Upgrade,
+    inflationFloor: number,
+    productionMultiplier: number,
+    upgradeable: boolean
+  ) {
+    super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, upgradeable, upgradeButton);
+    this.name = name;
+    this.index = index;
+    // this.lastProduction = new JBDecimal(0);
+    this.basicUpgrade = basicUpgrade;
+    this.productionMultiplier = productionMultiplier;
+  }
+
+  production (ticks:number = gameData.world.currentTickLength) {
+    let val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
+
+    if (val.equals(0)) {
+      return new JBDecimal(0);
+    }
+
+    val = val.multiply(ticks / 1000);
+    val = val.multiply(gameData.rockUpgrades[13].getBonus());
+    val = val.multiply(this.productionMultiplier);
+
+    return val;
+  }
+
+  productionPerSecDisplay () {
+    return new JBDecimal(this.production(1000));
+  }
+}

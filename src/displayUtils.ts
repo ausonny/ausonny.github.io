@@ -1,52 +1,56 @@
-function addColor(theColor: string, theText: string) {
-  return '<span style="color:' + theColor + '">' + theText + "</span><br />";
+/* global gameData, JBDecimal */
+
+function addColor (theColor: string, theText: string) {
+  return '<span style="color:' + theColor + '">' + theText + '</span><br />';
 }
 
-function addToDisplay(newline: string, category: string) {
+function addToDisplay (newline: string, category: string) {
   displayindex++;
 
-  var newItem = new DisplayItem(displayindex, newline, category);
-  if (category === "gameSave") {
-    newItem.txt = addColor("white", getPrettyTime(new Date()) + ": " + newline);
+  const newItem = new DisplayItem(displayindex, newline, category);
+  if (category === 'gameSave') {
+    newItem.txt = addColor('white', getPrettyTime(new Date()) + ': ' + newline);
     textToDisplaygamesave.unshift(newItem);
     textToDisplaygamesave.splice(1);
-  } else if (category === "achievement") {
-    newItem.txt = addColor("blue", getPrettyTime(new Date()) + ": " + newline);
+  } else if (category === 'achievement') {
+    newItem.txt = addColor('blue', getPrettyTime(new Date()) + ': ' + newline);
     textToDisplayachievement.unshift(newItem);
-  } else if (category === "loot") {
-    newItem.txt = addColor("green", getPrettyTime(new Date()) + ": " + newline);
+  } else if (category === 'loot') {
+    newItem.txt = addColor('green', getPrettyTime(new Date()) + ': ' + newline);
     textToDisplayloot.unshift(newItem);
     textToDisplayloot.splice(100);
-  } else if (category === "challenge") {
-    newItem.txt = addColor("red", getPrettyTime(new Date()) + ": " + newline);
+  } else if (category === 'challenge') {
+    newItem.txt = addColor('red', getPrettyTime(new Date()) + ': ' + newline);
     textToDisplaychallenge.unshift(newItem);
     textToDisplaychallenge.splice(25);
-  } else if (category === "story") {
-    newItem.txt = addColor("yellow", getPrettyTime(new Date()) + ": " + newline);
+  } else if (category === 'story') {
+    newItem.txt = addColor('yellow', getPrettyTime(new Date()) + ': ' + newline);
     textToDisplaystory.unshift(newItem);
   }
   textToDisplay = textToDisplayachievement.concat(textToDisplaychallenge).concat(textToDisplaygamesave).concat(textToDisplayloot).concat(textToDisplaystory);
   textToDisplay.sort((a, b) => (a.index < b.index ? 1 : -1));
-  var activechallenges = false;
-  var txt = 'Challenges Active:<br />';
-  for (let index = 0; index < gameData.challenges.length; index++) {
-    const element = gameData.challenges[index];
-    if(element.active) {
-      activechallenges = true
-      txt += element.name + ' Wave needed: ' + element.waveRequiredforCompletion() + '<br />';
-    }    
-  }
-  if(activechallenges) {
-    var newactivechallenge = new DisplayItem(0, addColor("red", txt), 'achievement')
-    textToDisplay.unshift(newactivechallenge);
+  let activechallenges = false;
+  let txt = 'Challenges Active:<br />';
+  // eslint-disable-next-line no-undef
+  gameData.challenges.forEach((ch) => {
+    if (ch.active) {
+      activechallenges = true;
+      txt += ch.name + ' Wave needed: ' + ch.waveRequiredforCompletion() + '<br />';
+    }
+  });
+
+  if (activechallenges) {
+    textToDisplay.unshift(new DisplayItem(0, addColor('red', txt), 'achievement'));
   }
 }
 
-function getDisplayText() {
-  var val = "";
-  for (var i = 0; i < textToDisplay.length; i++) {
-    val += "\n" + textToDisplay[i].txt;
-  }
+// eslint-disable-next-line no-unused-vars
+function getDisplayText () {
+  let val = '';
+
+  // eslint-disable-next-line no-return-assign
+  textToDisplay.forEach(textToDisplay => val += '\n' + textToDisplay.txt);
+
   return val;
 }
 
@@ -59,7 +63,7 @@ class DisplayItem {
 
   type: string;
 
-  constructor(index: number, txt: string, type: string) {
+  constructor (index: number, txt: string, type: string) {
     this.index = index;
     this.timeadded = new Date();
     this.txt = txt;
@@ -67,49 +71,59 @@ class DisplayItem {
   }
 }
 
-function getPrettyTime(d: Date) {
-  var hr = d.getHours();
-  var min = d.getMinutes();
-  var hrdisplay = "";
-  var mindisplay = "";
-  var secdisplay = "";
-  var sec = d.getSeconds();
+let textToDisplay: DisplayItem[];
+let textToDisplaygamesave: DisplayItem[];
+let textToDisplayachievement: DisplayItem[];
+let textToDisplayloot: DisplayItem[];
+let textToDisplaychallenge: DisplayItem[];
+let textToDisplaystory: DisplayItem[];
+let displayindex: number;
+
+function getPrettyTime (d: Date) {
+  const hr = d.getHours();
+  const min = d.getMinutes();
+  const sec = d.getSeconds();
+  let hrdisplay = '';
+  let mindisplay = '';
+  let secdisplay = '';
   if (min < 10) {
-    mindisplay = "0" + min.toString();
+    mindisplay = '0' + min.toString();
   } else {
     mindisplay = min.toString();
   }
   if (sec < 10) {
-    secdisplay = "0" + sec.toString();
+    secdisplay = '0' + sec.toString();
   } else {
     secdisplay = sec.toString();
   }
   if (hr < 10) {
-    hrdisplay = "0" + hr.toString();
+    hrdisplay = '0' + hr.toString();
   } else {
     hrdisplay = hr.toString();
   }
-  return hrdisplay + ":" + mindisplay + ":" + secdisplay;
+  return hrdisplay + ':' + mindisplay + ':' + secdisplay;
 }
 
-function logMyErrors(e: any) {
-  addToDisplay(e.message, "challenge");
+// eslint-disable-next-line no-unused-vars
+function logMyErrors (e: any) {
+  addToDisplay(e.message, 'challenge');
 }
 
-function getPrettyTimeFromMilliSeconds(millisecondsToEvaluate: number) {
-  var work = millisecondsToEvaluate - 0;
+// eslint-disable-next-line no-unused-vars
+function getPrettyTimeFromMilliSeconds (millisecondsToEvaluate: number) {
+  let work = millisecondsToEvaluate;
   const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
   const MILLISECONDS_PER_HOUR = 60 * 60 * 1000;
   const MILLISECONDS_PER_MINUTE = 60 * 1000;
   const MILLISECONDS_PER_SECOND = 1000;
-  var days = 0;
-  var hours = 0;
-  var minutes = 0;
-  var seconds = 0;
-  var ddays = "";
-  var dhours = "";
-  var dminutes = "";
-  var dseconds = "";
+  let days = 0;
+  let hours = 0;
+  let minutes = 0;
+  let seconds = 0;
+  let ddays = '';
+  let dhours = '';
+  let dminutes = '';
+  let dseconds = '';
 
   while (work > MILLISECONDS_PER_DAY) {
     days++;
@@ -127,51 +141,35 @@ function getPrettyTimeFromMilliSeconds(millisecondsToEvaluate: number) {
     seconds++;
     work -= MILLISECONDS_PER_SECOND;
   }
-  ddays = ("0" + days.toString()).slice(-2);
-  dhours = ("0" + hours.toString()).slice(-2);
-  dminutes = ("0" + minutes.toString()).slice(-2);
-  dseconds = ("0" + seconds.toString()).slice(-2);
+  ddays = ('0' + days.toString()).slice(-2);
+  dhours = ('0' + hours.toString()).slice(-2);
+  dminutes = ('0' + minutes.toString()).slice(-2);
+  dseconds = ('0' + seconds.toString()).slice(-2);
 
   if (days > 0) {
-    return ddays + ":" + dhours + ":" + dminutes + ":" + dseconds;
+    return ddays + ':' + dhours + ':' + dminutes + ':' + dseconds;
   } else if (hours > 0) {
-    return dhours + ":" + dminutes + ":" + dseconds;
+    return dhours + ':' + dminutes + ':' + dseconds;
   } else if (minutes > 0) {
-    return dminutes + ":" + dseconds;
+    return dminutes + ':' + dseconds;
   } else {
-    return ":" + dseconds;
+    return ':' + dseconds;
   }
 }
 
-function changeNotation() {
-  // eslint-disable-line no-unused-vars
+// eslint-disable-next-line no-unused-vars
+function changeNotation () {
   gameData.options.standardNotation++;
   if (gameData.options.standardNotation >= 6) {
     gameData.options.standardNotation = 0;
   }
-  $("#btnNotation").text(notationDisplayOptions[gameData.options.standardNotation]);
+  // eslint-disable-next-line no-undef
+  $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
 }
 
-function PrettyRatePerTime(amt: JBDecimal, ticks: number) {
-  var base = amt.divide(ticks).multiply(1000);
-  // if (base.greaterThan(1)) {
-  //   return base.ToString() + ' /sec'
-  // }
-  base = base.multiply(60);
-  // if(base.greaterThan(1)) {
-  //   return base.ToString() + ' /min'
-  // }
-  base = base.multiply(60);
-  // if(base.greaterThan(1)) {
-  //   return base.ToString() + ' /hr'
-  // }
-  return base.ToString() + ' /hr'
-  base = base.multiply(24);
-  if(base.greaterThan(1)) {
-    return base.ToString() + ' /day'
-  }
-  base = base.multiply(365);
-  return base.ToString() + ' /yr'
-
+// eslint-disable-next-line no-unused-vars
+function PrettyRatePerTime (amt: JBDecimal, ticks: number) {
+  // this originally changed the time element based on size, but I found it distracting in poreactice so it is back to /hr only
+  const base = amt.divide(ticks).multiply(1000 * 60 * 60);
+  return base.ToString() + ' /hr';
 }
-

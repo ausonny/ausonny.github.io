@@ -1,11 +1,13 @@
+/* global JBDecimal, Purchasable, Resource, gameData */
+// eslint-disable-next-line no-unused-vars
 class Upgrade extends Purchasable {
-    // 1 bought/unbought
-    // 2 power of 2
+    // 1 prestige1's
+    // 2 power of 10
     // 3 square root of pebbles available
-    // 4 number of bought
+    // 4 number of upgrades bought
     // 5 sqare root of time in prestige dividied by ten minutes
-    // 7 10% per additive
     // 6 10% per multiplicative
+    // 7 1% per additive
     constructor(name, description, baseCost, costMultiplier, resource, buyButton, limit, bonustype) {
         super(baseCost, costMultiplier, resource, 0, 1, new Resource('dummy'), 0, limit, buyButton, false, buyButton);
         this.name = name;
@@ -13,7 +15,7 @@ class Upgrade extends Purchasable {
         this.bonusType = bonustype;
     }
     getBonus() {
-        var ret = new JBDecimal(1);
+        const ret = new JBDecimal(1);
         if (this.bonusType === 1) {
             if (this.bought === 0) {
                 return ret;
@@ -54,13 +56,6 @@ class Upgrade extends Purchasable {
         super.updateDisplay();
         this.buyButton.innerHTML += this.description;
         this.buyButton.innerHTML += '<br />' + this.bought.toString() + '/' + (this.limit + this.addedlimit).toString();
-        // this.buyButton.innerHTML += '<br />Currently: ' + this.getBonus().ToString();
-        // if (this.bonusType === 1) {
-        // } else if (this.bonusType === 7) {
-        //   this.buyButton.innerHTML += '%'
-        // } else {
-        //   this.buyButton.innerHTML += 'x'
-        // }
     }
 }
 //# sourceMappingURL=Upgrade.js.map

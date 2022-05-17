@@ -1,53 +1,79 @@
-class movingObject {
-  pos: vector;
+/* global gameData, JBDecimal */
 
-  target: vector;
+class Vector {
+  x: number;
+
+  y: number;
+
+  constructor (currentx: number, currenty: number) {
+    this.x = currentx;
+    this.y = currenty;
+  }
+
+  getLength (targetx: number, targety: number) {
+    const xdif = this.x - targetx;
+    const ydif = this.y - targety;
+    return Math.sqrt(xdif * xdif + ydif * ydif); // calculating length of vector;
+  }
+
+  getNormalizedX (targetx: number, targety: number) {
+    return this.x / this.getLength(targetx, targety);
+  }
+
+  getNormalizedY (targetx: number, targety: number) {
+    return this.y / this.getLength(targetx, targety);
+  }
+}
+
+class movingObject {
+  pos: Vector;
+
+  target: Vector;
 
   movementPerSec: number;
 
   isBullet: boolean;
 
-  constructor(pos: vector, target: vector, movementPerSec: number, isbullet: boolean = false) {
+  constructor (pos: Vector, target: Vector, movementPerSec: number, isbullet: boolean = false) {
     this.pos = Object.assign(pos);
     this.updateTarget(target);
     this.movementPerSec = movementPerSec;
     this.isBullet = isbullet;
   }
 
-  updateTarget(target: vector) {
+  updateTarget (target: Vector) {
     this.target = Object.assign(target);
   }
 
-  getDistanceToTarget() {
-    var length = this.pos.getLength(this.target.x, this.target.y);
-    return length;
+  getDistanceToTarget () {
+    return this.pos.getLength(this.target.x, this.target.y);
   }
 
-  timeToTarget() {
+  timeToTarget () {
     return this.getDistanceToTarget() / this.movementPerSec;
   }
 
-  move() {
-    var length = this.getDistanceToTarget();
+  move () {
+    const length = this.getDistanceToTarget();
+    const xdif = this.pos.x - this.target.x;
+    const ydif = this.pos.y - this.target.y;
     if (this.isBullet) {
-      var tickmovement = (this.movementPerSec * gameData.world.currentTickLength) / 1000;
+      const tickmovement = (this.movementPerSec * gameData.world.currentTickLength) / 1000;
 
       if (length <= tickmovement) {
         this.pos.x = this.target.x;
         this.pos.y = this.target.y;
       } else {
-        var xdif = this.pos.x - this.target.x;
-        var ydif = this.pos.y - this.target.y;
-        var movex = (xdif / length) * tickmovement;
-        var movey = (ydif / length) * tickmovement;
+        const movex = (xdif / length) * tickmovement;
+        const movey = (ydif / length) * tickmovement;
         this.pos.x -= movex;
         this.pos.y -= movey;
       }
     } else {
-      var tickmovement = (this.movementPerSec * gameData.world.currentTickLength) / 1000;
-      var slowpenalty = (tickmovement * gameData.tower.Slow()) / 100;
+      let tickmovement = (this.movementPerSec * gameData.world.currentTickLength) / 1000;
+      const slowpenalty = (tickmovement * gameData.tower.Slow()) / 100;
 
-      if(length < gameData.tower.Range()) {
+      if (length < gameData.tower.Range()) {
         tickmovement -= slowpenalty;
       }
 
@@ -56,14 +82,26 @@ class movingObject {
         this.pos.y = this.pos.getNormalizedY(this.target.x, this.target.y) * 0.99;
         // sit still
       } else {
-        var xdif = this.pos.x - this.target.x;
-        var ydif = this.pos.y - this.target.y;
-        var movex = (xdif / length) * tickmovement;
-        var movey = (ydif / length) * tickmovement;
+        const movex = (xdif / length) * tickmovement;
+        const movey = (ydif / length) * tickmovement;
         this.pos.x -= movex;
         this.pos.y -= movey;
       }
     }
+  }
+}
+
+class Bullet extends movingObject {
+  damage: JBDecimal;
+
+  crit: boolean;
+
+  constructor (posx: number, posy: number, targetx: number, targety: number, damage: JBDecimal, crit: boolean) {
+    super(new Vector(posx, posy), new Vector(targetx, targety), 10, true);
+    this.damage = new JBDecimal(0);
+    this.damage.mantissa = damage.mantissa;
+    this.damage.exponent = damage.exponent;
+    this.crit = crit;
   }
 }
 
@@ -88,16 +126,14 @@ class fightingObject extends movingObject {
 
   enemycount: number;
 
-  bullets: bullet[];
+  bullets: Bullet[];
 
   type: string;
 
   wave: number;
 
-  constructor(wave: number, enemycount: number, player: boolean = false) {
-    var pos = new vector(0, 0);
-    var target = new vector(0, 0);
-    super(pos, target, 0, false);
+  constructor (wave: number, enemycount: number, player: boolean = false) {
+    super(new Vector(0, 0), new Vector(0, 0), 0, false);
     this.bullets = [];
     this.ticksToNextBullet = 0;
 
@@ -108,7 +144,7 @@ class fightingObject extends movingObject {
     }
   }
 
-  createTower() {
+  createTower () {
     this.baseMaxHitPoints = new JBDecimal(50);
     this.baseAttack = new JBDecimal(1);
     this.baseDefense = new JBDecimal(0);
@@ -123,11 +159,10 @@ class fightingObject extends movingObject {
     this.target.y = 0;
   }
 
-  createEnemy(wave: number, enemycount: number) {
-    var posx = Math.random() * 10;
-    var posy = 100 - Math.pow(posx, 2);
-    posy = Math.sqrt(posy);
-    var tieradjustment = gameData.world.currentTier - 1;
+  createEnemy (wave: number, enemycount: number) {
+    const posx = Math.random() * 10;
+    const posy = Math.sqrt(100 - Math.pow(posx, 2));
+    const tieradjustment = gameData.world.currentTier - 1;
 
     this.baseAttack = new JBDecimal(1.15 + tieradjustment / 100).pow(wave - 1);
     this.baseAttack.exponent += tieradjustment;
@@ -141,7 +176,7 @@ class fightingObject extends movingObject {
     this.baseShotsPerSec = 1;
     this.wave = wave;
     this.enemycount = enemycount;
-    this.pos = new vector(posx, posy);
+    this.pos = new Vector(posx, posy);
     if (enemycount % 4 === 0) {
       this.pos.y *= -1;
     } else if (enemycount % 4 === 1) {
@@ -151,38 +186,35 @@ class fightingObject extends movingObject {
       this.pos.y *= -1;
     }
 
-    this.type = "";
+    this.type = '';
   }
 
-  MaxHitPoints() {
-    var ret = new JBDecimal(this.baseMaxHitPoints);
+  MaxHitPoints () {
+    let ret = new JBDecimal(this.baseMaxHitPoints);
     if (this.player) {
-      var equipmentbonus = new JBDecimal(gameData.equipment[1].production().multiply(this.baseMaxHitPoints));
+      const equipmentbonus = new JBDecimal(gameData.equipment[1].production().multiply(this.baseMaxHitPoints));
       ret = ret.add(equipmentbonus);
     }
     return ret;
   }
 
-  CurrentHitPoints() {
-    var ret = new JBDecimal(this.MaxHitPoints());
-    ret = ret.subtract(this.damagetaken);
-    return ret;
+  CurrentHitPoints () {
+    return new JBDecimal(this.MaxHitPoints()).subtract(this.damagetaken);
   }
 
-  Attack() {
-    var ret = new JBDecimal(this.baseAttack);
+  Attack () {
+    let ret = new JBDecimal(this.baseAttack);
     if (this.player) {
-      var equipmentbonus = new JBDecimal(gameData.equipment[0].production());
-      ret = ret.add(equipmentbonus);
+      ret = ret.add(gameData.equipment[0].production());
     }
     return ret;
   }
 
-  Defense() {
+  Defense () {
     if (gameData.challenges[1].active || gameData.challenges[1].completed < 1) {
       return 0;
     }
-    var ret = 0;
+    let ret = 0;
     if (this.player) {
       ret = 10 * gameData.challenges[1].completed;
       ret *= Math.pow(0.99 - (gameData.world.currentTier - 1) / 100, gameData.world.currentWave);
@@ -196,7 +228,7 @@ class fightingObject extends movingObject {
     return ret;
   }
 
-  Range() {
+  Range () {
     if (!this.player) {
       return this.baseRange;
     }
@@ -205,7 +237,7 @@ class fightingObject extends movingObject {
       return 3;
     }
 
-    var ret = 3;
+    let ret = 3;
     if (this.player) {
       ret = 2 * gameData.challenges[4].completed;
       ret *= Math.pow(0.99 - (gameData.world.currentTier - 1) / 100, gameData.world.currentWave);
@@ -220,12 +252,12 @@ class fightingObject extends movingObject {
     return ret;
   }
 
-  Heal() {
+  Heal () {
     if (gameData.challenges[2].active || gameData.challenges[2].completed < 1) {
       return 0;
     }
 
-    var ret = 0;
+    let ret = 0;
     if (this.player) {
       ret = 1.0 * gameData.challenges[2].completed + (gameData.rockUpgrades[8].bought);
       ret *= Math.pow(0.99 - (gameData.world.currentTier - 1) / 100, gameData.world.currentWave);
@@ -239,12 +271,12 @@ class fightingObject extends movingObject {
     return ret;
   }
 
-  Slow() {
+  Slow () {
     if (gameData.challenges[7].active || gameData.challenges[7].completed < 1) {
       return 0;
     }
 
-    var ret = 0;
+    let ret = 0;
     if (this.player) {
       ret = 10 * gameData.challenges[7].completed;
       ret *= Math.pow(0.99 - (gameData.world.currentTier - 1) / 100, gameData.world.currentWave);
@@ -252,13 +284,13 @@ class fightingObject extends movingObject {
 
     if (ret < 0) {
       ret = 0;
-    } else if (ret > 90) {
-      ret = 90;
+    } else if (ret > 50) {
+      ret = 50;
     }
     return ret;
   }
 
-  ShotsPerSecond() {
+  ShotsPerSecond () {
     if (!this.player) {
       return this.baseShotsPerSec;
     }
@@ -266,7 +298,7 @@ class fightingObject extends movingObject {
       return 1;
     }
 
-    var ret = 1 + (gameData.challenges[5].completed + (gameData.rockUpgrades[10].bought));
+    let ret = 1 + (gameData.challenges[5].completed + (gameData.rockUpgrades[10].bought));
     ret *= Math.pow(0.99 - (gameData.world.currentTier - 1) / 100, gameData.world.currentWave);
 
     if (ret < 1) {
@@ -277,16 +309,16 @@ class fightingObject extends movingObject {
     return ret;
   }
 
-  ticksPerShot() {
-      return 1000 / this.ShotsPerSecond()
+  ticksPerShot () {
+    return 1000 / this.ShotsPerSecond();
   }
 
-  critChance(playerShooting: boolean) {
+  critChance (playerShooting: boolean) {
     if (playerShooting) {
       if (gameData.challenges[6].active || gameData.challenges[6].completed < 1) {
         return 0;
       }
-      var ret = 10 * gameData.challenges[6].completed;
+      let ret = 10 * gameData.challenges[6].completed;
       ret *= Math.pow(0.99 - (gameData.world.currentTier - 1) / 100, gameData.world.currentWave);
       return ret;
     } else {
@@ -294,15 +326,14 @@ class fightingObject extends movingObject {
     }
   }
 
-  critMultiplier(playerShooting: boolean) {
+  critMultiplier (playerShooting: boolean) {
     if (playerShooting) {
       if (gameData.challenges[6].active || gameData.challenges[6].completed < 1) {
         return 1;
       }
-      var ret = 2 * (gameData.challenges[6].completed + 1);
-      // var ret = 2 * gameData.challenges[6].completed
-       ret *= Math.pow(0.99 - ((gameData.world.currentTier - 1) / 100), gameData.world.currentWave)
-      if(ret < 1) {
+      let ret = 2 * (gameData.challenges[6].completed + 1);
+      ret *= Math.pow(0.99 - ((gameData.world.currentTier - 1) / 100), gameData.world.currentWave);
+      if (ret < 1) {
         ret = 1;
       }
       return ret;
@@ -311,21 +342,21 @@ class fightingObject extends movingObject {
     }
   }
 
-  recieveHit(attack: JBDecimal) {
-    var defensevalue = 100 - this.Defense();
-    var attackValue = attack.multiply(defensevalue).divide(100);
+  recieveHit (attack: JBDecimal) {
+    const defensevalue = 100 - this.Defense();
+    const attackValue = attack.multiply(defensevalue).divide(100);
     if (attackValue.greaterThan(0)) {
       this.damagetaken = this.damagetaken.add(attackValue);
     }
   }
 
-  beTargeted(attacker: fightingObject) {
-    var damage = attacker.Attack();
+  beTargeted (attacker: fightingObject) {
+    let damage = attacker.Attack();
 
-    var critchance = this.critChance(attacker.player);
+    let critchance = this.critChance(attacker.player);
 
-    var crit = false;
-    var multiplier = this.critMultiplier(attacker.player)
+    let crit = false;
+    const multiplier = this.critMultiplier(attacker.player);
 
     while (critchance > 100) {
       damage = damage.multiply(multiplier);
@@ -333,20 +364,18 @@ class fightingObject extends movingObject {
       crit = true;
     }
 
-    var rndvalue = Math.random() * 100;
+    const rndvalue = Math.random() * 100;
     if (rndvalue < critchance) {
       damage = damage.multiply(multiplier);
       crit = true;
     }
-
-    var newBullet = new bullet(attacker.pos.x, attacker.pos.y, this.pos.x, this.pos.y, damage, crit);
-    this.bullets.push(newBullet);
+    this.bullets.push(new Bullet(attacker.pos.x, attacker.pos.y, this.pos.x, this.pos.y, damage, crit));
   }
 
-  checkForHit() {
+  checkForHit () {
     for (let index = this.bullets.length - 1; index >= 0; index--) {
       const b = this.bullets[index];
-      b.updateTarget(new vector(this.pos.x, this.pos.y));
+      b.updateTarget(new Vector(this.pos.x, this.pos.y));
       b.move();
       if (b.getDistanceToTarget() <= 0) {
         this.recieveHit(b.damage);
@@ -355,25 +384,27 @@ class fightingObject extends movingObject {
     }
   }
 
-  expectedHitPointsRemaining(damage: JBDecimal) {
+  expectedHitPointsRemaining (damage: JBDecimal) {
     if (this.bullets.length === 0) {
       return this.CurrentHitPoints().divide(damage).ToNumber();
     }
-    var leftoverHitpoints = this.CurrentHitPoints();
-    for (let index = 0; index < this.bullets.length; index++) {
-      const element = this.bullets[index];
-      leftoverHitpoints = leftoverHitpoints.subtract(element.damage);
-    }
+    let leftoverHitpoints = this.CurrentHitPoints();
+
+    this.bullets.forEach((b) => {
+      leftoverHitpoints = leftoverHitpoints.subtract(b.damage);
+    });
+
     return leftoverHitpoints.divide(damage).ToNumber();
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 class Tower extends fightingObject {
-  constructor() {
+  constructor () {
     super(0, 0, true);
   }
 
-  act() {
+  act () {
     this.checkForHit();
     if (this.CurrentHitPoints().lessThanOrEqualTo(0)) {
       return;
@@ -384,41 +415,22 @@ class Tower extends fightingObject {
       this.damagetaken = new JBDecimal(0);
     }
     this.ticksToNextBullet -= gameData.world.currentTickLength;
-    // if (this.ticksToNextBullet <= 0) {
-    //     var searching = true;
-    //     var index = 0
-    //     while (searching && index < gameData.enemies.length) {
-    //         const e = gameData.enemies[index];
-    //         const len = e.pos.getLength(0,0);
-    //         if(len <= this.Range() && e.expectedHitPointsRemaining(this.Attack()) > 0) {
-    //             e.beTargeted(this);
-    //             searching = false;
-    //         }
-    //         index++
-    //     }
-    //     if (searching) {
-    //         this.ticksToNextBullet = 0;
-    //     } else {
-    //         this.ticksToNextBullet += this.TicksPerBullet();
-    //     }
-    // }
-    var enemiesInRange = [];
+    const enemiesInRange = [];
     if (this.ticksToNextBullet <= 0) {
       if (gameData.enemies.length > 0) {
-        for (let index = 0; index < gameData.enemies.length; index++) {
-          const element = gameData.enemies[index];
-          const len = element.pos.getLength(0, 0);
-          if (len <= this.Range() && element.expectedHitPointsRemaining(this.Attack()) > 0) {
-            enemiesInRange.push(element);
+        gameData.enemies.forEach((e) => {
+          const len = e.pos.getLength(0, 0);
+          if (len <= this.Range() && e.expectedHitPointsRemaining(this.Attack()) > 0) {
+            enemiesInRange.push(e);
           }
-        }
+        });
       }
 
       if (enemiesInRange.length > 0) {
-        //enemiesInRange.sort((a,b)=> (a.getDistanceToTarget() - b.getDistanceToTarget() || a.Attack().greaterThan(b.Attack()) || a.expectedHitPointsRemaining(this.Attack()).ceil - b.expectedHitPointsRemaining(this.Attack()).ceil));
+        // enemiesInRange.sort((a,b)=> (a.getDistanceToTarget() - b.getDistanceToTarget() || a.Attack().greaterThan(b.Attack()) || a.expectedHitPointsRemaining(this.Attack()).ceil - b.expectedHitPointsRemaining(this.Attack()).ceil));
 
-        //enemiesInRange.sort((a, b) => (a.expectedHitPointsRemaining(this.Attack()) > b.expectedHitPointsRemaining(this.Attack())) ? 1 : -1)
-        //enemiesInRange.sort((a, b) => (a.timeToTarget() > b.timeToTarget()) ? 1 : -1)
+        // enemiesInRange.sort((a, b) => (a.expectedHitPointsRemaining(this.Attack()) > b.expectedHitPointsRemaining(this.Attack())) ? 1 : -1)
+        // enemiesInRange.sort((a, b) => (a.timeToTarget() > b.timeToTarget()) ? 1 : -1)
         enemiesInRange[0].beTargeted(this);
         this.ticksToNextBullet += this.ticksPerShot();
       } else {
@@ -428,51 +440,16 @@ class Tower extends fightingObject {
   }
 }
 
-class vector {
-  x: number;
-
-  y: number;
-
-  constructor(currentx: number, currenty: number) {
-    this.x = currentx;
-    this.y = currenty;
-  }
-
-  getLength(targetx: number, targety: number) {
-    var xdif = this.x - targetx;
-    var ydif = this.y - targety;
-    var length = Math.sqrt(xdif * xdif + ydif * ydif); //calculating length of vector
-    return length;
-  }
-
-  getNormalizedX(targetx: number, targety: number) {
-    return this.x / this.getLength(targetx, targety);
-  }
-  getNormalizedY(targetx: number, targety: number) {
-    return this.y / this.getLength(targetx, targety);
-  }
-}
-
-class bullet extends movingObject {
-  damage: JBDecimal;
-
-  crit: boolean;
-
-  constructor(posx: number, posy: number, targetx: number, targety: number, damage: JBDecimal, crit: boolean) {
-    super(new vector(posx, posy), new vector(targetx, targety), 10, true);
-    this.damage = new JBDecimal(0);
-    this.damage.mantissa = damage.mantissa;
-    this.damage.exponent = damage.exponent;
-    this.crit = crit;
-  }
-}
-
+// eslint-disable-next-line no-unused-vars
 class Enemy extends fightingObject {
-  constructor(wave: number, enemycount: number) {
+  Enemy: boolean;
+
+  constructor (wave: number, enemycount: number) {
     super(wave, enemycount);
+    this.Enemy = true;
   }
 
-  act() {
+  act () {
     this.checkForHit();
     if (this.CurrentHitPoints().lessThanOrEqualTo(0)) {
       return;

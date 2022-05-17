@@ -1,3 +1,5 @@
+/* global init, addToDisplay, gameData, CheckAchievementCompletions */
+// eslint-disable-next-line no-unused-vars
 class Challenge {
     constructor(name, description, bonusDescription, startingWaveToComplete, wavePerComplete) {
         this.name = name;
@@ -19,16 +21,15 @@ class Challenge {
         init(1);
     }
     waveRequiredforCompletion() {
-        var waveper = this.wavePerComplete - gameData.boulderUpgrades[0].bought;
-        var ret = (this.completed * waveper) + this.startingWaveToComplete;
-        return ret;
+        const waveper = this.wavePerComplete - gameData.boulderUpgrades[0].bought;
+        return (this.completed * waveper) + this.startingWaveToComplete;
     }
     checkForCompletion() {
         if (gameData.world.currentWave > this.waveRequiredforCompletion()) {
             this.completed += 1;
             addToDisplay(this.name + ' #' + this.completed + ' completed', 'challenge');
             CheckAchievementCompletions();
-            //this.quit()
+            // this.quit()
         }
     }
 }

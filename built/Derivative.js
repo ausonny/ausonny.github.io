@@ -1,20 +1,22 @@
+/* global Upgrade, Purchasable, Resource, JBDecimal, gameData, getTimeParticleBonus, getParticleBonus  */
+// eslint-disable-next-line no-unused-vars
 class Derivative extends Purchasable {
     constructor(name, index, cost, costMultiplier, resource, upgradeResource, buyButton, upgradeButton, basicUpgrade, inflationFloor, productionMultiplier, upgradeable) {
         super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, upgradeable, upgradeButton);
         this.name = name;
         this.index = index;
-        //this.lastProduction = new JBDecimal(0);
+        // this.lastProduction = new JBDecimal(0);
         this.basicUpgrade = basicUpgrade;
         this.productionMultiplier = productionMultiplier;
     }
     production(ticks = gameData.world.currentTickLength) {
-        var val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
+        let val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
         if (val.equals(0)) {
             return new JBDecimal(0);
         }
         val = val.multiply(this.basicUpgrade.getBonus());
         val = val.multiply(new JBDecimal(10).pow(this.upgradeLevel));
-        var modifiedticks = getTimeParticleBonus().multiply(ticks);
+        const modifiedticks = getTimeParticleBonus().multiply(ticks);
         val = val.multiply(modifiedticks.divide(1000));
         val = val.multiply(gameData.producer.production());
         val = val.multiply(gameData.upgrades[13].getBonus());
@@ -22,20 +24,19 @@ class Derivative extends Purchasable {
         val = val.multiply(gameData.upgrades[15].getBonus());
         val = val.multiply(this.productionMultiplier);
         val = val.multiply(getParticleBonus());
-        val = val.multiply(Math.pow(2, gameData.boulderUpgrades[4].bought));
         if (gameData.upgrades[5].owned.greaterThan(0)) {
-            var perlevel = gameData.upgrades[5].getBonus();
-            var qtymult = new JBDecimal(perlevel).multiply(this.bought);
-            qtymult = qtymult.add(1);
+            const perlevel = gameData.upgrades[5].getBonus();
+            const qtymult = new JBDecimal(perlevel).multiply(this.bought).add(1);
             val = val.multiply(qtymult);
         }
         return val;
     }
     productionPerSecDisplay() {
-        var val = new JBDecimal(this.production(1000));
+        const val = new JBDecimal(this.production(1000));
         return val;
     }
 }
+// eslint-disable-next-line no-unused-vars
 class Producer extends Purchasable {
     constructor(name, index, cost, costMultiplier, resource, upgradeResource, buyButton, upgradeButton, basicUpgrade, inflationFloor) {
         super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, true, upgradeButton);
@@ -45,71 +46,60 @@ class Producer extends Purchasable {
         this.basicUpgrade = basicUpgrade;
     }
     production() {
-        var val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
+        let val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
         val = val.multiply(2);
         if (gameData.challenges[3].active) {
             return new JBDecimal(1);
         }
-        var base = .01;
+        let base = 0.01;
         if (gameData.upgrades[16].bought > 0) {
             base *= 2;
         }
         if (gameData.rockUpgrades[3].bought > 0) {
             base *= 2;
         }
-        var challengebonus = 1.1 + (base * ((gameData.challenges[3].completed / 4) + this.upgradeLevel));
-        var ret = new JBDecimal(challengebonus).pow(val.ToNumber());
+        const challengebonus = 1.1 + (base * ((gameData.challenges[3].completed / 4) + this.upgradeLevel));
+        const ret = new JBDecimal(challengebonus).pow(val.ToNumber());
         return ret;
     }
     productionPerSecDisplay() {
-        var val = new JBDecimal(this.production());
-        return val;
+        return new JBDecimal(this.production());
     }
     percentageIncrease() {
         if (this.lastProduction.mantissa === 0) {
             return new JBDecimal(0);
         }
-        var val = new JBDecimal(this.owned.subtract(this.lastProduction));
+        let val = new JBDecimal(this.owned.subtract(this.lastProduction));
         val = val.divide(this.lastProduction).multiply(gameData.world.currentTickLength);
         return val;
     }
     percentageIncreaseDisplay() {
-        var val = new JBDecimal(this.percentageIncrease());
-        return val;
+        return new JBDecimal(this.percentageIncrease());
+        ;
     }
 }
+// eslint-disable-next-line no-unused-vars
 class Derivative2 extends Purchasable {
     constructor(name, index, cost, costMultiplier, resource, upgradeResource, buyButton, upgradeButton, basicUpgrade, inflationFloor, productionMultiplier, upgradeable) {
         super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, upgradeable, upgradeButton);
         this.name = name;
         this.index = index;
-        //this.lastProduction = new JBDecimal(0);
+        // this.lastProduction = new JBDecimal(0);
         this.basicUpgrade = basicUpgrade;
         this.productionMultiplier = productionMultiplier;
     }
     production(ticks = gameData.world.currentTickLength) {
-        var val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
+        let val = this.owned.floor().add(this.basicUpgrade.owned).add(this.upgradeLevel);
         if (val.equals(0)) {
             return new JBDecimal(0);
         }
-        //val = val.multiply(this.basicUpgrade.getBonus());
-        //val = val.multiply(new JBDecimal(2).pow(this.upgradeLevel));
         val = val.multiply(ticks / 1000);
         val = val.multiply(gameData.rockUpgrades[13].getBonus());
-        // val = val.multiply(gameData.upgrades[14].getBonus())
-        // val = val.multiply(gameData.upgrades[15].getBonus())
         val = val.multiply(this.productionMultiplier);
-        // if(gameData.upgrades[5].owned.greaterThan(0)){
-        //   var perlevel = gameData.upgrades[5].getBonus()
-        //   var qtymult = new JBDecimal(perlevel).multiply(this.bought)
-        //   qtymult = qtymult.add(1);
-        //   val = val.multiply(qtymult)
-        // }
         return val;
     }
     productionPerSecDisplay() {
-        var val = new JBDecimal(this.production(1000));
-        return val;
+        return new JBDecimal(this.production(1000));
     }
 }
 //# sourceMappingURL=Derivative.js.map
