@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-/* global JBDecimal, addToDisplay $, Enemy, Automation, Purchasable, Resource, getDisplayText, getPrettyTimeFromMilliSeconds, PrettyRatePerTime, textToDisplay, textToDisplayachievement, textToDisplaychallenge, logMyErrors, SaveGameData, saveGame, textToDisplayloot, textToDisplaygamesave, displayindex, textToDisplaystory, Bullet */
+/* global JBDecimal, $, Enemy, Automation, Purchasable, Resource, SaveGameData, saveGame, Bullet, Vector, Display, getAchievementBonus, getAchievementsOnlyBonus, getTier1FeatBonus, getTier2FeatBonus, CheckAchievementCompletions, achievementbonusarray */
 
 // eslint-disable-next-line no-unused-vars
 const notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
@@ -7,14 +7,11 @@ const notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'E
 let initted = false;
 // eslint-disable-next-line no-undef
 let gameData: SaveGameData;
+const display = new Display();
 let internalInflationArray: number[];
+
 // eslint-disable-next-line prefer-const
 internalInflationArray = [];
-
-let lastachievementcount: number;
-lastachievementcount = 0;
-let achievementbonusarray: number[];
-achievementbonusarray = [];
 
 // const isFixedString = (s: string) => !isNaN(+s) && isFinite(+s) && !/e/i.test(s);
 
@@ -118,7 +115,7 @@ function processStuff (ticks: number) {
           }
           if (dustGained.greaterThan(0)) {
             gameData.resources.dust.add(dustGained);
-            addToDisplay(dustGained.ToString() + ' dust gained', 'loot');
+            display.addToDisplay(dustGained.ToString() + ' dust gained', 'loot');
           }
         }
       } else {
@@ -133,7 +130,7 @@ function processStuff (ticks: number) {
           }
           if (metalGained.greaterThan(0)) {
             gameData.resources.metal.add(metalGained);
-            addToDisplay(metalGained.ToString() + ' metal gained', 'loot');
+            display.addToDisplay(metalGained.ToString() + ' metal gained', 'loot');
           }
         }
       }
@@ -214,8 +211,8 @@ function processStuff (ticks: number) {
           newEnemy.type = 'Archer';
           newEnemy.baseRange = 10;
           newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
-        } else if (choicesArr[i] === 't') {
-          gameData.world.archerEnemiesToSpawn -= 1;
+        } else if (choicesArr[i] === 'ti') {
+          gameData.world.titanEnemiesToSpawn -= 1;
           newEnemy.type = 'Titan';
           newEnemy.baseRange = 10;
           newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
@@ -242,7 +239,7 @@ function processStuff (ticks: number) {
     gameData.challenges.forEach((ch) => { ch.active = false; });
     if (autoprestige1.checked && pebblesFromPrestige().greaterThan(0)) {
       init(1);
-      addToDisplay('Dust. But I still need more.', 'story');
+      display.addToDisplay('Dust. But I still need more.', 'story');
     } else {
       gameData.world.currentWave -= 11;
       if (gameData.world.currentWave < 0) {
@@ -250,7 +247,7 @@ function processStuff (ticks: number) {
       }
       gameData.world.deathlevel++;
       resetSpawns(true);
-      addToDisplay('You have been overcome.  The pressure lessens.', 'story');
+      display.addToDisplay('You have been overcome.  The pressure lessens.', 'story');
     }
   }
 
@@ -384,27 +381,27 @@ function getTimeParticleBonus () {
 
 function updateGUI () {
   if (!gameData.storyElements[0].printed) {
-    addToDisplay(gameData.storyElements[0].text, 'story');
+    display.addToDisplay(gameData.storyElements[0].text, 'story');
     gameData.storyElements[0].printed = true;
   }
 
   if (!gameData.storyElements[1].printed) {
     if (gameData.derivatives[0].bought > 0) {
-      addToDisplay(gameData.storyElements[1].text, 'story');
+      display.addToDisplay(gameData.storyElements[1].text, 'story');
       gameData.storyElements[1].printed = true;
     }
   }
 
   if (!gameData.storyElements[2].printed) {
     if (gameData.derivatives[3].bought > 0) {
-      addToDisplay(gameData.storyElements[2].text, 'story');
+      display.addToDisplay(gameData.storyElements[2].text, 'story');
       gameData.storyElements[2].printed = true;
     }
   }
 
   if (!gameData.storyElements[3].printed) {
     if (gameData.resources.dust.amount.greaterThan(0)) {
-      addToDisplay(gameData.storyElements[3].text, 'story');
+      display.addToDisplay(gameData.storyElements[3].text, 'story');
       gameData.storyElements[3].printed = true;
     }
   }
@@ -606,7 +603,7 @@ function updateGUI () {
   document.getElementById('hullbought').innerHTML = gameData.equipment[1].bought.toString();
   document.getElementById('hullproducing').innerHTML = gameData.equipment[1].productionPerUnit().multiply(gameData.tower.baseMaxHitPoints).ToString();
 
-  document.getElementById('textToDisplay').innerHTML = getDisplayText();
+  document.getElementById('textToDisplay').innerHTML = display.getDisplayText();
 
   gameData.derivatives.forEach((d) => { d.updateDisplay(); });
 
@@ -756,7 +753,8 @@ function updateGUI () {
     document.getElementById('tier2div').classList.remove('hidden');
   }
 
-  const canvas = document.getElementById('gameBoard') as HTMLCanvasElement;
+  const canvas = display.canvas;
+  const ctx = display.ctx;
   if (canvas.getContext) {
     const originalHeight = canvas.height;
     const originalWidth = canvas.width;
@@ -767,85 +765,41 @@ function updateGUI () {
     canvas.height = dimensions.height * dpr;
 
     const ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
-    const ctx = canvas.getContext('2d');
-    const height = canvas.width;
-    const width = canvas.height;
-    const scrollheight = canvas.scrollWidth;
-    const scrollwidth = canvas.scrollHeight;
-    ctx.scale(ratio * dpr * height / scrollheight, ratio * dpr * width / scrollwidth); // adjust this!
-
-    const squareSize = 520;
+    ctx.scale(ratio * dpr * canvas.height / canvas.scrollHeight, ratio * dpr * canvas.width / canvas.scrollWidth); // adjust this!
 
     ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, squareSize, squareSize);
+    ctx.fillRect(0, 0, canvas.height, canvas.height);
 
     ctx.globalAlpha = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).ToNumber();
     if (ctx.globalAlpha < 0.1) {
       ctx.globalAlpha = 0.1;
     }
-    DrawSolidSquare(ctx, gameData.tower.CurrentHitPoints(), gameData.tower.MaxHitPoints(), squareSize, 20, 0, 0, 'lime');
+    ctx.fillStyle = 'lime';
+    // ctx.fillRect((10) * (canvas.scrollWidth / 20) - 10, (10) * (canvas.scrollWidth / 20) - 10, 20, 20);
 
-    gameData.tower.bullets.forEach((b) => { DrawSolidSquare(ctx, new JBDecimal(100), new JBDecimal(100), squareSize, 4, b.pos.x, b.pos.y, 'white'); });
+    // const towerhitpoint = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).multiply(5).multiply(display.drone.CurrentHitPoints());
+    display.DrawTower();
+
+    ctx.globalAlpha = 1.0;
+    gameData.tower.bullets.forEach((b) => { b.update(); });
 
     gameData.enemies.forEach((e) => {
-      e.bullets.forEach((b) => {
-        let bulletColor = 'white';
-        if (b.crit) {
-          bulletColor = 'red';
-        }
-        DrawSolidSquare(ctx, new JBDecimal(100), new JBDecimal(100), squareSize, 4, b.pos.x, b.pos.y, bulletColor);
-      });
-      if (e.type === '') {
-        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'white');
-      } else if (e.type === 'Fast') {
-        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'yellow');
-      } else if (e.type === 'Ranged') {
-        DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'white');
-      } else if (e.type === 'Cannon') {
-        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'blue');
-      } else if (e.type === 'Bradley') {
-        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'yellow');
-      } else if (e.type === 'Trireme') {
-        DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'white');
-      } else if (e.type === 'Tank') {
-        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'white');
-      } else if (e.type === 'Cavalier') {
-        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'blue');
-      } else if (e.type === 'Scorpion') {
-        DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'yellow', 'blue');
-      } else if (e.type === 'Paladin') {
-        DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'blue');
-      } else if (e.type === 'Oliphant') {
-        DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'yellow');
-      } else if (e.type === 'Blitz') {
-        DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'yellow', 'blue');
-      } else if (e.type === 'Falcon') {
-        DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, e.pos.x, e.pos.y, 'blue');
-      } else if (e.type === 'Archer') {
-        DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'yellow');
-      } else if (e.type === 'Titan') {
-        DrawTwoColorDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, e.pos.x, e.pos.y, 'yellow', 'blue');
-      } else if (e.type === 'Boss') {
-        DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 30, e.pos.x, e.pos.y, 'red');
-      }
+      e.update();
+      e.bullets.forEach((b) => { b.update(); });
     });
 
     ctx.globalAlpha = 1;
-    const e = new Enemy(gameData.world.currentWave, 1);
-
-    // ctx.fillStyle = "red";
-    // ctx.fillRect(0,442,180,45);
 
     ctx.font = 'bold 15px Arial';
     ctx.fillStyle = 'red';
-    ctx.fillText('Drone Attack: ' + e.Attack().ToString(), 10, 460);
-    ctx.fillText('Drone Hp: ' + e.MaxHitPoints().ToString(), 10, 480);
+    ctx.fillText('Drone Attack: ' + display.drone.Attack().ToString(), 10, 460);
+    ctx.fillText('Drone Hp: ' + display.drone.MaxHitPoints().ToString(), 10, 480);
 
     ctx.font = '10px Arial';
     ctx.fillStyle = 'white';
     ctx.fillText(gameData.world.currentTickLength + 'ms', 10, 510);
     if (gameData.world.ticksLeftOver > 50) {
-      ctx.fillText(getPrettyTimeFromMilliSeconds(gameData.world.ticksLeftOver) + ' banked', 10, 500);
+      ctx.fillText(display.getPrettyTimeFromMilliSeconds(gameData.world.ticksLeftOver) + ' banked', 10, 500);
     }
     ctx.font = '15px Arial';
     ctx.fillText('Wave: ' + gameData.world.currentWave, 230, 15);
@@ -853,91 +807,91 @@ function updateGUI () {
 
     if (gameData.world.ticksToNextSpawn > 1000) {
       ctx.fillStyle = 'red';
-      ctx.fillText('Time to next enemy: ' + getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn), 10, 30);
+      ctx.fillText('Time to next enemy: ' + display.getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn), 10, 30);
     }
 
-    ctx.font = '12px Arial';
+    //   ctx.font = '12px Arial';
 
-    DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -7.5, 'white');
-    ctx.fillText('Drone', 32, 68);
+    //   DrawSolidSquare(ctx, drone, drone.CurrentHitPoints(), canvas.scrollWidth, new Vector(-9.4, -7.5), 'white');
+    //   ctx.fillText('Drone', 32, 68);
 
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 5) {
-      DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -6.6, 'yellow');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Fast', 32, 91);
-    }
+    //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 5) {
+    //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, -6.6, 'yellow');
+    //     ctx.fillStyle = 'white';
+    //     ctx.fillText('Fast', 32, 91);
+    //   }
 
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 10) {
-      DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -5.7, 'white');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Tough', 32, 115);
-    }
+    //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 10) {
+    //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, -5.7, 'white');
+    //     ctx.fillStyle = 'white';
+    //     ctx.fillText('Tough', 32, 115);
+    //   }
 
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 15) {
-      DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -4.8, 'white');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Ranged', 32, 138);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 20) {
-      DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -3.9, 'blue');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Strong', 32, 161);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 25) {
-      DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, -3.0, 'yellow');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Fast/Ranged', 32, 184);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 30) {
-      DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -2.1, 'yellow');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Fast/Tough', 32, 208);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 35) {
-      DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -1.2, 'white');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Ranged/Tough', 32, 231);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 40) {
-      DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, -0.3, 'blue');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Strong/Tough', 32, 255);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 45) {
-      DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, 0.6, 'yellow', 'blue');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Fast/Strong', 32, 278);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 50) {
-      DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.4, 1.5, 'blue');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Ranged/Strong', 32, 303);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 55) {
-      DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 2.4, 'yellow');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Fast/Ranged/Tough', 32, 326);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 60) {
-      DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 3.3, 'yellow', 'blue');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Fast/Strong/Tough', 32, 350);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 65) {
-      DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 20, -9.45, 4.2, 'blue');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Ranged/Strong/Tough', 32, 375);
-    }
-    if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 70) {
-      DrawTwoColorDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 12, -9.40, 5.1, 'yellow', 'blue');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Fast/Strong/Ranged', 32, 399);
-    }
-    if (gameData.world.currentWave % 10 === 0) {
-      DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), squareSize, 30, -9.5, 6.0, 'red');
-      ctx.fillStyle = 'white';
-      ctx.fillText('Boss', 32, 423);
-    }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 15) {
+  //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, -4.8, 'white');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Ranged', 32, 138);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 20) {
+  //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, -3.9, 'blue');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Strong', 32, 161);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 25) {
+  //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, -3.0, 'yellow');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Fast/Ranged', 32, 184);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 30) {
+  //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, -2.1, 'yellow');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Fast/Tough', 32, 208);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 35) {
+  //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, -1.2, 'white');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Ranged/Tough', 32, 231);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 40) {
+  //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, -0.3, 'blue');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Strong/Tough', 32, 255);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 45) {
+  //     DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, 0.6, 'yellow', 'blue');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Fast/Strong', 32, 278);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 50) {
+  //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, 1.5, 'blue');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Ranged/Strong', 32, 303);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 55) {
+  //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, 2.4, 'yellow');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Fast/Ranged/Tough', 32, 326);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 60) {
+  //     DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, 3.3, 'yellow', 'blue');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Fast/Strong/Tough', 32, 350);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 65) {
+  //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, 4.2, 'blue');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Ranged/Strong/Tough', 32, 375);
+  //   }
+  //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 70) {
+  //     DrawTwoColorDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.40, 5.1, 'yellow', 'blue');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Fast/Strong/Ranged', 32, 399);
+  //   }
+  //   if (gameData.world.currentWave % 10 === 0) {
+  //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 30, -9.5, 6.0, 'red');
+  //     ctx.fillStyle = 'white';
+  //     ctx.fillText('Boss', 32, 423);
+  //   }
   }
 
   document.getElementById('auto1').classList.add('hidden');
@@ -1049,11 +1003,11 @@ function updateGUI () {
   });
 
   document.getElementById('prestige1count').innerHTML = gameData.stats.prestige1.toString();
-  document.getElementById('prestige1time').innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige1ticks);
+  document.getElementById('prestige1time').innerHTML = display.getPrettyTimeFromMilliSeconds(gameData.stats.prestige1ticks);
   document.getElementById('prestige2count').innerHTML = gameData.stats.prestige2.toString();
-  document.getElementById('prestige2time').innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige2ticks);
+  document.getElementById('prestige2time').innerHTML = display.getPrettyTimeFromMilliSeconds(gameData.stats.prestige2ticks);
   document.getElementById('prestige3count').innerHTML = gameData.stats.prestige3.toString();
-  document.getElementById('prestige3time').innerHTML = getPrettyTimeFromMilliSeconds(gameData.stats.prestige3ticks);
+  document.getElementById('prestige3time').innerHTML = display.getPrettyTimeFromMilliSeconds(gameData.stats.prestige3ticks);
   document.getElementById('highestwavereached').innerHTML = gameData.stats.highestEverWave.toString();
 
   let prestige1history = '<br />';
@@ -1061,7 +1015,7 @@ function updateGUI () {
     const ticks = gameData.stats.last10Prestige1times[index];
     const tier = gameData.stats.last10Prestige1tier[index];
     const waves = gameData.stats.last10Prestige1waves[index];
-    const rate = PrettyRatePerTime(amt, ticks);
+    const rate = display.PrettyRatePerTime(amt, ticks);
     const newline =
       index.toString() +
       ' reached tier ' +
@@ -1069,7 +1023,7 @@ function updateGUI () {
       ' wave ' +
       waves.toString() +
       ' took ' +
-      getPrettyTimeFromMilliSeconds(ticks) +
+      display.getPrettyTimeFromMilliSeconds(ticks) +
       ' and gave ' +
       amt.ToString() +
       ' for an average of: ' + rate;
@@ -1081,8 +1035,8 @@ function updateGUI () {
   let prestige2history = '<br />';
   gameData.stats.last10Prestige2amounts.forEach((amt, index) => {
     const ticks = gameData.stats.last10Prestige2times[index];
-    const rate = PrettyRatePerTime(amt, ticks);
-    const newline = index.toString() + ' took ' + getPrettyTimeFromMilliSeconds(ticks) + ' and gave ' + amt.ToString() + ' for an average of ' + rate;
+    const rate = display.PrettyRatePerTime(amt, ticks);
+    const newline = index.toString() + ' took ' + display.getPrettyTimeFromMilliSeconds(ticks) + ' and gave ' + amt.ToString() + ' for an average of ' + rate;
     prestige2history += newline + '</br />';
   });
   document.getElementById('prestige2history').innerHTML = prestige2history;
@@ -1090,8 +1044,8 @@ function updateGUI () {
   let prestige3history = '<br />';
   gameData.stats.last10Prestige3amounts.forEach((amt, index) => {
     const ticks = gameData.stats.last10Prestige3times[index];
-    const rate = PrettyRatePerTime(amt, ticks);
-    const newline = index.toString() + ' took ' + getPrettyTimeFromMilliSeconds(ticks) + ' and gave ' + amt.ToString() + ' for an average of ' + rate;
+    const rate = display.PrettyRatePerTime(amt, ticks);
+    const newline = index.toString() + ' took ' + display.getPrettyTimeFromMilliSeconds(ticks) + ' and gave ' + amt.ToString() + ' for an average of ' + rate;
     prestige3history += newline + '</br />';
   });
   document.getElementById('prestige3history').innerHTML = prestige3history;
@@ -1136,65 +1090,6 @@ function getObjectFitSize (contains: boolean /* true = contain, false = cover */
     x: (containerWidth - targetWidth) / 2,
     y: (containerHeight - targetHeight) / 2
   };
-}
-
-function DrawSolidDiamond (ctx: CanvasRenderingContext2D, CurrentHitPoints: JBDecimal, MaxHitPoints: JBDecimal, squareSize: number, enemysize: number, x: number, y: number, enemycolor: string) {
-  ctx.globalAlpha = CurrentHitPoints.divide(MaxHitPoints).ToNumber();
-  if (ctx.globalAlpha < 0.1) {
-    ctx.globalAlpha = 0.1;
-  }
-
-  ctx.fillStyle = enemycolor;
-  const top = (x + 10) * (squareSize / 20) - (enemysize / 1.8);
-  const bottom = (x + 10) * (squareSize / 20) + (enemysize / 1.8);
-  const left = (y + 10) * (squareSize / 20) - (enemysize / 1.8);
-  const right = (y + 10) * (squareSize / 20) + (enemysize / 1.8);
-  ctx.beginPath();
-  ctx.moveTo(top, (y + 10) * (squareSize / 20));
-  ctx.lineTo((x + 10) * (squareSize / 20), right);
-  ctx.lineTo(bottom, (y + 10) * (squareSize / 20));
-  ctx.lineTo((x + 10) * (squareSize / 20), left);
-  ctx.fill();
-}
-
-function DrawTwoColorDiamond (ctx: CanvasRenderingContext2D, CurrentHitPoints: JBDecimal, MaxHitPoints: JBDecimal, squareSize: number, enemysize: number, x: number, y: number, leftcolor: string, rightcolor: string) {
-  ctx.globalAlpha = CurrentHitPoints.divide(MaxHitPoints).ToNumber();
-  if (ctx.globalAlpha < 0.1) {
-    ctx.globalAlpha = 0.1;
-  }
-
-  const top = (x + 10) * (squareSize / 20) - (enemysize / 1.8);
-  const left = (y + 10) * (squareSize / 20) - (enemysize / 1.8);
-  const right = (y + 10) * (squareSize / 20) + (enemysize / 1.8);
-
-  DrawSolidDiamond(ctx, CurrentHitPoints, MaxHitPoints, squareSize, enemysize, x, y, rightcolor);
-
-  ctx.fillStyle = leftcolor;
-  ctx.beginPath();
-  ctx.moveTo((x + 10) * (squareSize / 20), left);
-  ctx.lineTo(top, (y + 10) * (squareSize / 20));
-  ctx.lineTo((x + 10) * (squareSize / 20), right);
-  ctx.fill();
-}
-
-function DrawSolidSquare (ctx: CanvasRenderingContext2D, CurrentHitPoints: JBDecimal, MaxHitPoints: JBDecimal, squareSize: number, enemysize: number, x: number, y: number, enemycolor: string) {
-  ctx.globalAlpha = CurrentHitPoints.divide(MaxHitPoints).ToNumber();
-  if (ctx.globalAlpha < 0.1) {
-    ctx.globalAlpha = 0.1;
-  }
-  ctx.fillStyle = enemycolor;
-  ctx.fillRect((x + 10) * (squareSize / 20) - enemysize / 2, (y + 10) * (squareSize / 20) - enemysize / 2, enemysize, enemysize);
-}
-
-function DrawTwoColorSquare (ctx: CanvasRenderingContext2D, CurrentHitPoints: JBDecimal, MaxHitPoints: JBDecimal, squareSize: number, enemysize: number, x: number, y: number, leftcolor: string, rightcolor: string) {
-  ctx.globalAlpha = CurrentHitPoints.divide(MaxHitPoints).ToNumber();
-  if (ctx.globalAlpha < 0.1) {
-    ctx.globalAlpha = 0.1;
-  }
-  ctx.fillStyle = leftcolor;
-  ctx.fillRect((x + 10) * (squareSize / 20) - enemysize / 2, (y + 10) * (squareSize / 20) - enemysize / 2, enemysize / 2, enemysize);
-  ctx.fillStyle = rightcolor;
-  ctx.fillRect((x + 10) * (squareSize / 20), (y + 10) * (squareSize / 20) - enemysize / 2, enemysize / 2, enemysize);
 }
 
 function quitChallenges () {
@@ -1306,7 +1201,7 @@ function getSpecialsArray () {
     choicesArr.push('a');
   }
   for (let index = 0; index < gameData.world.titanEnemiesToSpawn; index++) {
-    choicesArr.push('t');
+    choicesArr.push('ti');
   }
   return choicesArr;
 }
@@ -1332,6 +1227,8 @@ function resetSpawns (killexistingenemies: boolean = true) {
       init(1);
     }
   }
+
+  display.drone = new Enemy(gameData.world.currentWave, 0);
 
   gameData.world.enemiesToSpawn = 9 + gameData.world.currentWave - gameData.rockUpgrades[12].bought;
 
@@ -1361,7 +1258,7 @@ function resetSpawns (killexistingenemies: boolean = true) {
     gameData.tower.bullets = [];
     gameData.world.ticksToNextSpawn = 100000 * gameData.world.deathlevel;
   } else {
-    addToDisplay('Wave ' + (gameData.world.currentWave - 1) + ' completed!', 'story');
+    display.addToDisplay('Wave ' + (gameData.world.currentWave - 1) + ' completed!', 'story');
     gameData.world.ticksToNextSpawn = 1000;
   }
 
@@ -1370,42 +1267,9 @@ function resetSpawns (killexistingenemies: boolean = true) {
   }
 }
 
-function CheckAchievementCompletions () {
-  lastachievementcount = 0;
-  gameData.Achievements.forEach((ch) => {
-    ch.checkforCompletion();
-    if (ch.completed) {
-      lastachievementcount++;
-    }
-  });
-  gameData.tier1Feats.forEach((ch) => { ch.checkforCompletion(); });
-  gameData.tier2Feats.forEach((ch) => { ch.checkforCompletion(); });
-}
-
 function init (prestigelevel: number = 0) {
-  if (typeof textToDisplay === 'undefined') {
-    // eslint-disable-next-line no-global-assign
-    textToDisplay = [];
-    // eslint-disable-next-line no-global-assign
-    textToDisplayachievement = [];
-    // eslint-disable-next-line no-global-assign
-    textToDisplaychallenge = [];
-    // eslint-disable-next-line no-global-assign
-    textToDisplaygamesave = [];
-    // eslint-disable-next-line no-global-assign
-    textToDisplayloot = [];
-    // eslint-disable-next-line no-global-assign
-    textToDisplaystory = [];
-    // eslint-disable-next-line no-global-assign
-    displayindex = 0;
-  }
   if (prestigelevel >= 1) {
-    // eslint-disable-next-line no-global-assign
-    textToDisplaygamesave = [];
-    // eslint-disable-next-line no-global-assign
-    textToDisplayloot = [];
-    // eslint-disable-next-line no-global-assign
-    textToDisplaystory = [];
+    display.prestige1DisplayReset();
     if (pebblesFromPrestige().greaterThan(0)) {
       gameData.stats.last10Prestige1amounts.unshift(pebblesFromPrestige());
       gameData.stats.last10Prestige1amounts.splice(10);
@@ -1464,7 +1328,7 @@ function init (prestigelevel: number = 0) {
     }
 
     // eslint-disable-next-line no-global-assign
-    textToDisplaychallenge = [];
+    display.prestige2DisplayReset();
 
     gameData.stats.bestPrestige2Rate = new JBDecimal(0.0000000001);
     gameData.stats.prestige2 += 1;
@@ -1795,50 +1659,15 @@ function init (prestigelevel: number = 0) {
       }
     }
   }
+  display.drone = new Enemy(gameData.world.currentWave, 0);
+
   CheckAchievementCompletions();
   initted = true;
-}
-
-function getAchievementsOnlyBonus () {
-  if (achievementbonusarray.length <= lastachievementcount) {
-    addToDisplay('Consider upping the initial achievementbonusarray', 'story');
-    achievementbonusarray = [];
-    let total = 0;
-    for (let index = 0; index <= (lastachievementcount * 1.1); index++) {
-      total += index;
-      achievementbonusarray.push(total);
-    }
-  }
-  return (achievementbonusarray[lastachievementcount] + 100) / 100;
-}
-
-function getTier1FeatBonus () {
-  let tier1completed = 1; // no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
-  gameData.tier1Feats.forEach((f) => {
-    if (f.completed) {
-      tier1completed++;
-    }
-  });
-  return tier1completed;
-}
-
-function getTier2FeatBonus () {
-  let tiercompleted = 1; // no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
-  gameData.tier2Feats.forEach((f) => {
-    if (f.completed) {
-      tiercompleted++;
-    }
-  });
-  return tiercompleted;
 }
 
 // eslint-disable-next-line no-unused-vars
 function saveGameClick () {
   gameData.world.nextSaveGameTime = new Date();
-}
-
-function getAchievementBonus () {
-  return (getAchievementsOnlyBonus() * getTier1FeatBonus() * getTier2FeatBonus());
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -1892,6 +1721,6 @@ window.setInterval(function () {
 
     updateGUI();
   } catch (error) {
-    logMyErrors(error);
+    display.logMyErrors(error);
   }
 }, 0);

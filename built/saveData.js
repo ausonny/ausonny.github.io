@@ -1,4 +1,4 @@
-/* global Tower, Enemy, Resource, Upgrade, Challenge, Producer, Derivative, Equipment, Achievement, JBDecimal, Automation, Derivative2, gameData, addToDisplay */
+/* global Tower, Enemy, Resource, Upgrade, Challenge, Producer, Derivative, Equipment, Achievement, JBDecimal, Automation, Derivative2, gameData, display */
 class Story {
     constructor(text) {
         this.text = text;
@@ -78,7 +78,7 @@ class SaveGameData {
         };
         this.world.nextSaveGameTime.setMilliseconds(this.world.nextSaveGameTime.getMilliseconds() + 1000 * 60 * 5);
         this.automation = [];
-        for (let index = 0; index < 22; index++) {
+        for (let index = 0; index < 23; index++) {
             const newRule = new Automation(0, 0);
             this.automation.push(newRule);
         }
@@ -267,7 +267,7 @@ class SaveGameData {
 // eslint-disable-next-line no-unused-vars
 function saveGame(currentTime) {
     localStorage.setItem('save', JSON.stringify(gameData));
-    addToDisplay('Game Saved', 'gameSave');
+    display.addToDisplay('Game Saved', 'gameSave');
     gameData.world.nextSaveGameTime.setMilliseconds(currentTime.getMilliseconds() + 1000 * 60 * 5);
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {

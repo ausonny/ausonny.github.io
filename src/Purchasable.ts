@@ -1,4 +1,4 @@
-/* global JBDecimal, Resource, gameData, internalInflationArray, addToDisplay, CheckAchievementCompletions, logMyErrors */
+/* global JBDecimal, Resource, gameData, internalInflationArray, display, CheckAchievementCompletions */
 // eslint-disable-next-line no-unused-vars
 class Purchasable {
   baseCost: JBDecimal;
@@ -79,7 +79,7 @@ class Purchasable {
 
   internalInflationCost (increase: number) {
     if (internalInflationArray.length <= increase) {
-      addToDisplay('Consider upping the initial internalinflationarray', 'story');
+      display.addToDisplay('Consider upping the initial internalinflationarray', 'story');
       // eslint-disable-next-line no-global-assign
       internalInflationArray = [];
       let total = 0;
@@ -195,7 +195,7 @@ class Purchasable {
         this.upgradeButton.innerHTML = this.upgradeResource.name + ': ' + this.buyUpgradeCost().ToString();
       }
     } catch (error) {
-      logMyErrors(error);
+      display.logMyErrors(error);
     }
   }
 }

@@ -1,4 +1,4 @@
-/* global gameData, JBDecimal */
+/* global gameData, JBDecimal, display */
 
 class Vector {
   x: number;
@@ -77,9 +77,9 @@ class movingObject {
         tickmovement -= slowpenalty;
       }
 
-      if (length < 1) {
-        this.pos.x = this.pos.getNormalizedX(this.target.x, this.target.y) * 0.99;
-        this.pos.y = this.pos.getNormalizedY(this.target.x, this.target.y) * 0.99;
+      if (length < 2) {
+        this.pos.x = this.pos.getNormalizedX(this.target.x, this.target.y) * 1.99;
+        this.pos.y = this.pos.getNormalizedY(this.target.x, this.target.y) * 1.99;
         // sit still
       } else {
         const movex = (xdif / length) * tickmovement;
@@ -102,6 +102,16 @@ class Bullet extends movingObject {
     this.damage.mantissa = damage.mantissa;
     this.damage.exponent = damage.exponent;
     this.crit = crit;
+  }
+
+  draw () {
+    let color = 'white';
+    if (this.crit) { color = 'red'; }
+    display.DrawSolidSquare(display.drone.CurrentHitPoints().divide(3), this.pos, color);
+  }
+
+  update () {
+    this.draw();
   }
 }
 
@@ -171,7 +181,7 @@ class fightingObject extends movingObject {
     this.baseMaxHitPoints.exponent += tieradjustment;
     this.damagetaken = new JBDecimal(0);
     this.baseDefense = new JBDecimal(0);
-    this.baseRange = 1;
+    this.baseRange = 2;
     this.baseHeal = new JBDecimal(0);
     this.baseShotsPerSec = 1;
     this.wave = wave;
@@ -469,5 +479,60 @@ class Enemy extends fightingObject {
     }
 
     this.move();
+  }
+
+  draw () {
+    switch (this.type) {
+      case (''):
+      case ('Tank'): {
+        display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'white');
+        break;
+      }
+      case ('Bradley'):
+      case ('Fast'): {
+        display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'yellow');
+        break;
+      }
+      case ('Trireme'):
+      case ('Ranged'): {
+        display.DrawSolidDiamond(this.CurrentHitPoints(), this.pos, 'white');
+        break;
+      }
+      case ('Cavalier'):
+      case ('Cannon'): {
+        display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'blue');
+        break;
+      }
+      case ('Blitz'):
+      case ('Scorpion'): {
+        display.DrawTwoColorSquare(this.CurrentHitPoints(), this.pos, 'yellow', 'blue');
+        break;
+      }
+      case ('Falcon'):
+      case ('Paladin'): {
+        display.DrawSolidDiamond(this.CurrentHitPoints(), this.pos, 'blue');
+        break;
+      }
+      case ('Archer'):
+      case ('Oliphant'): {
+        display.DrawSolidDiamond(this.CurrentHitPoints(), this.pos, 'yellow');
+        break;
+      }
+      case ('Titan'): {
+        display.DrawTwoColorDiamond(this.CurrentHitPoints(), this.pos, 'yellow', 'blue');
+        break;
+      }
+      case ('Boss'): {
+        display.DrawSolidDiamond(this.CurrentHitPoints(), this.pos, 'red');
+        break;
+      }
+      case (this.type): {
+        display.addToDisplay('Missing enemy draw', 'challenge');
+      }
+    }
+  }
+
+  update () {
+    this.draw();
   }
 }

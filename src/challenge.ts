@@ -1,4 +1,4 @@
-/* global init, addToDisplay, gameData, CheckAchievementCompletions */
+/* global init, display, gameData, CheckAchievementCompletions */
 // eslint-disable-next-line no-unused-vars
 class Challenge {
   name: string;
@@ -28,12 +28,12 @@ class Challenge {
   setActive () {
     this.active = true;
     init(1);
-    addToDisplay('Challenge ' + this.name + ' begun', 'challenge');
+    display.addToDisplay('Challenge ' + this.name + ' begun', 'challenge');
   }
 
   quit () {
     this.active = false;
-    addToDisplay('Challenge exited', 'challenge');
+    display.addToDisplay('Challenge exited', 'challenge');
     init(1);
   }
 
@@ -45,7 +45,7 @@ class Challenge {
   checkForCompletion () {
     if (gameData.world.currentWave > this.waveRequiredforCompletion()) {
       this.completed += 1;
-      addToDisplay(this.name + ' #' + this.completed + ' completed', 'challenge');
+      display.addToDisplay(this.name + ' #' + this.completed + ' completed', 'challenge');
       CheckAchievementCompletions();
       // this.quit()
     }

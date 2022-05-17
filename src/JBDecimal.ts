@@ -1,4 +1,4 @@
-/* global addToDisplay */
+/* global display */
 // eslint-disable-next-line no-unused-vars
 class JBDecimal {
   mantissa: number;
@@ -16,7 +16,7 @@ class JBDecimal {
       this.mantissa = input;
       this.exponent = 0;
     } else {
-      addToDisplay('Invalid JBDecimal construtor input', 'achievement');
+      display.addToDisplay('Invalid JBDecimal construtor input', 'achievement');
     }
     this.normalize();
   }
@@ -398,7 +398,7 @@ class JBDecimal {
 
   ToNumber () {
     if (this.exponent > 307) {
-      addToDisplay('nope', 'achievement');
+      display.addToDisplay('nope', 'achievement');
     }
     const ret = this.mantissa * Math.pow(10, this.exponent);
     return ret;

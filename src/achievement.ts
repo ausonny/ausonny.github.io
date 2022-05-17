@@ -1,5 +1,9 @@
-/* global JBDecimal, addToDisplay, gameData, getCurrentPebbleRate */
+/* global JBDecimal, display, gameData, getCurrentPebbleRate */
 
+let achievementbonusarray: number[];
+achievementbonusarray = [];
+
+let lastachievementcount = 0;
 // eslint-disable-next-line no-unused-vars
 class Achievement {
   index: number;
@@ -29,7 +33,7 @@ class Achievement {
   }
 
   writeToBoard () {
-    addToDisplay('Achievement completed: ' + this.desc, 'achievement');
+    display.addToDisplay('Achievement completed: ' + this.desc, 'achievement');
   }
 
   checkforCompletion () {
@@ -129,4 +133,58 @@ class Achievement {
       }
     }
   }
+}
+
+// eslint-disable-next-line no-unused-vars
+function getAchievementsOnlyBonus () {
+  if (achievementbonusarray.length <= lastachievementcount) {
+    display.addToDisplay('Consider upping the initial achievementbonusarray', 'story');
+    achievementbonusarray = [];
+    let total = 0;
+    for (let index = 0; index <= (lastachievementcount * 1.1); index++) {
+      total += index;
+      achievementbonusarray.push(total);
+    }
+  }
+  return (achievementbonusarray[lastachievementcount] + 100) / 100;
+}
+
+// eslint-disable-next-line no-unused-vars
+function getTier1FeatBonus () {
+  let tier1completed = 1; // no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
+  gameData.tier1Feats.forEach((f) => {
+    if (f.completed) {
+      tier1completed++;
+    }
+  });
+  return tier1completed;
+}
+
+// eslint-disable-next-line no-unused-vars
+function getTier2FeatBonus () {
+  let tiercompleted = 1; // no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
+  gameData.tier2Feats.forEach((f) => {
+    if (f.completed) {
+      tiercompleted++;
+    }
+  });
+  return tiercompleted;
+}
+
+// eslint-disable-next-line no-unused-vars
+function CheckAchievementCompletions () {
+  lastachievementcount = 0;
+  gameData.Achievements.forEach((ch) => {
+    ch.checkforCompletion();
+    if (ch.completed) {
+      lastachievementcount++;
+    }
+  });
+  gameData.tier1Feats.forEach((ch) => { ch.checkforCompletion(); });
+  gameData.tier2Feats.forEach((ch) => { ch.checkforCompletion(); });
+}
+
+// eslint-disable-next-line no-unused-vars
+function getAchievementBonus () {
+  return (getAchievementsOnlyBonus() * getTier1FeatBonus() * getTier2FeatBonus());
 }
