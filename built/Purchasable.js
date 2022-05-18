@@ -121,14 +121,14 @@ class Purchasable {
         //   amt = gameData.options.MultiBuys;
         // }
         if (this.limit > 0 && this.bought >= (this.limit + this.addedlimit)) {
-            this.buyButton.classList.add('btn-success');
-            this.buyButton.classList.remove('btn-danger');
-            this.buyButton.classList.remove('btn-primary');
-        }
-        else if (this.affordBuy(amt)) {
             this.buyButton.classList.add('btn-primary');
             this.buyButton.classList.remove('btn-danger');
             this.buyButton.classList.remove('btn-success');
+        }
+        else if (this.affordBuy(amt)) {
+            this.buyButton.classList.add('btn-success');
+            this.buyButton.classList.remove('btn-danger');
+            this.buyButton.classList.remove('btn-primary');
         }
         else {
             this.buyButton.classList.add('btn-danger');
@@ -140,9 +140,9 @@ class Purchasable {
             if (this.upgradeable) {
                 amt = new JBDecimal(1);
                 if (this.afforUpgradeBuy(amt)) {
-                    this.upgradeButton.classList.add('btn-primary');
+                    this.upgradeButton.classList.add('btn-success');
                     this.upgradeButton.classList.remove('btn-danger');
-                    this.upgradeButton.classList.remove('btn-success');
+                    this.upgradeButton.classList.remove('btn-primary');
                 }
                 else {
                     this.upgradeButton.classList.add('btn-danger');

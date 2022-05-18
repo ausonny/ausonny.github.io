@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-/* global JBDecimal, $, Enemy, Automation, Purchasable, Resource, SaveGameData, saveGame, Bullet, Vector, Display, getAchievementBonus, getAchievementsOnlyBonus, getTier1FeatBonus, getTier2FeatBonus, CheckAchievementCompletions, achievementbonusarray */
+/* global JBDecimal, Enemy, Automation, Purchasable, Resource, SaveGameData, saveGame, Bullet, Vector, Display, getAchievementBonus, getAchievementsOnlyBonus, getTier1FeatBonus, getTier2FeatBonus, CheckAchievementCompletions, achievementbonusarray */
 // eslint-disable-next-line no-unused-vars
 const notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
 let initted = false;
@@ -421,109 +421,109 @@ function updateGUI() {
     document.getElementById('timeparticles').innerHTML = gameData.resources.timeparticles.amount.ToString();
     document.getElementById('timeparticlesbonus').innerHTML = getTimeParticleBonus().ToString();
     if (gameData.challenges[3].active || gameData.challenges[3].completed < 1) {
-        $('#productionderivative').addClass('hidden');
+        document.getElementById('productionderivative').classList.add('hidden');
     }
     else {
-        $('#productionderivative').removeClass('hidden');
+        document.getElementById('productionderivative').classList.remove('hidden');
     }
     if (gameData.derivatives[0].owned.greaterThan(0)) {
-        $('#supervisorderivative').removeClass('hidden');
+        document.getElementById('supervisorderivative').classList.remove('hidden');
     }
     else {
-        $('#supervisorderivative').addClass('hidden');
+        document.getElementById('supervisorderivative').classList.add('hidden');
     }
     if (gameData.derivatives[1].owned.greaterThan(0)) {
-        $('#foremanderivative').removeClass('hidden');
+        document.getElementById('foremanderivative').classList.remove('hidden');
     }
     else {
-        $('#foremanderivative').addClass('hidden');
+        document.getElementById('foremanderivative').classList.add('hidden');
     }
-    $('#managerderivative').addClass('hidden');
-    $('#btnBuyUpgrade7').addClass('hidden');
+    document.getElementById('managerderivative').classList.add('hidden');
+    document.getElementById('btnBuyUpgrade7').classList.add('hidden');
     if (gameData.upgrades[12].owned.greaterThan(0)) {
-        $('#btnBuyUpgrade7').removeClass('hidden');
+        document.getElementById('btnBuyUpgrade7').classList.remove('hidden');
         if (gameData.derivatives[2].owned.greaterThan(0)) {
-            $('#managerderivative').removeClass('hidden');
+            document.getElementById('managerderivative').classList.remove('hidden');
         }
     }
-    $('#middlemanagementderivative').addClass('hidden');
-    $('#btnBuyUpgrade8').addClass('hidden');
+    document.getElementById('middlemanagementderivative').classList.add('hidden');
+    document.getElementById('btnBuyUpgrade8').classList.add('hidden');
     if (gameData.upgrades[12].owned.greaterThan(1)) {
-        $('#btnBuyUpgrade8').removeClass('hidden');
+        document.getElementById('btnBuyUpgrade8').classList.remove('hidden');
         if (gameData.derivatives[3].owned.greaterThan(0)) {
-            $('#middlemanagementderivative').removeClass('hidden');
+            document.getElementById('middlemanagementderivative').classList.remove('hidden');
         }
     }
-    $('#uppermanagementderivative').addClass('hidden');
-    $('#btnBuyUpgrade9').addClass('hidden');
+    document.getElementById('uppermanagementderivative').classList.add('hidden');
+    document.getElementById('btnBuyUpgrade9').classList.add('hidden');
     if (gameData.upgrades[12].owned.greaterThan(2)) {
-        $('#btnBuyUpgrade9').removeClass('hidden');
+        document.getElementById('btnBuyUpgrade9').classList.remove('hidden');
         if (gameData.derivatives[4].owned.greaterThan(0)) {
-            $('#uppermanagementderivative').removeClass('hidden');
+            document.getElementById('uppermanagementderivative').classList.remove('hidden');
         }
     }
-    $('#vicepresidentderivative').addClass('hidden');
-    $('#btnBuyUpgrade10').addClass('hidden');
+    document.getElementById('vicepresidentderivative').classList.add('hidden');
+    document.getElementById('btnBuyUpgrade10').classList.add('hidden');
     if (gameData.upgrades[12].owned.greaterThan(3)) {
-        $('#btnBuyUpgrade10').removeClass('hidden');
+        document.getElementById('btnBuyUpgrade10').classList.remove('hidden');
         if (gameData.derivatives[5].owned.greaterThan(0)) {
-            $('#vicepresidentderivative').removeClass('hidden');
+            document.getElementById('vicepresidentderivative').classList.remove('hidden');
         }
     }
-    $('#presidentderivative').addClass('hidden');
-    $('#btnBuyUpgrade11').addClass('hidden');
+    document.getElementById('presidentderivative').classList.add('hidden');
+    document.getElementById('btnBuyUpgrade11').classList.add('hidden');
     if (gameData.upgrades[12].owned.greaterThan(4)) {
-        $('#btnBuyUpgrade11').removeClass('hidden');
+        document.getElementById('btnBuyUpgrade11').classList.remove('hidden');
         if (gameData.derivatives[6].owned.greaterThan(0)) {
-            $('#presidentderivative').removeClass('hidden');
+            document.getElementById('presidentderivative').classList.remove('hidden');
         }
     }
-    $('#particles').addClass('hidden');
-    $('#accelerationderivative').addClass('hidden');
-    $('#jerkderivative').addClass('hidden');
-    $('#snapderivative').addClass('hidden');
-    $('#cracklederivative').addClass('hidden');
-    $('#popderivative').addClass('hidden');
+    document.getElementById('particles').classList.add('hidden');
+    document.getElementById('accelerationderivative').classList.add('hidden');
+    document.getElementById('jerkderivative').classList.add('hidden');
+    document.getElementById('snapderivative').classList.add('hidden');
+    document.getElementById('cracklederivative').classList.add('hidden');
+    document.getElementById('popderivative').classList.add('hidden');
     if (gameData.stats.prestige2 > 0) {
-        $('#particles').removeClass('hidden');
+        document.getElementById('particles').classList.remove('hidden');
         if (gameData.speedDerivatives[0].owned.greaterThan(0)) {
-            $('#accelerationderivative').removeClass('hidden');
+            document.getElementById('accelerationderivative').classList.remove('hidden');
         }
         if (gameData.speedDerivatives[1].owned.greaterThan(0)) {
-            $('#jerkderivative').removeClass('hidden');
+            document.getElementById('jerkderivative').classList.remove('hidden');
         }
         if (gameData.speedDerivatives[2].owned.greaterThan(0)) {
-            $('#snapderivative').removeClass('hidden');
+            document.getElementById('snapderivative').classList.remove('hidden');
         }
         if (gameData.speedDerivatives[3].owned.greaterThan(0)) {
-            $('#cracklederivative').removeClass('hidden');
+            document.getElementById('cracklederivative').classList.remove('hidden');
         }
         if (gameData.speedDerivatives[4].owned.greaterThan(0)) {
-            $('#popderivative').removeClass('hidden');
+            document.getElementById('popderivative').classList.remove('hidden');
         }
     }
-    $('#time').addClass('hidden');
-    $('#time2derivative').addClass('hidden');
-    $('#time3derivative').addClass('hidden');
-    $('#time4derivative').addClass('hidden');
-    $('#time5derivative').addClass('hidden');
-    $('#time6derivative').addClass('hidden');
+    document.getElementById('time').classList.add('hidden');
+    document.getElementById('time2derivative').classList.add('hidden');
+    document.getElementById('time3derivative').classList.add('hidden');
+    document.getElementById('time4derivative').classList.add('hidden');
+    document.getElementById('time5derivative').classList.add('hidden');
+    document.getElementById('time6derivative').classList.add('hidden');
     if (gameData.stats.prestige3 > 0) {
-        $('#time').removeClass('hidden');
+        document.getElementById('time').classList.remove('hidden');
         if (gameData.timeDerivatives[0].owned.greaterThan(0)) {
-            $('#time2derivative').removeClass('hidden');
+            document.getElementById('time2derivative').classList.remove('hidden');
         }
         if (gameData.timeDerivatives[1].owned.greaterThan(0)) {
-            $('#time3derivative').removeClass('hidden');
+            document.getElementById('time3derivative').classList.remove('hidden');
         }
         if (gameData.timeDerivatives[2].owned.greaterThan(0)) {
-            $('#time4derivative').removeClass('hidden');
+            document.getElementById('time4derivative').classList.remove('hidden');
         }
         if (gameData.timeDerivatives[3].owned.greaterThan(0)) {
-            $('#time5derivative').removeClass('hidden');
+            document.getElementById('time5derivative').classList.remove('hidden');
         }
         if (gameData.timeDerivatives[4].owned.greaterThan(0)) {
-            $('#time6derivative').removeClass('hidden');
+            document.getElementById('time6derivative').classList.remove('hidden');
         }
     }
     document.getElementById('producitonproduction').innerHTML = gameData.producer.productionPerSecDisplay().ToString();
@@ -653,26 +653,26 @@ function updateGUI() {
         document.getElementById('boulderupgrades-tab').classList.remove('hidden');
     }
     if (pebblesFromPrestige().greaterThan(0)) {
-        $('#btnPrestige1').removeClass('hidden');
+        document.getElementById('btnPrestige1').classList.remove('hidden');
         document.getElementById('btnPrestige1').innerHTML = 'Prestige for ' + pebblesFromPrestige().ToString() + ' pebbles<br>Current: ' + getCurrentPebbleRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige1Rate.ToString() + '/hr';
     }
     else {
-        $('#btnPrestige1').addClass('hidden');
+        document.getElementById('btnPrestige1').classList.add('hidden');
     }
     if (rocksFromPrestige().greaterThan(0)) {
-        $('#btnPrestige2').removeClass('hidden');
+        document.getElementById('btnPrestige2').classList.remove('hidden');
         document.getElementById('btnPrestige2').innerHTML = 'Ascend for ' + rocksFromPrestige().ToString() + ' rocks<br>Current: ' + getCurrentRockRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige2Rate.ToString() + '/hr';
     }
     else {
-        $('#btnPrestige2').addClass('hidden');
+        document.getElementById('btnPrestige2').classList.add('hidden');
     }
     if (bouldersFromPrestige().greaterThan(0)) {
-        $('#btnPrestige3').removeClass('hidden');
+        document.getElementById('btnPrestige3').classList.remove('hidden');
         document.getElementById('btnPrestige3').innerHTML =
             'Transform for ' + bouldersFromPrestige().ToString() + ' boulders<br>Current: ' + getCurrentBoulderRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige3Rate.ToString() + '/hr';
     }
     else {
-        $('#btnPrestige3').addClass('hidden');
+        document.getElementById('btnPrestige3').classList.add('hidden');
     }
     gameData.Achievements.forEach((a, index) => {
         const elementName = 'btnAchievement' + (index + 1).toString();

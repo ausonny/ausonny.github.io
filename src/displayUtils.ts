@@ -183,15 +183,16 @@ class Display {
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
-  changeNotation () {
-    gameData.options.standardNotation++;
-    if (gameData.options.standardNotation >= 6) {
-      gameData.options.standardNotation = 0;
-    }
-    // eslint-disable-next-line no-undef
-    $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
-  }
+  // // eslint-disable-next-line no-unused-vars
+  // changeNotation () {
+  //   gameData.options.standardNotation++;
+  //   if (gameData.options.standardNotation >= 6) {
+  //     gameData.options.standardNotation = 0;
+  //   }
+  //   // eslint-disable-next-line no-undef
+  //   document.getElementById('btnPrestige1').classList.add('hidden');
+  //   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
+  // }
 
   // eslint-disable-next-line no-unused-vars
   PrettyRatePerTime (amt: JBDecimal, ticks: number) {
@@ -230,7 +231,7 @@ class Display {
     this.ctx.moveTo((position.x + 10) * (this.canvas.scrollWidth / 20), left);
     this.ctx.lineTo(top, (position.y + 10) * (this.canvas.scrollWidth / 20));
     this.ctx.lineTo((position.x + 10) * (this.canvas.scrollWidth / 20), right);
-    this.ctx.fill();
+    this.ctx.fill();40
   }
 
   DrawSolidSquare (CurrentHitPoints: JBDecimal, position: Vector, color: string) {

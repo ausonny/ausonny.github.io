@@ -158,15 +158,16 @@ class Display {
             return ':' + dseconds;
         }
     }
-    // eslint-disable-next-line no-unused-vars
-    changeNotation() {
-        gameData.options.standardNotation++;
-        if (gameData.options.standardNotation >= 6) {
-            gameData.options.standardNotation = 0;
-        }
-        // eslint-disable-next-line no-undef
-        $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
-    }
+    // // eslint-disable-next-line no-unused-vars
+    // changeNotation () {
+    //   gameData.options.standardNotation++;
+    //   if (gameData.options.standardNotation >= 6) {
+    //     gameData.options.standardNotation = 0;
+    //   }
+    //   // eslint-disable-next-line no-undef
+    //   document.getElementById('btnPrestige1').classList.add('hidden');
+    //   $('#btnNotation').text(notationDisplayOptions[gameData.options.standardNotation]);
+    // }
     // eslint-disable-next-line no-unused-vars
     PrettyRatePerTime(amt, ticks) {
         // this originally changed the time element based on size, but I found it distracting in poreactice so it is back to /hr only
@@ -199,6 +200,7 @@ class Display {
         this.ctx.lineTo(top, (position.y + 10) * (this.canvas.scrollWidth / 20));
         this.ctx.lineTo((position.x + 10) * (this.canvas.scrollWidth / 20), right);
         this.ctx.fill();
+        40;
     }
     DrawSolidSquare(CurrentHitPoints, position, color) {
         const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();

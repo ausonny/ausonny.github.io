@@ -74,7 +74,7 @@ class movingObject {
       const slowpenalty = (tickmovement * gameData.tower.Slow()) / 100;
 
       if (length < gameData.tower.Range()) {
-        tickmovement -= slowpenalty;
+        tickmovement -= slowpenalty
       }
 
       if (length < 2) {
