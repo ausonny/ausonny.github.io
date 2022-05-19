@@ -411,11 +411,6 @@ function updateGUI() {
             gameData.storyElements[3].printed = true;
         }
     }
-    document.getElementById('dust').innerHTML = gameData.resources.dust.amount.ToString();
-    document.getElementById('metal').innerHTML = gameData.resources.metal.amount.ToString();
-    document.getElementById('pebbles').innerHTML = gameData.resources.pebbles.amount.ToString();
-    document.getElementById('rocks').innerHTML = gameData.resources.rocks.amount.ToString();
-    document.getElementById('boulders').innerHTML = gameData.resources.boulders.amount.ToString();
     document.getElementById('particlesamount').innerHTML = gameData.resources.particles.amount.ToString();
     document.getElementById('particlesb').innerHTML = getParticleBonus().ToString();
     document.getElementById('timeparticles').innerHTML = gameData.resources.timeparticles.amount.ToString();
@@ -606,6 +601,20 @@ function updateGUI() {
     gameData.upgrades.forEach((u) => { u.updateDisplay(); });
     gameData.rockUpgrades.forEach((u) => { u.updateDisplay(); });
     gameData.boulderUpgrades.forEach((u) => { u.updateDisplay(); });
+    let resourceStats = "Metal: " + gameData.resources.metal.amount.ToString() + "<br />";
+    if (gameData.stats.highestEverWave >= 5) {
+        resourceStats += "Dust: " + gameData.resources.dust.amount.ToString() + "<br />";
+    }
+    if (gameData.stats.prestige1 >= 1) {
+        resourceStats += "Pebbles: " + gameData.resources.pebbles.amount.ToString() + "<br />";
+    }
+    if (gameData.stats.prestige2 >= 1) {
+        resourceStats += "Rocks: " + gameData.resources.rocks.amount.ToString() + "<br />";
+    }
+    if (gameData.stats.prestige3 >= 1) {
+        resourceStats += "Boulders: " + gameData.resources.boulders.amount.ToString() + "<br />";
+    }
+    document.getElementById('resourcesText').innerHTML = resourceStats;
     let towerstats = '<b> Attack:' + gameData.tower.Attack().ToString() + '</b><br />';
     towerstats += 'Shoots: ' + new JBDecimal(gameData.tower.ShotsPerSecond()).ToString() + '/s<br />';
     towerstats += 'Range: ' + new JBDecimal(gameData.tower.Range()).ToString() + '<br />';
@@ -625,6 +634,7 @@ function updateGUI() {
         towerstats += 'Slow: ' + new JBDecimal(gameData.tower.Slow()).ToString() + '%<br />';
     }
     document.getElementById('towerStatsText').innerHTML = towerstats;
+    document.getElementById('secondRow').classList.add('hidden');
     document.getElementById('tierinfo').classList.add('hidden');
     const btndown = document.getElementById('btntierdown');
     btndown.disabled = false;
@@ -633,6 +643,7 @@ function updateGUI() {
     if (gameData.world.tierUnlocked > 1) {
         document.getElementById('currenttier').innerHTML = gameData.world.currentTier.toFixed(0);
         document.getElementById('tierinfo').classList.remove('hidden');
+        document.getElementById('secondRow').classList.remove('hidden');
         if (gameData.world.currentTier === 1) {
             btndown.disabled = true;
         }
@@ -942,6 +953,7 @@ function updateGUI() {
     gameData.challenges.forEach((ch, index) => {
         if (ch.active) {
             document.getElementById('btnChallengeQuit').classList.remove('hidden');
+            document.getElementById('secondRow').classList.remove('hidden');
         }
         let spanName = 'challenge' + index.toString() + 'Description';
         document.getElementById(spanName).innerHTML = ch.description;
@@ -1235,7 +1247,7 @@ function init(prestigelevel = 0) {
             }
             d.upgradeLevel = 0;
         });
-        gameData.speedDerivatives.forEach((d) => { d.bought = 0; });
+        gameData.speedDerivatives.forEach((d) => { d.owned = new JBDecimal(0); });
         gameData.producer.bought = 0;
         gameData.producer.owned = new JBDecimal(0);
         gameData.producer.upgradeLevel = 0;

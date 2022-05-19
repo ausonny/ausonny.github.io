@@ -126,16 +126,19 @@ canvas {
 }
 
 .nav-tabs .nav-item .nav-link {
-  background-color: #000000;
+  border: 1px solid #dee2e6;
+  background-color: #212529;
   color: #009dff;
 }
 
 .nav-tabs .nav-item .nav-link.active {
-  color: #FFF;
+  border: 1px solid #dee2e6;
+  background-color: #6c757d;
+  color: white;
 }
 
-.tab-content {
+/* .tab-content {
   border: 1px solid #dee2e6;
   border-top: transparent;
   padding: 2px;
-}
+} */

@@ -21,16 +21,16 @@
       </div>
     </noscript>
     <div class="container">
-      <div class="row p-0 m-0 border border-secondary rounded text-light">
+      <div class="row p-0 mt-1 border border-secondary text-light">
         <div class="col-md-12 p-0 m-0 text-small">
-          <div id="prestige1button" class="row p-0 m-0 rounded bg-dark text-light">
+          <div id="prestige1button" class="row p-0 m-0 bg-dark text-light">
             <button class="button prestigebutton text-center bg-success" type="button" id="btnPrestige1" onclick="prestige1()">Prestige</button>
             <button class="button prestigebutton text-center bg-success" type="button" id="btnPrestige2" onclick="prestige2()">Prestige</button>
             <button class="button prestigebutton text-center bg-success" type="button" id="btnPrestige3" onclick="prestige3()">Prestige</button>
           </div>
         </div>
       </div>
-      <div class="row p-0 m-0 border border-dark rounded bg-dark text-light text-center">
+      <div id="secondRow" class="row p-0 hidden mt-1 border border-dark bg-dark text-light text-center">
         <div class="col-md-3 p-0 m-0 text-center">
         </div>
         <div class="col-md-6 p-0 m-0 text-center">
@@ -48,48 +48,35 @@
           <button class="btn btn-sm btn-primary hidden" id="btnChallengeQuit" type="button" onclick="quitChallenges()">Quit all active challenges</button>
         </div>        
       </div>
-      <div class="row p-0 m-0 border border-secondary rounded text-light">
-        <div class="col-md-3 p-0 m-0">
-          <div class="row p-0 m-0 text-light">
-            <div class="col-md-12">Metal: <span id="metal">0</span></div>
+      <div class="row p-0 mt-1 border border-secondary text-light">
+        <div class="col-md-3 border border-light bg-dark p-0 m-0">
+          <div id="ResourceStats" class="bg-dark text-light border border-light">
+            <div class="row p-0 m-0 text-light">
+              <div class="col-md-12"><span id="resourcesText"></span></div>
+             </div>
           </div>
-          <div class="row p-0 m-0 text-light">
-            <div class="col-md-12">Dust: <span id="dust">0</span></div>
-          </div>
-          <div class="row p-0 m-0 text-light">
-            <div class="col-md-12">Pebbles: <span id="pebbles">0</span></div>
-          </div>
-          <div class="row p-0 m-0 text-light">
-            <div class="col-md-12">Rocks: <span id="rocks">0</span></div>
-          </div>
-          <div class="row p-0 m-0 text-light">
-            <div class="col-md-12">Boulders: <span id="boulders">0</span></div>
-          </div>
-          <div id="TowerStats" class="bg-primary text-light border border-secondary rounded">
+          <div id="TowerStats" class="bg-secondary text-light border border-light">
             <div class="row p-0 m-0">
               <div class="col-md-12"><span id="towerStatsText"></span></div>
             </div>
           </div>
         </div>
-        <div class="col-md-5 p-0 m-0">
+        <div class="col-md-5 p-0 m-0 border border-light">
           <div class="row p-0 m-0 bg-dark text-light text-xsmall">
             <div class="col-md-12 text-center">
-              <canvas id="gameBoard" class="canvas" height="520px" width="520px" style="object-fit: contain; background-color: black">
+              <canvas id="gameBoard" class="canvas" height="520px" width="520px" style="object-fit: contain">
                 <p>You may have more fun with a more modern browser. Chrome, Firefox, or Safari for instance</p>
               </canvas>
             </div>
           </div>
         </div>
         <div class="col-md-4 p-0 m-0">
-          <div class="border border-secondary rounded p-0 m-0 container text-small overflow-auto text-light" style="height: 520px; background-color: black" id="textToDisplay"></div>
+          <div class="border border-light p-0 m-0 text-small overflow-auto text-light" style="height: 520px; background-color: black;" id="textToDisplay"></div>
         </div>
       </div>
-      <div class="row p-0 m-0 border border-secondary rounded bg-dark text-light text-center">
-        <div class="col-md-12"></div>
-      </div>
-      <div class="row p-0 m-0 border border-dark rounded bg-dark text-light">
+      <div class="row p-0 mt-1 bg-dark text-light">
         <div class="col-md-12 p-0 m-0">
-          <ul class="nav nav-tabs nav-fill nav-justified" id="myTab" role="tablist">
+          <ul class="nav nav-tabs nav-fill nav-justified fw-bold" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
               <a class="nav-link active" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resourcestab" role="tab" aria-controls="resources" aria-selected="true">Resources</a>
             </li>
@@ -116,24 +103,24 @@
             </li>
           </ul>
           <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active px-0 py-0 overflow-auto" style="height: 400px" id="resourcestab" role="tabpanel" aria-labelledby="resources-tab">
-              <div class="row p-0 m-0 text-light" style="background-color: black">
+            <div class="tab-pane fade show active px-0 py-0 overflow-hidden" style="height: 420px" id="resourcestab" role="tabpanel" aria-labelledby="resources-tab">
+              <div class="row p-0 text-light">
                 <div class="col-md-12 p-0 m-0">
                   <ul class="nav nav-tabs nav-fill nav-justified" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                      <a class="nav-link active" id="metal-tab" data-bs-toggle="tab" data-bs-target="#metaltab" role="tab" aria-controls="metal" aria-selected="true">Metal</a>
+                      <a class="nav-link active fw-bold" id="metal-tab" data-bs-toggle="tab" data-bs-target="#metaltab" role="tab" aria-controls="metal" aria-selected="true">Metal</a>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item fw-bold" role="presentation">
                       <a class="nav-link" id="particles-tab" data-bs-toggle="tab" data-bs-target="#particles" role="tab" aria-controls="particles" aria-selected="false">Particles</a>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item fw-bold" role="presentation">
                       <a class="nav-link" id="time-tab" data-bs-toggle="tab" data-bs-target="#time" role="tab" aria-controls="timeparticles" aria-selected="false">Time</a>
                     </li>
                   </ul>
                   <div class="tab-content" id="myTabContentresources">
                     <div class="tab-pane fade show active" id="metaltab" role="tabpanel" aria-labelledby="metal-tab">
                       <div id="labelsderivative">
-                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-dark text-light fw-bold text-medium">
                           <div class="col-md-1 text-start">Name</div>
                           <div class="col-md-2 text-start"></div>
                           <div class="col-md-3 text-start"></div>
@@ -142,7 +129,7 @@
                         </div>
                       </div>
                       <div id="productionderivative">
-                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
                           <div class="col-md-1 text-start">Production Bonus</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="productionbought">0</span><br />
@@ -158,7 +145,7 @@
                         </div>
                       </div>
                       <div id="minerderivative">
-                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
                           <div class="col-md-1 text-start">Miners</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="minerbought">0</span><br />
@@ -174,7 +161,7 @@
                         </div>
                       </div>
                       <div id="supervisorderivative">
-                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
                           <div class="col-md-1 text-start">Supervisor</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="supervisorbought">0</span><br />
@@ -190,7 +177,7 @@
                         </div>
                       </div>
                       <div id="foremanderivative">
-                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
                           <div class="col-md-1 text-start">Foreman</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="foremanbought">0</span><br />
@@ -206,7 +193,7 @@
                         </div>
                       </div>
                       <div id="managerderivative">
-                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
                           <div class="col-md-1 text-start">Manager</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="managerbought">0</span><br />
@@ -222,7 +209,7 @@
                         </div>
                       </div>
                       <div id="middlemanagementderivative">
-                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
                           <div class="col-md-1 text-start">Middle Management</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="middlemanagementbought">0</span><br />
@@ -238,7 +225,7 @@
                         </div>
                       </div>
                       <div id="uppermanagementderivative">
-                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
                           <div class="col-md-1 text-start">Upper Management</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="uppermanagementbought">0</span><br />
@@ -254,7 +241,7 @@
                         </div>
                       </div>
                       <div id="vicepresidentderivative">
-                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
                           <div class="col-md-1 text-start">Vice President</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="vicepresidentbought">0</span><br />
@@ -270,7 +257,7 @@
                         </div>
                       </div>
                       <div id="presidentderivative">
-                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-secondary text-light text-xsmall">
                           <div class="col-md-1 text-start">President</div>
                           <div class="col-md-2 text-start">
                             Bought:<span id="presidentbought">0</span><br />
@@ -291,7 +278,7 @@
                         <div class="col-md-12 text-start"><span id="particlesamount">0</span> particles give a <span id="particlesb">0</span>x bonus to metal production</div>
                       </div>
                       <div id="labels2derivative">
-                        <div class="row p-0 m-0 bg-dark text-light text-xsmall">
+                        <div class="row p-0 m-0 bg-dark text-light fw-bold">
                           <div class="col-md-1 text-start">Name</div>
                           <div class="col-md-2 text-start"></div>
                           <div class="col-md-3 text-start"></div>
@@ -486,7 +473,7 @@
                 </div>
               </div>
             </div>
-            <div class="tab-pane fade px-0 py-0 overflow-auto" style="height: 400px" id="towertab" role="tabpanel" aria-labelledby="tower-tab">
+            <div class="tab-pane fade px-0 py-0 overflow-hidden" style="height: 420px" id="towertab" role="tabpanel" aria-labelledby="tower-tab">
               <div id="labelequipment">
                 <div class="row p-0 m-0 bg-dark text-light text-xsmall">
                   <div class="col-md-2 text-start">Name</div>
@@ -584,7 +571,7 @@
               </div> -->
             </div>
             <div class="tab-pane fade px-0 py-0" id="upgradestab" role="tabpanel" aria-labelledby="upgrades-tab">
-              <div class="row p-0 m-0 text-light" style="background-color:black">
+              <div class="row p-0 m-0 text-light">
                 <div class="col-md-12 p-0 m-0">
                   <ul class="nav nav-tabs nav-fill nav-justified" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -598,8 +585,8 @@
                     </li>
                   </ul>
                   <div class="tab-content" id="myTabContentupgrades">
-                    <div class="tab-pane fade show active overflow-auto" style="height: 400px" id="pebbleupgrades" role="tabpanel" aria-labelledby="pebbleupgrades-tab">
-                      <div class="row p-0 m-0 bg-dark text-light text-xsmall">
+                    <div class="tab-pane fade show active overflow-hidden" style="height: 420px" id="pebbleupgrades" role="tabpanel" aria-labelledby="pebbleupgrades-tab">
+                      <div class="row p-0 m-0                                                                                                                                                                                                                                                                                                bg-dark text-light text-xsmall">
                         <div class="col-md-12 p-0 m-0 text-center">
                           <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade13" onclick="gameData.upgrades[13].buy()">Upgrade</button>
                           <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade14" onclick="gameData.upgrades[14].buy()">Upgrade</button>
@@ -622,7 +609,7 @@
                         </div>
                       </div>
                     </div>
-                    <div class="tab-pane fade overflow-auto" style="height: 400px" id="rockupgrades" role="tabpanel" aria-labelledby="rockupgrades-tab">
+                    <div class="tab-pane fade overflow-hidden" style="height: 420px" id="rockupgrades" role="tabpanel" aria-labelledby="rockupgrades-tab">
                       <div class="row p-0 m-0 bg-dark text-light text-xsmall">
                         <div class="col-md-12 text-center">
                           <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade0" onclick="gameData.rockUpgrades[0].buy()">Upgrade</button>
@@ -642,7 +629,7 @@
                         </div>
                       </div>
                     </div>
-                    <div class="tab-pane fade overflow-auto" style="height: 400px" id="boulderupgrades" role="tabpanel" aria-labelledby="boulderupgrades-tab">
+                    <div class="tab-pane fade overflow-hidden" style="height: 420px" id="boulderupgrades" role="tabpanel" aria-labelledby="boulderupgrades-tab">
                       <div class="row p-0 m-0 bg-dark text-light text-xsmall">
                         <div class="col-md-12 text-center">
                           <button class="button upgradebutton text-center" type="button" id="btnBuyBoulderUpgrade0" onclick="gameData.boulderUpgrades[0].buy()">Upgrade</button>
@@ -657,7 +644,7 @@
                 </div>
               </div>
             </div>
-            <div class="tab-pane fade px-0 py-0 overflow-auto" style="height: 400px" id="challengestab" role="tabpanel" aria-labelledby="challenges-tab">
+            <div class="tab-pane fade px-0 py-0 overflow-hidden" style="height: 420px" id="challengestab" role="tabpanel" aria-labelledby="challenges-tab">
               <div class="row p-0 m-0 bg-dark text-light text-small">
                 <div class="col-md-12 p-0 m-0 text-center">
                   <div class="row p-0 m-0 bg-secondary text-light text-small text-center">
@@ -815,7 +802,7 @@
                 </div>
               </div>
             </div>
-            <div id="automationtab" role="tabpanel" aria-labelledby="automation-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 400px">
+            <div id="automationtab" role="tabpanel" aria-labelledby="automation-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px">
               <div class="row p-0 m-0 bg-dark text-light text-small text-center">
                 <div class="col-md-6 p-0 m-0 text-center">
                   <div class="row p-0 m-0 bg-dark text-light text-small text-center">
@@ -1712,7 +1699,7 @@
                 </div>
               </div>
             </div>
-            <div id="achievementtab" role="tabpanel" aria-labelledby="achievement-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 400px">
+            <div id="achievementtab" role="tabpanel" aria-labelledby="achievement-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px">
               <div class="row p-0 m-0 text-light text-center">
                 <div class="col-md-12 p-0 m-0 text-xlarge text-center">Total Bonus to Attack and Health: <span id="totalachievementbonus">0</span>x</div>
               </div>
@@ -1906,7 +1893,7 @@
                 </div>
               </div>
             </div>
-            <div id="statisticstab" role="tabpanel" aria-labelledby="statistics-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 400px">
+            <div id="statisticstab" role="tabpanel" aria-labelledby="statistics-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px">
               Highest Wave Reached: <span id="highestwavereached">0</span><br />
               Current Pebble Prestige Time:<br />
               <span id="prestige1time">0</span><br />
@@ -1919,7 +1906,7 @@
               Boulder Prestiges:<br /><span id="prestige3count">0</span><br />
               Previous 10 Boulder Prestiges: <span id="prestige3history">0</span><br />
             </div>
-            <div id="optionstab" role="tabpanel" aria-labelledby="options-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 400px">
+            <div id="optionstab" role="tabpanel" aria-labelledby="options-tab" class="tab-pane fade px-0 py-0 overflow-hidden" style="height: 420px">
               <button class="btn btn-sm btn-primary" id="btnNotation" type="button" onclick="changeNotation()">Notation</button>
               <button class="btn btn-sm btn-primary" type="button" onclick="myFunction()">Reset</button>
               <button class="btn btn-sm btn-primary" type="button" onclick="saveGameClick()">Save</button>
