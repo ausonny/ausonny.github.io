@@ -1247,7 +1247,7 @@ function init(prestigelevel = 0) {
             }
             d.upgradeLevel = 0;
         });
-        gameData.speedDerivatives.forEach((d) => { d.owned = new JBDecimal(0); });
+        gameData.speedDerivatives.forEach((d) => { d.owned = new JBDecimal(d.bought); });
         gameData.producer.bought = 0;
         gameData.producer.owned = new JBDecimal(0);
         gameData.producer.upgradeLevel = 0;
