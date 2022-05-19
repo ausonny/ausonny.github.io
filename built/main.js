@@ -375,14 +375,16 @@ function runAutomationRule(rule, actioner, resource, notupgrade = true) {
     }
 }
 function getParticleBonus() {
-    let particlebonus = new JBDecimal(gameData.resources.particles.amount.exponent + (gameData.resources.particles.amount.mantissa / 10)).pow(2);
+    //let particlebonus = new JBDecimal(gameData.resources.particles.amount.exponent + (gameData.resources.particles.amount.mantissa / 10)).pow(2);
+    let particlebonus = new JBDecimal(gameData.resources.particles.amount);
     if (particlebonus.lessThan(1)) {
         particlebonus = new JBDecimal(1);
     }
     return particlebonus;
 }
 function getTimeParticleBonus() {
-    let particlebonus = new JBDecimal(gameData.resources.timeparticles.amount.exponent + (gameData.resources.timeparticles.amount.mantissa / 10)).pow(2);
+    //let particlebonus = new JBDecimal(gameData.resources.timeparticles.amount.exponent + (gameData.resources.timeparticles.amount.mantissa / 10)).pow(2);
+    let particlebonus = new JBDecimal(gameData.resources.timeparticles.amount);
     if (particlebonus.lessThan(1)) {
         particlebonus = new JBDecimal(1);
     }
@@ -1236,16 +1238,14 @@ function init(prestigelevel = 0) {
         resetSpawns(true);
         gameData.derivatives.forEach((d, index) => {
             d.bought = 0;
+            d.owned = new JBDecimal(0);
+            d.upgradeLevel = 0;
             if (gameData.rockUpgrades[11].bought) {
                 if (index - 3 < gameData.upgrades[12].bought) {
                     // which derivatives recieve intial inventory is controlled by which are unlocked
                     d.owned = new JBDecimal(gameData.stats.prestige2);
                 }
             }
-            else {
-                d.owned = new JBDecimal(0);
-            }
-            d.upgradeLevel = 0;
         });
         gameData.speedDerivatives.forEach((d) => { d.owned = new JBDecimal(d.bought); });
         gameData.producer.bought = 0;
@@ -1279,16 +1279,14 @@ function init(prestigelevel = 0) {
         });
         gameData.derivatives.forEach((d, index) => {
             d.bought = 0;
+            d.owned = new JBDecimal(0);
+            d.upgradeLevel = 0;
             if (gameData.rockUpgrades[11].bought) {
                 if (index - 3 < gameData.upgrades[12].bought) {
                     // which derivatives recieve intial inventory is controlled by which are unlocked
                     d.owned = new JBDecimal(gameData.stats.prestige2);
                 }
             }
-            else {
-                d.owned = new JBDecimal(0);
-            }
-            d.upgradeLevel = 0;
         });
     }
     if (prestigelevel >= 3) {

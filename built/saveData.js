@@ -151,7 +151,7 @@ class SaveGameData {
         this.challenges.push(new Challenge('Shields', 'Shields are disabled', 'Unlock and improve Tower Defenses', 20, 10));
         this.challenges.push(new Challenge('Heal', 'Heal is disabled', 'Unlock and improve Tower Healing', 10, 5));
         this.challenges.push(new Challenge('Production', 'Production Bonus is disabled', 'Add .01 to production bonus', 10, 5));
-        this.challenges.push(new Challenge('Range', 'Tower Range is set to 3', 'Add 1 to Tower Range', 20, 10));
+        this.challenges.push(new Challenge('Range', 'Tower Range is set to 3', 'Increase Tower Range', 20, 10));
         this.challenges.push(new Challenge('Shooting Speed', 'Shooting Speed is set to 1/s', 'Increase shooting speed', 10, 5));
         this.challenges.push(new Challenge('Crits', 'Critical Attacks are disabled', 'Unlock and improve critical hits', 30, 5));
         this.challenges.push(new Challenge('Slow', 'Slow disabled', 'Enemies within range slow', 30, 5));
