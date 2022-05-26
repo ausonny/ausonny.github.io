@@ -120,23 +120,25 @@ class Purchasable {
         // if(this.multiBuyEligible) {
         //   amt = gameData.options.MultiBuys;
         // }
+        this.buyButton.innerHTML = '<br />';
         if (this.limit > 0 && this.bought >= (this.limit + this.addedlimit)) {
             this.buyButton.classList.add('btn-primary');
             this.buyButton.classList.remove('btn-danger');
             this.buyButton.classList.remove('btn-success');
         }
         else if (this.affordBuy(amt)) {
+            this.buyButton.innerHTML = this.baseResource.name + ': ' + this.buyCost().ToString() + '</br>';
             this.buyButton.classList.add('btn-success');
             this.buyButton.classList.remove('btn-danger');
             this.buyButton.classList.remove('btn-primary');
         }
         else {
+            this.buyButton.innerHTML = this.baseResource.name + ': ' + this.buyCost().ToString() + '</br>';
             this.buyButton.classList.add('btn-danger');
             this.buyButton.classList.remove('btn-primary');
             this.buyButton.classList.remove('btn-success');
         }
         try {
-            this.buyButton.innerHTML = this.baseResource.name + ': ' + this.buyCost().ToString() + '</br>';
             if (this.upgradeable) {
                 amt = new JBDecimal(1);
                 if (this.afforUpgradeBuy(amt)) {

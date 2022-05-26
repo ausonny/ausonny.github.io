@@ -248,19 +248,19 @@ class fightingObject extends movingObject {
         this.type = 'Oliphant';
         this.baseRange = 10;
         this.movementPerSec = this.movementPerSec *= 3;
-        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(5);
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
       } else if (choicesArr[i] === 'z') {
         gameData.world.blitzEnemiesToSpawn -= 1;
         this.type = 'Blitz';
         this.baseAttack = this.baseAttack.multiply(3);
         this.movementPerSec = this.movementPerSec *= 3;
-        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(5);
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
       } else if (choicesArr[i] === 'f') {
         gameData.world.falconEnemiesToSpawn -= 1;
         this.type = 'Falcon';
         this.baseRange = 10;
         this.baseAttack = this.baseAttack.multiply(3);
-        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(5);
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
       } else if (choicesArr[i] === 'a') {
         gameData.world.archerEnemiesToSpawn -= 1;
         this.type = 'Archer';
@@ -565,23 +565,25 @@ class Enemy extends fightingObject {
     if (this.CurrentHitPoints().greaterThan(0)) {
       return false;
     }
+
+    if (this.type === '') {
+      return true;
+    }
   
     let dustGained = new JBDecimal(0);
     let metalGained = new JBDecimal(0);
     let lootupgrade = new JBDecimal(0.1).multiply(gameData.upgrades[6].bought).add(1);
   
-    if (gameData.world.currentWave >= gameData.world.highestWaveCompleted && this.type ! == '') {
+    if (gameData.world.currentWave >= gameData.world.highestWaveCompleted) {
       lootupgrade = lootupgrade.multiply(gameData.rockUpgrades[6].getBonus()).add(1);
       dustGained = new JBDecimal(1.05).pow(gameData.world.currentWave);
       dustGained = dustGained.multiply(lootupgrade);
       dustGained = dustGained.multiply(new JBDecimal(2).pow(gameData.world.currentTier - 1));
-    }
-  
-    if (gameData.world.currentWave < gameData.world.highestWaveCompleted && this.type ! == '') {
+    } else {
       metalGained = new JBDecimal(gameData.derivatives[0].production(10000));
       metalGained = metalGained.multiply(lootupgrade);
       metalGained = metalGained.multiply(new JBDecimal(2).pow(gameData.world.currentTier - 1));
-    }
+    }  
   
     if (this.type === 'Boss') {
       dustGained = dustGained.multiply(5);
