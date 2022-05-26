@@ -637,7 +637,7 @@ function updateGUI() {
             ctx.fillText(display.getPrettyTimeFromMilliSeconds(gameData.world.ticksLeftOver) + ' banked', 10, 500);
         }
         ctx.font = '15px Arial';
-        ctx.fillText('Wave: ' + gameData.world.currentWave, 230, 15);
+        ctx.fillText('Wave: ' + gameData.world.currentWave + ' / ' + getWavesNeededForTier(), 230, 15);
         ctx.fillText('Unspawned: ' + gameData.world.enemiesToSpawn.toString() + '(' + getSpecialsCount().toString() + ')', 10, 15);
         if (gameData.world.ticksToNextSpawn > 1000) {
             ctx.fillStyle = 'red';
@@ -926,10 +926,13 @@ function getNumberOfEnemies(wave) {
     }
     return Math.floor(gameData.world.currentWave / div);
 }
+function getWavesNeededForTier() {
+    return 90 + (gameData.world.currentTier * 10);
+}
 function resetSpawns(killexistingenemies = true) {
     gameData.world.currentWave++;
     CheckAchievementCompletions(); // check before resetting to new tier
-    if (gameData.world.currentWave > 100) {
+    if (gameData.world.currentWave > getWavesNeededForTier()) {
         quitChallenges();
         if (gameData.world.currentTier === gameData.world.tierUnlocked) {
             changeTier('Up');
