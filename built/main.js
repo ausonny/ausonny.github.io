@@ -637,7 +637,7 @@ function updateGUI() {
             ctx.fillText(display.getPrettyTimeFromMilliSeconds(gameData.world.ticksLeftOver) + ' banked', 10, 500);
         }
         ctx.font = '15px Arial';
-        ctx.fillText('Wave: ' + gameData.world.currentWave + ' / ' + getWavesNeededForTier(), 230, 15);
+        ctx.fillText('Wave: ' + gameData.world.currentWave + ' / ' + getWavesNeededForTier(), 210, 15);
         ctx.fillText('Unspawned: ' + gameData.world.enemiesToSpawn.toString() + '(' + getSpecialsCount().toString() + ')', 10, 15);
         if (gameData.world.ticksToNextSpawn > 1000) {
             ctx.fillStyle = 'red';

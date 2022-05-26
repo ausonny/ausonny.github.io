@@ -241,7 +241,7 @@ class SaveGameData {
 
     this.boulderUpgrades = [];
     this.boulderUpgrades.push(new Upgrade('Upgrade0', 'Lower Challenge Limit by 1<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade0'), 1, 2));
-    this.boulderUpgrades.push(new Upgrade('Upgrade1', 'Reduce cost of rocks by one hundred pebbles', 10, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade1'), 8, 2));
+    this.boulderUpgrades.push(new Upgrade('Upgrade1', 'Reduce cost of rocks by ten pebbles', 10, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade1'), 8, 2));
     this.boulderUpgrades.push(new Upgrade('Upgrade2', 'Increase automation slots<br />', 1, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade2'), 1, 2));
     this.boulderUpgrades.push(new Upgrade('Upgrade3', 'Increase upgrade limits on certain pebble upgrades', 10, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade3'), 1, 2));
     this.boulderUpgrades.push(new Upgrade('Upgrade4', 'Double Production of all metal producers', 1, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade4'), 1, 2));
