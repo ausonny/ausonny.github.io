@@ -21,15 +21,9 @@ class Equipment extends Purchasable {
         if (gameData.rockUpgrades[4].bought > 0 && this.index === 0) {
             ret = ret.multiply(new JBDecimal(2).pow(gameData.rockUpgrades[4].bought));
         }
-        if (gameData.rockUpgrades[8].bought > 0 && this.index === 1) {
+        else if (gameData.rockUpgrades[8].bought > 0 && this.index === 1) {
             ret = ret.multiply(new JBDecimal(2).pow(gameData.rockUpgrades[8].bought));
         }
-        // if(gameData.rockUpgrades[9].bought > 0 && this.index === 3) {
-        //   ret = ret.multiply(new JBDecimal(2).pow(gameData.rockUpgrades[9].bought))
-        // }
-        // if(gameData.rockUpgrades[10].bought > 0 && this.index === 2) {
-        //   ret = ret.multiply(new JBDecimal(2).pow(gameData.rockUpgrades[10].bought))
-        // }
         ret = ret.add(1);
         ret = ret.multiply(getAchievementBonus());
         if (gameData.upgrades[17].owned.greaterThan(0)) {

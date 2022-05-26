@@ -32,5 +32,22 @@ class Challenge {
             // this.quit()
         }
     }
+    updateDisplay(index) {
+        let spanName = 'challenge' + index.toString() + 'Description';
+        document.getElementById(spanName).innerHTML = this.description;
+        spanName = 'challenge' + index.toString() + 'Bonus';
+        document.getElementById(spanName).innerHTML = this.bonusDescription;
+        spanName = 'challenge' + index.toString() + 'Completed';
+        document.getElementById(spanName).innerHTML = this.completed.toString();
+        spanName = 'challenge' + index.toString() + 'DustNeeded';
+        document.getElementById(spanName).innerHTML = this.waveRequiredforCompletion().toString();
+        const startName = 'btnChallenge' + index.toString() + 'Start';
+        if (this.active) {
+            document.getElementById(startName).classList.add('hidden');
+        }
+        else {
+            document.getElementById(startName).classList.remove('hidden');
+        }
+    }
 }
 //# sourceMappingURL=challenge.js.map

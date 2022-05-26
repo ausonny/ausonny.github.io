@@ -281,8 +281,8 @@ class SaveGameData {
     this.challenges.push(new Challenge('Production', 'Production Bonus is disabled', 'Add .01 to production bonus', 10, 5));
     this.challenges.push(new Challenge('Range', 'Tower Range is set to 3', 'Increase Tower Range', 20, 10));
     this.challenges.push(new Challenge('Shooting Speed', 'Shooting Speed is set to 1/s', 'Increase shooting speed', 10, 5));
-    this.challenges.push(new Challenge('Crits', 'Critical Attacks are disabled', 'Unlock and improve critical hits', 30, 5));
-    this.challenges.push(new Challenge('Slow', 'Slow disabled', 'Enemies within range slow', 30, 5));
+    this.challenges.push(new Challenge('Crits', 'Critical Attacks are disabled', 'Unlock and improve critical hits', 30, 15));
+    this.challenges.push(new Challenge('Slow', 'Slow disabled', 'Enemies within range slow', 30, 15));
 
     this.equipment = [];
     this.equipment.push(new Equipment('Attack', 0, 100, 1.5, this.resources.metal, this.resources.dust, document.getElementById('btnBuyAttack'), document.getElementById('btnBuyAttackDustUpgrade'), 1, 2, this.upgrades[3], this.dummyChallenge, 20));
@@ -515,35 +515,35 @@ class SaveGameData {
     );
 
     this.Achievements.push(
-      new Achievement(71, '1Prestige10', 'Pebble Prestige 1 times', 1, 1)
+      new Achievement(71, '1Prestige10', 'Prestige 1 time', 1, 1)
     );
     this.Achievements.push(
-      new Achievement(72, '1Prestige50', 'Pebble Prestige 10 times', 1, 10)
+      new Achievement(72, '1Prestige50', 'Prestige 10 times', 1, 10)
     );
     this.Achievements.push(
-      new Achievement(73, '1Prestige100', 'Pebble Prestige 50 times', 1, 50)
+      new Achievement(73, '1Prestige100', 'Prestige 50 times', 1, 50)
     );
     this.Achievements.push(
-      new Achievement(74, '1Prestige500', 'Pebble Prestige 100 times', 1, 100)
+      new Achievement(74, '1Prestige500', 'Prestige 100 times', 1, 100)
     );
     this.Achievements.push(
-      new Achievement(75, '1Prestige1000', 'Pebble Prestige 500 times', 1, 500)
+      new Achievement(75, '1Prestige1000', 'Prestige 500 times', 1, 500)
     );
 
     this.Achievements.push(
-      new Achievement(76, '2Prestige10', 'Rock Prestige 1 times', 1, 1)
+      new Achievement(76, '2Prestige10', 'Ascend 1 time', 1, 1)
     );
     this.Achievements.push(
-      new Achievement(77, '2Prestige50', 'Rock Prestige 10 times', 1, 10)
+      new Achievement(77, '2Prestige50', 'Ascend 10 times', 1, 10)
     );
     this.Achievements.push(
-      new Achievement(78, '2Prestige100', 'Rock Prestige 50 times', 1, 50)
+      new Achievement(78, '2Prestige100', 'Ascend 50 times', 1, 50)
     );
     this.Achievements.push(
-      new Achievement(79, '2Prestige500', 'Rock Prestige 100 times', 1, 100)
+      new Achievement(79, '2Prestige500', 'Ascend 100 times', 1, 100)
     );
     this.Achievements.push(
-      new Achievement(80, '2Prestige1000', 'Rock Prestige 500 times', 1, 500)
+      new Achievement(80, '2Prestige1000', 'Ascend 500 times', 1, 500)
     );
 
     this.Achievements.push(
@@ -563,19 +563,19 @@ class SaveGameData {
     );
 
     this.Achievements.push(
-      new Achievement(86, '3Prestige10', 'Boulder Prestige 1 times', 1, 1)
+      new Achievement(86, '3Prestige10', 'Transform 1 time', 1, 1)
     );
     this.Achievements.push(
-      new Achievement(87, '3Prestige50', 'Boulder Prestige 10 times', 1, 10)
+      new Achievement(87, '3Prestige50', 'Transform 10 times', 1, 10)
     );
     this.Achievements.push(
-      new Achievement(88, '3Prestige100', 'Boulder Prestige 50 times', 1, 50)
+      new Achievement(88, '3Prestige100', 'Transform 50 times', 1, 50)
     );
     this.Achievements.push(
-      new Achievement(89, '3Prestige500', 'Boulder Prestige 100 times', 1, 100)
+      new Achievement(89, '3Prestige500', 'Transform 100 times', 1, 100)
     );
     this.Achievements.push(
-      new Achievement(90, '3Prestige1000', 'Boulder Prestige 500 times', 1, 500)
+      new Achievement(90, '3Prestige1000', 'Transform 500 times', 1, 500)
     );
 
     this.tier1Feats = [];

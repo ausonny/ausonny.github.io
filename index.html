@@ -24,9 +24,9 @@
       <div class="row p-0 mt-1 border border-secondary text-light">
         <div class="col-md-12 p-0 m-0 text-small">
           <div id="prestige1button" class="row p-0 m-0 bg-dark text-light">
-            <button class="button prestigebutton text-center bg-success" type="button" id="btnPrestige1" onclick="prestige1()">Prestige</button>
-            <button class="button prestigebutton text-center bg-success" type="button" id="btnPrestige2" onclick="prestige2()">Prestige</button>
-            <button class="button prestigebutton text-center bg-success" type="button" id="btnPrestige3" onclick="prestige3()">Prestige</button>
+            <button class="button prestigebutton text-center fw-bold text-light bg-success" type="button" id="btnPrestige1" onclick="prestige1()">Prestige</button>
+            <button class="button prestigebutton text-center fw-bold text-light bg-success" type="button" id="btnPrestige2" onclick="prestige2()">Prestige</button>
+            <button class="button prestigebutton text-center fw-bold text-light bg-success" type="button" id="btnPrestige3" onclick="prestige3()">Prestige</button>
           </div>
         </div>
       </div>
@@ -86,10 +86,10 @@
             <li class="nav-item" role="presentation">
               <a class="nav-link" id="upgrades-tab" data-bs-toggle="tab" data-bs-target="#upgradestab" role="tab" aria-controls="upgrades" aria-selected="false">Upgrades</a>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" id="challengesTabNav">
               <a class="nav-link" id="challenges-tab" data-bs-toggle="tab" data-bs-target="#challengestab" role="tab" aria-controls="challenges" aria-selected="false">Challenges</a>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" id="automationTabNav">
               <a class="nav-link" id="automation-tab" data-bs-toggle="tab" data-bs-target="#automationtab" role="tab" aria-controls="automation" aria-selected="false">Automation</a>
             </li>
             <li class="nav-item" role="presentation">
@@ -501,7 +501,7 @@
               </div>
               <div id="healthequipment">
                 <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                  <div class="col-md-2 text-start">Hull Strength</div>
+                  <div class="col-md-2 text-start">Health</div>
                   <div class="col-md-2 text-start">Bought:<span id="hullbought">0</span></div>
                   <div class="col-md-2 text-start">Add <span id="hullproducing">0</span> to Hit Points</div>
                   <div class="col-md-3 text-center">

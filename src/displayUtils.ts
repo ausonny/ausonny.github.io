@@ -60,14 +60,14 @@ class Display {
 
     const newItem = new DisplayItem(this.displayindex, newline, category);
     if (category === 'gameSave') {
-      newItem.txt = this.addColor('white', this.getPrettyTime(new Date()) + ': ' + newline);
+      newItem.txt = this.addColor('blue', this.getPrettyTime(new Date()) + ': ' + newline);
       this.textToDisplaygamesave.unshift(newItem);
       this.textToDisplaygamesave.splice(1);
     } else if (category === 'achievement') {
-      newItem.txt = this.addColor('blue', this.getPrettyTime(new Date()) + ': ' + newline);
+      newItem.txt = this.addColor('green', this.getPrettyTime(new Date()) + ': ' + newline);
       this.textToDisplayachievement.unshift(newItem);
     } else if (category === 'loot') {
-      newItem.txt = this.addColor('green', this.getPrettyTime(new Date()) + ': ' + newline);
+      newItem.txt = this.addColor('white', this.getPrettyTime(new Date()) + ': ' + newline);
       this.textToDisplayloot.unshift(newItem);
       this.textToDisplayloot.splice(100);
     } else if (category === 'challenge') {
@@ -202,7 +202,11 @@ class Display {
   }
 
   DrawSolidDiamond (CurrentHitPoints: JBDecimal, position: Vector, color: string) {
-    const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+    let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+
+    if (squareSize < 4) {
+      squareSize = 4
+    }
 
     this.ctx.fillStyle = color;
     const top = (position.x + 10) * (this.canvas.scrollWidth / 20) - (squareSize / 1.4);
@@ -218,7 +222,10 @@ class Display {
   }
 
   DrawTwoColorDiamond (CurrentHitPoints: JBDecimal, position: Vector, leftcolor: string, rightcolor: string) {
-    const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+    let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+    if (squareSize < 4) {
+      squareSize = 4
+    }
 
     const top = (position.x + 10) * (this.canvas.scrollWidth / 20) - (squareSize / 1.4);
     const left = (position.y + 10) * (this.canvas.scrollWidth / 20) - (squareSize / 1.4);
@@ -235,13 +242,19 @@ class Display {
   }
 
   DrawSolidSquare (CurrentHitPoints: JBDecimal, position: Vector, color: string) {
-    const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+    let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+    if (squareSize < 4) {
+      squareSize = 4
+    }
     this.ctx.fillStyle = color;
     this.ctx.fillRect((position.x + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, (position.y + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, squareSize, squareSize);
   }
 
   DrawTwoColorSquare (CurrentHitPoints: JBDecimal, position: Vector, leftcolor: string, rightcolor: string) {
-    const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+    let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+    if (squareSize < 4) {
+      squareSize = 4
+    }
     this.ctx.fillStyle = leftcolor;
     this.ctx.fillRect((position.x + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, (position.y + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, squareSize / 2, squareSize);
     this.ctx.fillStyle = rightcolor;
@@ -249,7 +262,12 @@ class Display {
   }
 
   DrawTower () {
-    const squareSize = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).multiply(40).ToNumber();
+    let squareSize = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).multiply(40).ToNumber();
+
+    if (squareSize < 4) {
+      squareSize = 4
+    }
+
     const color = 'lime';
     this.ctx.fillStyle = color;
     this.ctx.fillRect((10) * (this.canvas.scrollWidth / 20) - squareSize / 2, (10) * (this.canvas.scrollWidth / 20) - squareSize / 2, squareSize, squareSize);

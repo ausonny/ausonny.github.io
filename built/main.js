@@ -61,7 +61,6 @@ function processStuff(ticks) {
     gameData.timeDerivatives[2].owned = gameData.timeDerivatives[2].owned.add(gameData.timeDerivatives[3].production());
     gameData.timeDerivatives[3].owned = gameData.timeDerivatives[3].owned.add(gameData.timeDerivatives[4].production());
     gameData.timeDerivatives[4].owned = gameData.timeDerivatives[4].owned.add(gameData.timeDerivatives[5].production());
-    gameData.tower.act();
     for (let index = 0; index < 12; index++) { // this resets only the first 12 pebbleupgrade limits, hence the unusual for loop
         const element = gameData.upgrades[index];
         element.addedlimit = 0;
@@ -78,149 +77,18 @@ function processStuff(ticks) {
             element.addedlimit += 10;
         }
     }
+    gameData.tower.act();
     for (let index = gameData.enemies.length - 1; index >= 0; index--) {
         const e = gameData.enemies[index];
-        e.act();
-        if (e.CurrentHitPoints().lessThanOrEqualTo(0)) {
-            if (gameData.world.currentWave >= gameData.world.highestWaveCompleted) {
-                let dustGained = new JBDecimal(0);
-                const lootupgrade = new JBDecimal(0.1).multiply(gameData.upgrades[6].bought).multiply(gameData.rockUpgrades[6].getBonus()).add(1);
-                if (e.type !== '') {
-                    dustGained = new JBDecimal(1.05).pow(gameData.world.currentWave);
-                    dustGained = dustGained.multiply(lootupgrade);
-                    dustGained = dustGained.multiply(new JBDecimal(2).pow(gameData.world.currentTier - 1));
-                    if (e.type === 'Boss') {
-                        dustGained = dustGained.multiply(5);
-                    }
-                    if (dustGained.greaterThan(0)) {
-                        gameData.resources.dust.add(dustGained);
-                        display.addToDisplay(dustGained.ToString() + ' dust gained', 'loot');
-                    }
-                }
-            }
-            else {
-                let metalGained = new JBDecimal(0);
-                const lootupgrade = new JBDecimal(0.1).multiply(gameData.upgrades[6].bought).add(1);
-                if (e.type !== '') {
-                    metalGained = new JBDecimal(gameData.derivatives[0].production(10000));
-                    metalGained = metalGained.multiply(lootupgrade);
-                    metalGained = metalGained.multiply(new JBDecimal(2).pow(gameData.world.currentTier - 1));
-                    if (e.type === 'Boss') {
-                        metalGained = metalGained.multiply(5);
-                    }
-                    if (metalGained.greaterThan(0)) {
-                        gameData.resources.metal.add(metalGained);
-                        display.addToDisplay(metalGained.ToString() + ' metal gained', 'loot');
-                    }
-                }
-            }
+        if (e.act()) { //returns true if enemy died
             gameData.enemies.splice(index, 1);
         }
     }
-    if (gameData.world.ticksToNextSpawn <= 0) {
-        if (gameData.world.enemiesToSpawn > 0) {
-            const enemyindex = gameData.world.currentWave + 10 - gameData.world.enemiesToSpawn; // keeps visual index from counting down.
-            const newEnemy = new Enemy(gameData.world.currentWave, enemyindex);
-            if (Math.random() * gameData.world.enemiesToSpawn < getSpecialsCount()) {
-                const choicesArr = getSpecialsArray();
-                const i = Math.floor(Math.random() * choicesArr.length);
-                if (choicesArr[i] === 'F') {
-                    gameData.world.fastEnemiesToSpawn -= 1;
-                    newEnemy.movementPerSec *= 3;
-                    newEnemy.type = 'Fast';
-                }
-                else if (choicesArr[i] === 'T') {
-                    gameData.world.tankEnemiesToSpawn -= 1;
-                    newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(3);
-                    newEnemy.type = 'Tank';
-                }
-                else if (choicesArr[i] === 'R') {
-                    gameData.world.rangedEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Ranged';
-                    newEnemy.baseRange = 10;
-                }
-                else if (choicesArr[i] === 'C') {
-                    gameData.world.cannonEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Cannon';
-                    newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
-                }
-                else if (choicesArr[i] === 'b') {
-                    gameData.world.bradleyEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Bradley';
-                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
-                    newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(3);
-                }
-                else if (choicesArr[i] === 't') {
-                    gameData.world.triremeEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Trireme';
-                    newEnemy.baseRange = 10;
-                    newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(3);
-                }
-                else if (choicesArr[i] === 'c') {
-                    gameData.world.cavalierEnemiesToSpwan -= 1;
-                    newEnemy.type = 'Cavalier';
-                    newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(3);
-                    newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
-                }
-                else if (choicesArr[i] === 'S') {
-                    gameData.world.scorpionEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Scorpion';
-                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
-                    newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
-                }
-                else if (choicesArr[i] === 'P') {
-                    gameData.world.paladinEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Paladin';
-                    newEnemy.baseRange = 10;
-                    newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
-                }
-                else if (choicesArr[i] === 'O') {
-                    gameData.world.oliphantEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Oliphant';
-                    newEnemy.baseRange = 10;
-                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
-                    newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(5);
-                }
-                else if (choicesArr[i] === 'z') {
-                    gameData.world.blitzEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Blitz';
-                    newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
-                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
-                    newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(5);
-                }
-                else if (choicesArr[i] === 'f') {
-                    gameData.world.falconEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Falcon';
-                    newEnemy.baseRange = 10;
-                    newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
-                    newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(5);
-                }
-                else if (choicesArr[i] === 'a') {
-                    gameData.world.archerEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Archer';
-                    newEnemy.baseRange = 10;
-                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
-                }
-                else if (choicesArr[i] === 'ti') {
-                    gameData.world.titanEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Titan';
-                    newEnemy.baseRange = 10;
-                    newEnemy.baseAttack = newEnemy.baseAttack.multiply(3);
-                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 3;
-                }
-                else if (choicesArr[i] === 'B') {
-                    gameData.world.bossEnemiesToSpawn -= 1;
-                    newEnemy.type = 'Boss';
-                    newEnemy.baseRange = 10;
-                    newEnemy.movementPerSec = newEnemy.movementPerSec *= 0.5; // slower makes him more deadly, giving him more time to shoot efore entering range
-                    newEnemy.baseAttack = newEnemy.baseAttack.multiply(5);
-                    newEnemy.baseMaxHitPoints = newEnemy.baseMaxHitPoints.multiply(5);
-                }
-            }
-            gameData.enemies.push(newEnemy);
-            gameData.world.ticksToNextSpawn += 1000 - gameData.world.currentWave * 5;
-            gameData.world.enemiesToSpawn -= 1;
-        }
+    if (gameData.world.ticksToNextSpawn <= 0 && gameData.world.enemiesToSpawn > 0) {
+        const newEnemy = new Enemy(false);
+        gameData.enemies.push(newEnemy);
+        gameData.world.ticksToNextSpawn += 1000 - (gameData.world.currentWave * 5);
+        gameData.world.enemiesToSpawn -= 1;
     }
     const autoprestige1 = document.getElementById('autoprestige1');
     if (gameData.tower.CurrentHitPoints().lessThanOrEqualTo(0)) {
@@ -240,7 +108,7 @@ function processStuff(ticks) {
             display.addToDisplay('You have been overcome.  The pressure lessens.', 'story');
         }
     }
-    if (gameData.world.enemiesToSpawn === 0 && gameData.enemies.length < 1) {
+    if (gameData.world.enemiesToSpawn === 0 && gameData.enemies.length === 0) {
         if (gameData.world.currentWave >= gameData.stats.highestEverWave) {
             gameData.stats.highestEverWave = gameData.world.currentWave;
         }
@@ -395,45 +263,33 @@ function updateGUI() {
         display.addToDisplay(gameData.storyElements[0].text, 'story');
         gameData.storyElements[0].printed = true;
     }
-    if (!gameData.storyElements[1].printed) {
-        if (gameData.derivatives[0].bought > 0) {
-            display.addToDisplay(gameData.storyElements[1].text, 'story');
-            gameData.storyElements[1].printed = true;
-        }
+    if (!gameData.storyElements[1].printed && gameData.derivatives[0].bought > 0) {
+        display.addToDisplay(gameData.storyElements[1].text, 'story');
+        gameData.storyElements[1].printed = true;
     }
-    if (!gameData.storyElements[2].printed) {
-        if (gameData.derivatives[3].bought > 0) {
-            display.addToDisplay(gameData.storyElements[2].text, 'story');
-            gameData.storyElements[2].printed = true;
-        }
+    if (!gameData.storyElements[2].printed && gameData.derivatives[3].bought > 0) {
+        display.addToDisplay(gameData.storyElements[2].text, 'story');
+        gameData.storyElements[2].printed = true;
     }
-    if (!gameData.storyElements[3].printed) {
-        if (gameData.resources.dust.amount.greaterThan(0)) {
-            display.addToDisplay(gameData.storyElements[3].text, 'story');
-            gameData.storyElements[3].printed = true;
-        }
+    if (!gameData.storyElements[3].printed && gameData.resources.dust.amount.greaterThan(0)) {
+        display.addToDisplay(gameData.storyElements[3].text, 'story');
+        gameData.storyElements[3].printed = true;
     }
     document.getElementById('particlesamount').innerHTML = gameData.resources.particles.amount.ToString();
     document.getElementById('particlesb').innerHTML = getParticleBonus().ToString();
     document.getElementById('timeparticles').innerHTML = gameData.resources.timeparticles.amount.ToString();
     document.getElementById('timeparticlesbonus').innerHTML = getTimeParticleBonus().ToString();
+    document.getElementById('productionderivative').classList.remove('hidden');
     if (gameData.challenges[3].active || gameData.challenges[3].completed < 1) {
         document.getElementById('productionderivative').classList.add('hidden');
     }
-    else {
-        document.getElementById('productionderivative').classList.remove('hidden');
-    }
+    document.getElementById('supervisorderivative').classList.add('hidden');
     if (gameData.derivatives[0].owned.greaterThan(0)) {
         document.getElementById('supervisorderivative').classList.remove('hidden');
     }
-    else {
-        document.getElementById('supervisorderivative').classList.add('hidden');
-    }
+    document.getElementById('foremanderivative').classList.add('hidden');
     if (gameData.derivatives[1].owned.greaterThan(0)) {
         document.getElementById('foremanderivative').classList.remove('hidden');
-    }
-    else {
-        document.getElementById('foremanderivative').classList.add('hidden');
     }
     document.getElementById('managerderivative').classList.add('hidden');
     document.getElementById('btnBuyUpgrade7').classList.add('hidden');
@@ -744,6 +600,12 @@ function updateGUI() {
     if (gameData.world.tierUnlocked > 1) {
         document.getElementById('tier2div').classList.remove('hidden');
     }
+    document.getElementById('challengesTabNav').classList.add('hidden');
+    document.getElementById('automationTabNav').classList.add('hidden');
+    if (gameData.stats.highestEverWave >= 20) {
+        document.getElementById('challengesTabNav').classList.remove('hidden');
+        document.getElementById('automationTabNav').classList.remove('hidden');
+    }
     const canvas = display.canvas;
     const ctx = display.ctx;
     if (canvas.getContext) {
@@ -757,13 +619,6 @@ function updateGUI() {
         ctx.scale(ratio * dpr * canvas.height / canvas.scrollHeight, ratio * dpr * canvas.width / canvas.scrollWidth); // adjust this!
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.height, canvas.height);
-        ctx.globalAlpha = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).ToNumber();
-        if (ctx.globalAlpha < 0.1) {
-            ctx.globalAlpha = 0.1;
-        }
-        ctx.fillStyle = 'lime';
-        // ctx.fillRect((10) * (canvas.scrollWidth / 20) - 10, (10) * (canvas.scrollWidth / 20) - 10, 20, 20);
-        // const towerhitpoint = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).multiply(5).multiply(display.drone.CurrentHitPoints());
         display.DrawTower();
         ctx.globalAlpha = 1.0;
         gameData.tower.bullets.forEach((b) => { b.update(); });
@@ -771,7 +626,6 @@ function updateGUI() {
             e.update();
             e.bullets.forEach((b) => { b.update(); });
         });
-        ctx.globalAlpha = 1;
         ctx.font = 'bold 15px Arial';
         ctx.fillStyle = 'red';
         ctx.fillText('Drone Attack: ' + display.drone.Attack().ToString(), 10, 460);
@@ -789,84 +643,6 @@ function updateGUI() {
             ctx.fillStyle = 'red';
             ctx.fillText('Time to next enemy: ' + display.getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn), 10, 30);
         }
-        //   ctx.font = '12px Arial';
-        //   DrawSolidSquare(ctx, drone, drone.CurrentHitPoints(), canvas.scrollWidth, new Vector(-9.4, -7.5), 'white');
-        //   ctx.fillText('Drone', 32, 68);
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 5) {
-        //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, -6.6, 'yellow');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Fast', 32, 91);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 10) {
-        //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, -5.7, 'white');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Tough', 32, 115);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 15) {
-        //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, -4.8, 'white');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Ranged', 32, 138);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 20) {
-        //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, -3.9, 'blue');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Strong', 32, 161);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 25) {
-        //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, -3.0, 'yellow');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Fast/Ranged', 32, 184);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 30) {
-        //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, -2.1, 'yellow');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Fast/Tough', 32, 208);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 35) {
-        //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, -1.2, 'white');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Ranged/Tough', 32, 231);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 40) {
-        //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, -0.3, 'blue');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Strong/Tough', 32, 255);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 45) {
-        //     DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, 0.6, 'yellow', 'blue');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Fast/Strong', 32, 278);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 50) {
-        //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.4, 1.5, 'blue');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Ranged/Strong', 32, 303);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 55) {
-        //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, 2.4, 'yellow');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Fast/Ranged/Tough', 32, 326);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 60) {
-        //     DrawTwoColorSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, 3.3, 'yellow', 'blue');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Fast/Strong/Tough', 32, 350);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 65) {
-        //     DrawSolidDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 20, -9.45, 4.2, 'blue');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Ranged/Strong/Tough', 32, 375);
-        //   }
-        //   if ((gameData.world.currentWave - gameData.world.currentTier + 1) >= 70) {
-        //     DrawTwoColorDiamond(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 12, -9.40, 5.1, 'yellow', 'blue');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Fast/Strong/Ranged', 32, 399);
-        //   }
-        //   if (gameData.world.currentWave % 10 === 0) {
-        //     DrawSolidSquare(ctx, e.CurrentHitPoints(), e.MaxHitPoints(), canvas.scrollWidth, 30, -9.5, 6.0, 'red');
-        //     ctx.fillStyle = 'white';
-        //     ctx.fillText('Boss', 32, 423);
-        //   }
     }
     document.getElementById('auto1').classList.add('hidden');
     document.getElementById('auto2').classList.add('hidden');
@@ -957,21 +733,7 @@ function updateGUI() {
             document.getElementById('btnChallengeQuit').classList.remove('hidden');
             document.getElementById('secondRow').classList.remove('hidden');
         }
-        let spanName = 'challenge' + index.toString() + 'Description';
-        document.getElementById(spanName).innerHTML = ch.description;
-        spanName = 'challenge' + index.toString() + 'Bonus';
-        document.getElementById(spanName).innerHTML = ch.bonusDescription;
-        spanName = 'challenge' + index.toString() + 'Completed';
-        document.getElementById(spanName).innerHTML = ch.completed.toString();
-        spanName = 'challenge' + index.toString() + 'DustNeeded';
-        document.getElementById(spanName).innerHTML = ch.waveRequiredforCompletion().toString();
-        const startName = 'btnChallenge' + index.toString() + 'Start';
-        if (ch.active) {
-            document.getElementById(startName).classList.add('hidden');
-        }
-        else {
-            document.getElementById(startName).classList.remove('hidden');
-        }
+        ch.updateDisplay(index);
     });
     document.getElementById('prestige1count').innerHTML = gameData.stats.prestige1.toString();
     document.getElementById('prestige1time').innerHTML = display.getPrettyTimeFromMilliSeconds(gameData.stats.prestige1ticks);
@@ -1065,11 +827,11 @@ function pebblesFromPrestige() {
     return gameData.resources.dust.amount.divide(10 - gameData.rockUpgrades[1].bought).floor();
 }
 function rocksFromPrestige() {
-    return gameData.resources.pebbles.amount.add(pebblesFromPrestige()).divide(1000 - (gameData.boulderUpgrades[1].bought * 10)).floor();
+    return gameData.resources.pebbles.amount.add(pebblesFromPrestige()).divide(100 - (gameData.boulderUpgrades[1].bought * 10)).floor();
     ;
 }
 function bouldersFromPrestige() {
-    return gameData.resources.rocks.amount.add(rocksFromPrestige()).divide(1000 - (gameData.boulderUpgrades[1].bought * 10)).floor();
+    return gameData.resources.rocks.amount.add(rocksFromPrestige()).divide(1000).floor();
 }
 // eslint-disable-next-line no-unused-vars
 function prestige1() {
@@ -1176,7 +938,7 @@ function resetSpawns(killexistingenemies = true) {
             init(1);
         }
     }
-    display.drone = new Enemy(gameData.world.currentWave, 0);
+    display.drone = new Enemy(true);
     gameData.world.enemiesToSpawn = 9 + gameData.world.currentWave - gameData.rockUpgrades[12].bought;
     gameData.world.fastEnemiesToSpawn = getNumberOfEnemies(5);
     gameData.world.tankEnemiesToSpawn = getNumberOfEnemies(10);
@@ -1416,7 +1178,7 @@ function init(prestigelevel = 0) {
             gameData.world.ticksToNextSpawn = savegame.world.ticksToNextSpawn;
             for (let index = 0; index < savegame.enemies.length; index++) {
                 const element = savegame.enemies[index];
-                const newEnemy = new Enemy(element.wave, element.enemycount);
+                const newEnemy = new Enemy(false);
                 newEnemy.pos.x = element.pos.x;
                 newEnemy.pos.y = element.pos.y;
                 newEnemy.baseAttack.mantissa = element.baseAttack.mantissa;
@@ -1562,7 +1324,7 @@ function init(prestigelevel = 0) {
             }
         }
     }
-    display.drone = new Enemy(gameData.world.currentWave, 0);
+    display.drone = new Enemy(true);
     CheckAchievementCompletions();
     initted = true;
 }

@@ -134,24 +134,19 @@ class fightingObject extends movingObject {
 
   player: boolean;
 
-  enemycount: number;
-
   bullets: Bullet[];
 
   type: string;
 
   wave: number;
 
-  constructor (wave: number, enemycount: number, player: boolean = false) {
+  constructor (displayDrone: boolean, tower: boolean) {
     super(new Vector(0, 0), new Vector(0, 0), 0, false);
     this.bullets = [];
     this.ticksToNextBullet = 0;
 
-    if (player) {
-      this.createTower();
-    } else {
-      this.createEnemy(wave, enemycount);
-    }
+    if (tower) { this.createTower();
+    } else this.createEnemy(displayDrone);
   }
 
   createTower () {
@@ -169,9 +164,10 @@ class fightingObject extends movingObject {
     this.target.y = 0;
   }
 
-  createEnemy (wave: number, enemycount: number) {
+  createEnemy(displaydrone: boolean ) {
     const posx = Math.random() * 10;
     const posy = Math.sqrt(100 - Math.pow(posx, 2));
+    const wave = gameData.world.currentWave;
     const tieradjustment = gameData.world.currentTier - 1;
 
     this.baseAttack = new JBDecimal(1.15 + tieradjustment / 100).pow(wave - 1);
@@ -185,19 +181,108 @@ class fightingObject extends movingObject {
     this.baseHeal = new JBDecimal(0);
     this.baseShotsPerSec = 1;
     this.wave = wave;
-    this.enemycount = enemycount;
+
+    const quadrant = Math.floor((Math.random() * 4));
     this.pos = new Vector(posx, posy);
-    if (enemycount % 4 === 0) {
+    if (quadrant === 0) {
       this.pos.y *= -1;
-    } else if (enemycount % 4 === 1) {
+    } else if (quadrant === 1) {
       this.pos.x *= -1;
-    } else if (enemycount % 4 === 2) {
+    } else if (quadrant === 2) {
       this.pos.x *= -1;
       this.pos.y *= -1;
     }
 
     this.type = '';
-  }
+    if (displaydrone) {
+      return;
+    }
+    if (Math.random() * gameData.world.enemiesToSpawn < getSpecialsCount()) {
+      const choicesArr = getSpecialsArray();
+
+      const i = Math.floor(Math.random() * choicesArr.length);
+
+      if (choicesArr[i] === 'F') {
+        gameData.world.fastEnemiesToSpawn -= 1;
+        this.movementPerSec *= 3;
+        this.type = 'Fast';
+      } else if (choicesArr[i] === 'T') {
+        gameData.world.tankEnemiesToSpawn -= 1;
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
+        this.type = 'Tank';
+      } else if (choicesArr[i] === 'R') {
+        gameData.world.rangedEnemiesToSpawn -= 1;
+        this.type = 'Ranged';
+        this.baseRange = 10;
+      } else if (choicesArr[i] === 'C') {
+        gameData.world.cannonEnemiesToSpawn -= 1;
+        this.type = 'Cannon';
+        this.baseAttack = this.baseAttack.multiply(3);
+      } else if (choicesArr[i] === 'b') {
+        gameData.world.bradleyEnemiesToSpawn -= 1;
+        this.type = 'Bradley';
+        this.movementPerSec = this.movementPerSec *= 3;
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
+      } else if (choicesArr[i] === 't') {
+        gameData.world.triremeEnemiesToSpawn -= 1;
+        this.type = 'Trireme';
+        this.baseRange = 10;
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
+      } else if (choicesArr[i] === 'c') {
+        gameData.world.cavalierEnemiesToSpwan -= 1;
+        this.type = 'Cavalier';
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
+        this.baseAttack = this.baseAttack.multiply(3);
+      } else if (choicesArr[i] === 'S') {
+        gameData.world.scorpionEnemiesToSpawn -= 1;
+        this.type = 'Scorpion';
+        this.movementPerSec = this.movementPerSec *= 3;
+        this.baseAttack = this.baseAttack.multiply(3);
+      } else if (choicesArr[i] === 'P') {
+        gameData.world.paladinEnemiesToSpawn -= 1;
+        this.type = 'Paladin';
+        this.baseRange = 10;
+        this.baseAttack = this.baseAttack.multiply(3);
+      } else if (choicesArr[i] === 'O') {
+        gameData.world.oliphantEnemiesToSpawn -= 1;
+        this.type = 'Oliphant';
+        this.baseRange = 10;
+        this.movementPerSec = this.movementPerSec *= 3;
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(5);
+      } else if (choicesArr[i] === 'z') {
+        gameData.world.blitzEnemiesToSpawn -= 1;
+        this.type = 'Blitz';
+        this.baseAttack = this.baseAttack.multiply(3);
+        this.movementPerSec = this.movementPerSec *= 3;
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(5);
+      } else if (choicesArr[i] === 'f') {
+        gameData.world.falconEnemiesToSpawn -= 1;
+        this.type = 'Falcon';
+        this.baseRange = 10;
+        this.baseAttack = this.baseAttack.multiply(3);
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(5);
+      } else if (choicesArr[i] === 'a') {
+        gameData.world.archerEnemiesToSpawn -= 1;
+        this.type = 'Archer';
+        this.baseRange = 10;
+        this.movementPerSec = this.movementPerSec *= 3;
+      } else if (choicesArr[i] === 'ti') {
+        gameData.world.titanEnemiesToSpawn -= 1;
+        this.type = 'Titan';
+        this.baseRange = 10;
+        this.baseAttack = this.baseAttack.multiply(3);
+        this.movementPerSec = this.movementPerSec *= 3;
+      } else if (choicesArr[i] === 'B') {
+        gameData.world.bossEnemiesToSpawn -= 1;
+        this.type = 'Boss';
+        this.baseRange = 10;
+        this.movementPerSec = this.movementPerSec *= 0.5; // slower makes him more deadly, giving him more time to shoot efore entering range
+        this.baseAttack = this.baseAttack.multiply(5);
+        this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(5);
+      }
+    }
+}
+
 
   MaxHitPoints () {
     let ret = new JBDecimal(this.baseMaxHitPoints);
@@ -269,7 +354,7 @@ class fightingObject extends movingObject {
 
     let ret = 0;
     if (this.player) {
-      ret = 1.0 * gameData.challenges[2].completed + (gameData.rockUpgrades[8].bought);
+      ret = (1.0 + (gameData.rockUpgrades[9].bought * 0.1)) * gameData.challenges[2].completed;
       ret *= Math.pow(0.99 - (gameData.world.currentTier - 1) / 100, gameData.world.currentWave);
     }
 
@@ -308,7 +393,8 @@ class fightingObject extends movingObject {
       return 1;
     }
 
-    let ret = 1 + (gameData.challenges[5].completed + (gameData.rockUpgrades[10].bought));
+    let ret = 1 + ((1.0 + (gameData.rockUpgrades[10].bought * 0.1)) * gameData.challenges[5].completed);
+
     ret *= Math.pow(0.99 - (gameData.world.currentTier - 1) / 100, gameData.world.currentWave);
 
     if (ret < 1) {
@@ -411,7 +497,7 @@ class fightingObject extends movingObject {
 // eslint-disable-next-line no-unused-vars
 class Tower extends fightingObject {
   constructor () {
-    super(0, 0, true);
+    super(false, true);
   }
 
   act () {
@@ -454,16 +540,13 @@ class Tower extends fightingObject {
 class Enemy extends fightingObject {
   Enemy: boolean;
 
-  constructor (wave: number, enemycount: number) {
-    super(wave, enemycount);
+  constructor (displayDrone: boolean) {
+    super(displayDrone, false);
     this.Enemy = true;
   }
 
   act () {
     this.checkForHit();
-    if (this.CurrentHitPoints().lessThanOrEqualTo(0)) {
-      return;
-    }
     this.damagetaken = this.damagetaken.subtract(this.Heal());
     if (this.damagetaken.lessThan(0)) {
       this.damagetaken = new JBDecimal(0);
@@ -477,8 +560,45 @@ class Enemy extends fightingObject {
         this.ticksToNextBullet = 0;
       }
     }
-
     this.move();
+
+    if (this.CurrentHitPoints().greaterThan(0)) {
+      return false;
+    }
+  
+    let dustGained = new JBDecimal(0);
+    let metalGained = new JBDecimal(0);
+    let lootupgrade = new JBDecimal(0.1).multiply(gameData.upgrades[6].bought).add(1);
+  
+    if (gameData.world.currentWave >= gameData.world.highestWaveCompleted && this.type ! == '') {
+      lootupgrade = lootupgrade.multiply(gameData.rockUpgrades[6].getBonus()).add(1);
+      dustGained = new JBDecimal(1.05).pow(gameData.world.currentWave);
+      dustGained = dustGained.multiply(lootupgrade);
+      dustGained = dustGained.multiply(new JBDecimal(2).pow(gameData.world.currentTier - 1));
+    }
+  
+    if (gameData.world.currentWave < gameData.world.highestWaveCompleted && this.type ! == '') {
+      metalGained = new JBDecimal(gameData.derivatives[0].production(10000));
+      metalGained = metalGained.multiply(lootupgrade);
+      metalGained = metalGained.multiply(new JBDecimal(2).pow(gameData.world.currentTier - 1));
+    }
+  
+    if (this.type === 'Boss') {
+      dustGained = dustGained.multiply(5);
+      metalGained = metalGained.multiply(5);
+    }
+  
+    if (dustGained.greaterThan(0)) {
+      gameData.resources.dust.add(dustGained);
+      display.addToDisplay(dustGained.ToString() + ' dust gained', 'loot');
+    }
+  
+    if (metalGained.greaterThan(0)) {
+      gameData.resources.metal.add(metalGained);
+      display.addToDisplay(metalGained.ToString() + ' metal gained', 'loot');
+    }
+
+    return true;
   }
 
   draw () {
@@ -489,7 +609,7 @@ class Enemy extends fightingObject {
         break;
       }
       case ('Bradley'):
-      case ('Fast'): {
+      case ('Fast'): {this
         display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'yellow');
         break;
       }

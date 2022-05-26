@@ -35,16 +35,16 @@ class Display {
         this.displayindex++;
         const newItem = new DisplayItem(this.displayindex, newline, category);
         if (category === 'gameSave') {
-            newItem.txt = this.addColor('white', this.getPrettyTime(new Date()) + ': ' + newline);
+            newItem.txt = this.addColor('blue', this.getPrettyTime(new Date()) + ': ' + newline);
             this.textToDisplaygamesave.unshift(newItem);
             this.textToDisplaygamesave.splice(1);
         }
         else if (category === 'achievement') {
-            newItem.txt = this.addColor('blue', this.getPrettyTime(new Date()) + ': ' + newline);
+            newItem.txt = this.addColor('green', this.getPrettyTime(new Date()) + ': ' + newline);
             this.textToDisplayachievement.unshift(newItem);
         }
         else if (category === 'loot') {
-            newItem.txt = this.addColor('green', this.getPrettyTime(new Date()) + ': ' + newline);
+            newItem.txt = this.addColor('white', this.getPrettyTime(new Date()) + ': ' + newline);
             this.textToDisplayloot.unshift(newItem);
             this.textToDisplayloot.splice(100);
         }
@@ -175,7 +175,10 @@ class Display {
         return base.ToString() + ' /hr';
     }
     DrawSolidDiamond(CurrentHitPoints, position, color) {
-        const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+        let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+        if (squareSize < 4) {
+            squareSize = 4;
+        }
         this.ctx.fillStyle = color;
         const top = (position.x + 10) * (this.canvas.scrollWidth / 20) - (squareSize / 1.4);
         const bottom = (position.x + 10) * (this.canvas.scrollWidth / 20) + (squareSize / 1.4);
@@ -189,7 +192,10 @@ class Display {
         this.ctx.fill();
     }
     DrawTwoColorDiamond(CurrentHitPoints, position, leftcolor, rightcolor) {
-        const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+        let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+        if (squareSize < 4) {
+            squareSize = 4;
+        }
         const top = (position.x + 10) * (this.canvas.scrollWidth / 20) - (squareSize / 1.4);
         const left = (position.y + 10) * (this.canvas.scrollWidth / 20) - (squareSize / 1.4);
         const right = (position.y + 10) * (this.canvas.scrollWidth / 20) + (squareSize / 1.4);
@@ -203,19 +209,28 @@ class Display {
         40;
     }
     DrawSolidSquare(CurrentHitPoints, position, color) {
-        const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+        let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+        if (squareSize < 4) {
+            squareSize = 4;
+        }
         this.ctx.fillStyle = color;
         this.ctx.fillRect((position.x + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, (position.y + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, squareSize, squareSize);
     }
     DrawTwoColorSquare(CurrentHitPoints, position, leftcolor, rightcolor) {
-        const squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+        let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).multiply(12).ToNumber();
+        if (squareSize < 4) {
+            squareSize = 4;
+        }
         this.ctx.fillStyle = leftcolor;
         this.ctx.fillRect((position.x + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, (position.y + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, squareSize / 2, squareSize);
         this.ctx.fillStyle = rightcolor;
         this.ctx.fillRect((position.x + 10) * (this.canvas.scrollWidth / 20), (position.y + 10) * (this.canvas.scrollWidth / 20) - squareSize / 2, squareSize / 2, squareSize);
     }
     DrawTower() {
-        const squareSize = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).multiply(40).ToNumber();
+        let squareSize = gameData.tower.CurrentHitPoints().divide(gameData.tower.MaxHitPoints()).multiply(40).ToNumber();
+        if (squareSize < 4) {
+            squareSize = 4;
+        }
         const color = 'lime';
         this.ctx.fillStyle = color;
         this.ctx.fillRect((10) * (this.canvas.scrollWidth / 20) - squareSize / 2, (10) * (this.canvas.scrollWidth / 20) - squareSize / 2, squareSize, squareSize);
