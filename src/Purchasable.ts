@@ -1,5 +1,19 @@
-/* global JBDecimal, Resource, gameData, internalInflationArray, display, CheckAchievementCompletions */
 // eslint-disable-next-line no-unused-vars
+function internalInflationCost(increase: number) {
+  if (internalInflationArray.length <= increase) {
+    display.addToDisplay('Consider upping the initial internalinflationarray', DisplayCategory.Story);
+    // eslint-disable-next-line no-global-assign
+    internalInflationArray = [];
+    let total = 0;
+    for (let index = 1; index <= increase * 1.1; index++) {
+      total += Math.ceil(Math.sqrt(index));
+      internalInflationArray.push(total);
+    }
+  }
+  return internalInflationArray[increase];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Purchasable {
   baseCost: JBDecimal;
 
@@ -31,7 +45,23 @@ class Purchasable {
 
   upgradeButton: HTMLElement;
 
-  constructor (baseCost: number, costMultiplier: number, baseResource: Resource, upgradeCost: number, upgradeCostMultiplier: number, upgradeResource: Resource, inflationFloor: number, limit: number, buyButton: HTMLElement, upgradeable: boolean, upgradeButton: HTMLElement) {
+  autoOn: boolean;
+
+  active: boolean;
+
+  constructor(
+    baseCost: number,
+    costMultiplier: number,
+    baseResource: Resource,
+    upgradeCost: number,
+    upgradeCostMultiplier: number,
+    upgradeResource: Resource,
+    inflationFloor: number,
+    limit: number,
+    buyButton: HTMLElement,
+    upgradeable: boolean,
+    upgradeButton: HTMLElement
+  ) {
     this.baseCost = new JBDecimal(baseCost);
     this.costMultiplier = costMultiplier;
     this.baseResource = baseResource;
@@ -47,9 +77,30 @@ class Purchasable {
     this.upgradeLevel = 0;
     this.upgradeButton = upgradeButton;
     this.addedlimit = 0;
+    this.autoOn = false;
+    this.active = false;
   }
 
-  currentInflationFloor () {
+  autoSwitch() {
+    this.autoOn = !this.autoOn;
+  }
+
+  autoBuy() {
+    if (!this.autoOn) {
+      return;
+    }
+    if (!this.active) {
+      return;
+    }
+
+    const moneyavailable = 100;
+    if (this.baseResource.amount.lessThan(this.buyCost().multiply(moneyavailable))) {
+      return;
+    }
+    this.buy();
+  }
+
+  currentInflationFloor() {
     if (gameData.challenges[0].active) {
       return 1;
     }
@@ -57,13 +108,13 @@ class Purchasable {
     let ret = this.inflationFloor;
 
     if (gameData.challenges[0].completed > 0) {
-      const bonus = 1.05 + (gameData.rockUpgrades[0].bought * 0.05);
-      ret *= Math.pow(bonus, gameData.challenges[0].completed);
+      const bonus = 1.05 + gameData.rockUpgrades[3].bought * 0.01;
+      ret *= bonus ** gameData.challenges[0].completed;
     }
     return ret;
   }
 
-  buyUpgradeCost (amt: JBDecimal = new JBDecimal(1)) {
+  buyUpgradeCost(amt: JBDecimal = new JBDecimal(1)) {
     let count = 0;
     let ret = new JBDecimal(0);
 
@@ -72,26 +123,12 @@ class Purchasable {
       const unitMultiplier = new JBDecimal(this.upgradeCostMultiplier).pow(unitno);
       const costTemp = this.upgradeCost.multiply(unitMultiplier);
       ret = ret.add(costTemp);
-      count++;
+      count += 1;
     }
     return ret;
   }
 
-  internalInflationCost (increase: number) {
-    if (internalInflationArray.length <= increase) {
-      display.addToDisplay('Consider upping the initial internalinflationarray', 'story');
-      // eslint-disable-next-line no-global-assign
-      internalInflationArray = [];
-      let total = 0;
-      for (let index = 1; index <= (increase * 1.1); index++) {
-        total += Math.ceil(Math.sqrt(index));
-        internalInflationArray.push(total);
-      }
-    }
-    return internalInflationArray[increase];
-  }
-
-  buyCost (amt: JBDecimal = new JBDecimal(1)) {
+  buyCost(amt: JBDecimal = new JBDecimal(1)) {
     if (this.baseCost.equals(0)) {
       return new JBDecimal(0);
     }
@@ -101,88 +138,88 @@ class Purchasable {
     let count = 0;
     let qtyToUse = 0;
     while (amt.greaterThan(count)) {
-      count++;
+      count += 1;
       let itemQty = this.bought + count;
       if (this.inflationFloor > 0) {
         if (itemQty > this.currentInflationFloor()) {
           const increase = Math.ceil(itemQty - this.currentInflationFloor());
-          itemQty += this.internalInflationCost(increase);
+          itemQty += internalInflationCost(increase);
         }
       }
       qtyToUse += itemQty;
     }
-    count = this.bought;
+    // count = this.bought;
     return new JBDecimal(this.baseCost.multiply(new JBDecimal(this.costMultiplier).pow(qtyToUse - 1)));
   }
 
-  affordBuy (amt: JBDecimal = new JBDecimal(1)) {
-    if (this.limit > 0 && this.bought >= (this.limit + this.addedlimit)) {
+  affordBuy(amt: JBDecimal = new JBDecimal(1)) {
+    if (this.limit > 0 && this.bought >= this.limit + this.addedlimit) {
       return false;
-    } else if (this.buyCost(amt).greaterThan(this.baseResource.amount)) {
+    }
+    if (this.buyCost(amt).greaterThan(this.baseResource.amount)) {
       return false;
     }
     return true;
   }
 
-  afforUpgradeBuy (amt: JBDecimal = new JBDecimal(1)) {
+  afforUpgradeBuy(amt: JBDecimal = new JBDecimal(1)) {
     if (this.buyUpgradeCost(amt).greaterThan(this.upgradeResource.amount)) {
       return false;
     }
     return true;
   }
 
-  buyUpgrade (amt: JBDecimal = new JBDecimal(1)) {
+  buyUpgrade(amt: JBDecimal = new JBDecimal(1)) {
     let count = 0;
     while (this.afforUpgradeBuy() && amt.greaterThan(count)) {
       this.upgradeResource.subtract(this.buyUpgradeCost());
-      this.upgradeLevel++;
+      this.upgradeLevel += 1;
       // this.bought = new JBDecimal(1);
       // this.owned = new JBDecimal(1);
-      count++;
+      count += 1;
     }
   }
 
-  buy (amt: JBDecimal = new JBDecimal(1)) {
+  buy(amt: JBDecimal = new JBDecimal(1)) {
     let count = 0;
     while (this.affordBuy() && amt.greaterThan(count)) {
-      if (this.limit > 0 && this.bought > (this.limit + this.addedlimit)) {
+      if (this.limit > 0 && this.bought > this.limit + this.addedlimit) {
         return;
       }
 
       this.baseResource.subtract(this.buyCost());
 
-      this.bought++;
+      this.bought += 1;
       this.owned = this.owned.add(1);
-      count++;
+      count += 1;
 
       CheckAchievementCompletions();
     }
   }
 
-  updateDisplay () {
+  updateDisplay() {
     let amt = new JBDecimal(1);
     // if(this.multiBuyEligible) {
     //   amt = gameData.options.MultiBuys;
     // }
 
     this.buyButton.innerHTML = '<br />';
-    if (this.limit > 0 && this.bought >= (this.limit + this.addedlimit)) {
+    if (this.limit > 0 && this.bought >= this.limit + this.addedlimit) {
       this.buyButton.classList.add('btn-primary');
       this.buyButton.classList.remove('btn-danger');
       this.buyButton.classList.remove('btn-success');
     } else if (this.affordBuy(amt)) {
-      this.buyButton.innerHTML = this.baseResource.name + ': ' + this.buyCost().ToString() + '</br>';
+      this.buyButton.innerHTML = `${this.baseResource.name}: ${this.buyCost().ToString()}</br>`;
       this.buyButton.classList.add('btn-success');
       this.buyButton.classList.remove('btn-danger');
       this.buyButton.classList.remove('btn-primary');
     } else {
-      this.buyButton.innerHTML = this.baseResource.name + ': ' + this.buyCost().ToString() + '</br>';
+      this.buyButton.innerHTML = `${this.baseResource.name}: ${this.buyCost().ToString()}</br>`;
       this.buyButton.classList.add('btn-danger');
       this.buyButton.classList.remove('btn-primary');
       this.buyButton.classList.remove('btn-success');
     }
     try {
-
       if (this.upgradeable) {
         amt = new JBDecimal(1);
         if (this.afforUpgradeBuy(amt)) {
@@ -194,7 +231,7 @@ class Purchasable {
           this.upgradeButton.classList.remove('btn-primary');
           this.upgradeButton.classList.remove('btn-success');
         }
-        this.upgradeButton.innerHTML = this.upgradeResource.name + ': ' + this.buyUpgradeCost().ToString();
+        this.upgradeButton.innerHTML = `${this.upgradeResource.name}: ${this.buyUpgradeCost().ToString()}`;
       }
     } catch (error) {
       display.logMyErrors(error);

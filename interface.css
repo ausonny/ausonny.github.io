@@ -22,13 +22,18 @@ canvas {
 }
 
 .achievementbutton {
-  width: 180px;
+  width: 210px;
   margin: 1px;
   height: 50px;
 }
 
-
 .autobutton {
+  width: 25px;
+  margin: 1px;
+  height: 30px;
+}
+
+.equipmentbutton {
   width: 25px;
   margin: 1px;
   height: 30px;
@@ -54,7 +59,7 @@ canvas {
 }
 
 .upgradebutton {
-  width: 245px;
+  width: 254px;
   margin: 1px;
   height: 90px;
 }
@@ -66,6 +71,12 @@ canvas {
 }
 
 .hidden{
+  visibility: hidden;
+  width: 0px;
+  height: 0px;
+}
+
+.hiddenSpaceTaken{
   visibility: hidden;
 }
 
@@ -84,7 +95,6 @@ canvas {
 .text-large {
   font-size: 150%;
 }
-
 
 .text-xsmall {
   font-size: 75%;
@@ -111,6 +121,10 @@ canvas {
 /* Hide scrollbar for IE and Edge */
 .noscrollbars {
     -ms-overflow-style: none;
+}
+
+.yellowbackground {
+  background-color: yellow;
 }
 
 @media (min-width: 576px) {

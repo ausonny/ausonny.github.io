@@ -1,5 +1,4 @@
-/* global display */
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class JBDecimal {
     constructor(input) {
         this.sigDigits = 12;
@@ -12,7 +11,7 @@ class JBDecimal {
             this.exponent = 0;
         }
         else {
-            display.addToDisplay('Invalid JBDecimal construtor input', 'achievement');
+            display.addToDisplay('Invalid JBDecimal construtor input', DisplayCategory.Achievement);
         }
         this.normalize();
     }
@@ -22,7 +21,7 @@ class JBDecimal {
             return ret;
         }
         ret.mantissa = Math.pow(this.mantissa, value);
-        if (!isFinite(ret.mantissa)) {
+        if (!Number.isFinite(ret.mantissa)) {
             return this.pow2(value);
         }
         ret.exponent = this.exponent * value;
@@ -37,9 +36,7 @@ class JBDecimal {
         if (value % 2 === 0) {
             return x.multiply(new JBDecimal(x));
         }
-        else {
-            return this.multiply(new JBDecimal(x).multiply(new JBDecimal(x)));
-        }
+        return this.multiply(new JBDecimal(x).multiply(new JBDecimal(x)));
     }
     equals(inputpassed) {
         const input = new JBDecimal(inputpassed);
@@ -48,7 +45,7 @@ class JBDecimal {
         }
         return false;
     }
-    between(val1, val2, inclusive = true) {
+    between(val1, val2, inclusive) {
         if (inclusive) {
             if (this.greaterThanOrEqualTo(val1)) {
                 if (val2.greaterThanOrEqualTo(this)) {
@@ -96,7 +93,7 @@ class JBDecimal {
             }
             return ret;
         }
-        input.mantissa = input.mantissa * Math.pow(10, expdiff);
+        input.mantissa *= Math.pow(10, expdiff);
         ret.mantissa = this.mantissa + input.mantissa;
         ret.exponent = this.exponent;
         ret.normalize();
@@ -113,7 +110,7 @@ class JBDecimal {
         if (expdiff < -this.sigDigits) {
             return ret;
         }
-        input.mantissa = input.mantissa * Math.pow(10, expdiff);
+        input.mantissa *= Math.pow(10, expdiff);
         ret.mantissa -= input.mantissa;
         ret.normalize();
         return ret;
@@ -147,16 +144,16 @@ class JBDecimal {
     multiply(inputpassed) {
         const input = new JBDecimal(inputpassed);
         const ret = new JBDecimal(this);
-        ret.mantissa = ret.mantissa * input.mantissa;
-        ret.exponent = ret.exponent + input.exponent;
+        ret.mantissa *= input.mantissa;
+        ret.exponent += input.exponent;
         ret.normalize();
         return ret;
     }
     divide(inputpassed) {
         const input = new JBDecimal(inputpassed);
         const ret = new JBDecimal(this);
-        ret.mantissa = ret.mantissa / input.mantissa;
-        ret.exponent = ret.exponent - input.exponent;
+        ret.mantissa /= input.mantissa;
+        ret.exponent -= input.exponent;
         ret.normalize();
         return ret;
     }
@@ -172,25 +169,21 @@ class JBDecimal {
             if (val.mantissa > 0) {
                 return true;
             }
-            else {
-                return false;
-            }
+            return false;
         }
         if (val.mantissa === 0) {
             if (this.mantissa >= 0) {
                 return false;
             }
-            else {
-                return true;
-            }
+            return true;
         }
         if (this.exponent > val.exponent) {
             return false;
         }
-        else if (this.exponent < val.exponent) {
+        if (this.exponent < val.exponent) {
             return true;
         }
-        else if (this.mantissa >= val.mantissa) {
+        if (this.mantissa >= val.mantissa) {
             return false;
         }
         return true;
@@ -207,25 +200,21 @@ class JBDecimal {
             if (val.mantissa >= 0) {
                 return true;
             }
-            else {
-                return false;
-            }
+            return false;
         }
         if (val.mantissa === 0) {
             if (this.mantissa > 0) {
                 return false;
             }
-            else {
-                return true;
-            }
+            return true;
         }
         if (this.exponent > val.exponent) {
             return false;
         }
-        else if (this.exponent < val.exponent) {
+        if (this.exponent < val.exponent) {
             return true;
         }
-        else if (this.mantissa > val.mantissa) {
+        if (this.mantissa > val.mantissa) {
             return false;
         }
         return true;
@@ -242,25 +231,21 @@ class JBDecimal {
             if (val.mantissa >= 0) {
                 return false;
             }
-            else {
-                return true;
-            }
+            return true;
         }
         if (val.mantissa === 0) {
             if (this.mantissa > 0) {
                 return true;
             }
-            else {
-                return false;
-            }
+            return false;
         }
         if (this.exponent > val.exponent) {
             return true;
         }
-        else if (this.exponent < val.exponent) {
+        if (this.exponent < val.exponent) {
             return false;
         }
-        else if (this.mantissa > val.mantissa) {
+        if (this.mantissa > val.mantissa) {
             return true;
         }
         return false;
@@ -277,25 +262,21 @@ class JBDecimal {
             if (val.mantissa > 0) {
                 return false;
             }
-            else {
-                return true;
-            }
+            return true;
         }
         if (val.mantissa === 0) {
             if (this.mantissa >= 0) {
                 return true;
             }
-            else {
-                return false;
-            }
+            return false;
         }
         if (this.exponent > val.exponent) {
             return true;
         }
-        else if (this.exponent < val.exponent) {
+        if (this.exponent < val.exponent) {
             return false;
         }
-        else if (this.mantissa >= val.mantissa) {
+        if (this.mantissa >= val.mantissa) {
             return true;
         }
         return false;
@@ -305,15 +286,16 @@ class JBDecimal {
         if (val2.exponent < 0) {
             return new JBDecimal(0);
         }
-        else if (val2.exponent > 8) {
+        if (val2.exponent > 8) {
             return new JBDecimal(val2);
         }
-        else {
-            const val = val2.ToNumber();
-            return new JBDecimal(Math.floor(val));
-        }
+        const val = val2.ToNumber();
+        return new JBDecimal(Math.floor(val));
     }
     normalize() {
+        if (!Number.isFinite(this.mantissa)) {
+            this.mantissa = 0;
+        }
         if (this.mantissa === 0) {
             this.exponent = 0;
             return;
@@ -328,6 +310,9 @@ class JBDecimal {
         }
         this.mantissa = parseFloat(this.mantissa.toFixed(10));
     }
+    toString() {
+        return this.ToString();
+    }
     ToString() {
         this.normalize();
         if (this.exponent === 0) {
@@ -335,17 +320,22 @@ class JBDecimal {
             val = Number(val.toFixed(2));
             return val.toString();
         }
-        if (this.exponent < -2) {
-            return '0';
+        // if (this.exponent < -2) {
+        //   return '0';
+        // }
+        if (this.exponent === -3) {
+            let val = this.ToNumber();
+            val = Number(val.toFixed(3));
+            return val.toString();
         }
         if (this.exponent === -2) {
             let val = this.ToNumber();
-            val = Number(val.toFixed(2));
+            val = Number(val.toFixed(3));
             return val.toString();
         }
         if (this.exponent === -1) {
             let val = this.ToNumber();
-            val = Number(val.toFixed(2));
+            val = Number(val.toFixed(3));
             return val.toString();
         }
         if (this.exponent === 1) {
@@ -364,11 +354,11 @@ class JBDecimal {
             return val.toString();
         }
         const val = Number(this.mantissa.toFixed(2));
-        return val.toString() + 'e' + this.exponent.toString();
+        return `${val.toString()}e${this.exponent.toString()}`;
     }
     ToNumber() {
         if (this.exponent > 307) {
-            display.addToDisplay('nope', 'achievement');
+            display.addToDisplay('nope', DisplayCategory.Achievement);
         }
         const ret = this.mantissa * Math.pow(10, this.exponent);
         return ret;

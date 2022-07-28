@@ -1,11 +1,24 @@
-// eslint-disable-next-line no-unused-vars
-/* global JBDecimal, Enemy, Automation, Purchasable, Resource, SaveGameData, saveGame, Bullet, Vector, Display, getAchievementBonus, getAchievementsOnlyBonus, getTier1FeatBonus, getTier2FeatBonus, CheckAchievementCompletions, achievementbonusarray */
+/* eslint-disable no-loop-func */
+/* eslint-disable func-names */
+/* eslint-disable no-param-reassign */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const notationDisplayOptions = [
+  'Scientific Notation',
+  'Standard Formatting',
+  'Engineering Notation',
+  'Alphabetic Notation',
+  'Hybrid Notation',
+  'Logarithmic Notation',
+];
 
-// eslint-disable-next-line no-unused-vars
-const notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'Engineering Notation', 'Alphabetic Notation', 'Hybrid Notation', 'Logarithmic Notation'];
+let dirtyEquipment = true;
+
+let dirtyTowers = true;
+
+let gameSpeedFast = false;
 
 let initted = false;
-// eslint-disable-next-line no-undef
+
 let gameData: SaveGameData;
 const display = new Display();
 let internalInflationArray: number[];
@@ -15,992 +28,167 @@ internalInflationArray = [];
 
 // const isFixedString = (s: string) => !isNaN(+s) && isFinite(+s) && !/e/i.test(s);
 
-function getCurrentPebbleRate () {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function changeSpeedNormal() {
+  gameSpeedFast = false;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function changeSpeedFast() {
+  gameSpeedFast = true;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function switchPause() {
+  gameData.world.paused = !gameData.world.paused;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function challengeAuto() {
+  gameData.world.autoChallenge = !gameData.world.autoChallenge;
+  gameData.world.nextAutoChallenge = 0;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function ChangeTactic(index: number) {
+  switch (index) {
+    case 0: {
+      gameData.tactics.fastest = true;
+      gameData.tactics.healer = false;
+      gameData.tactics.highestHealth = false;
+      gameData.tactics.lowestHealth = false;
+      break;
+    }
+    case 1: {
+      gameData.tactics.fastest = false;
+      gameData.tactics.healer = true;
+      gameData.tactics.highestHealth = false;
+      gameData.tactics.lowestHealth = false;
+      break;
+    }
+    case 2: {
+      gameData.tactics.fastest = false;
+      gameData.tactics.healer = false;
+      gameData.tactics.highestHealth = true;
+      gameData.tactics.lowestHealth = false;
+      break;
+    }
+    case 3: {
+      gameData.tactics.fastest = false;
+      gameData.tactics.healer = false;
+      gameData.tactics.highestHealth = false;
+      gameData.tactics.lowestHealth = true;
+      break;
+    }
+    default: {
+      gameData.tactics.fastest = true;
+      gameData.tactics.healer = false;
+      gameData.tactics.highestHealth = false;
+      gameData.tactics.lowestHealth = false;
+      break;
+    }
+  }
+}
+
+function pebblesFromPrestige(amt: JBDecimal = new JBDecimal(0)) {
+  if (amt.equals(new JBDecimal(0))) {
+    return gameData.resources.dust.amount.divide(100 - gameData.rockUpgrades[0].bought).floor();
+  }
+  return amt.divide(100 - gameData.rockUpgrades[0].bought);
+}
+
+function rocksFromPrestige() {
+  return gameData.resources.pebbles.amount
+    .add(pebblesFromPrestige())
+    .divide(1000 - gameData.boulderUpgrades[1].bought * 10)
+    .floor();
+}
+
+function bouldersFromPrestige() {
+  return gameData.resources.rocks.amount.add(rocksFromPrestige()).divide(10000).floor();
+}
+
+function getCurrentPebbleRate() {
   return pebblesFromPrestige().multiply(3600000).divide(gameData.stats.prestige1ticks);
 }
 
-function getCurrentRockRate () {
+function getCurrentRockRate() {
   return rocksFromPrestige().multiply(3600000).divide(gameData.stats.prestige2ticks);
 }
 
-function getCurrentBoulderRate () {
+function getCurrentBoulderRate() {
   return bouldersFromPrestige().multiply(3600000).divide(gameData.stats.prestige3ticks);
 }
 
-// eslint-disable-next-line no-unused-vars
-function AchievementClick () {
+function AutoBuyPebbles() {
+  const dustToUse = gameData.resources.dust.amount.multiply(gameData.world.currentTickLength / 100000);
+  gameData.resources.dust.subtract(dustToUse);
+  gameData.resources.pebbles.add(pebblesFromPrestige(dustToUse));
 }
 
-function processStuff (ticks: number) {
-  gameData.stats.prestige1ticks += ticks;
-  gameData.stats.prestige2ticks += ticks;
-  gameData.stats.prestige3ticks += ticks;
-  gameData.world.currentTickLength = ticks;
-  gameData.world.ticksToNextSpawn -= ticks;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function blueprintAuto() {
+  gameData.tierblueprintsauto = !gameData.tierblueprintsauto;
+}
 
-  gameData.producer.costMultiplier = 10 - gameData.rockUpgrades[7].bought;
-
-  const currentPebbleRate = getCurrentPebbleRate();
-
-  if (currentPebbleRate.greaterThan(gameData.stats.bestPrestige1Rate)) {
-    gameData.stats.bestPrestige1Rate = new JBDecimal(currentPebbleRate);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function blueprintLoad() {
+  while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
+    gameData.tierBlueprints.push(new TierBluePrint());
   }
+  const currentBluePrint = gameData.tierBlueprints[gameData.world.currentTier];
 
-  const currentRockRate = getCurrentRockRate();
-  if (currentRockRate.greaterThan(gameData.stats.bestPrestige2Rate)) {
-    gameData.stats.bestPrestige2Rate = new JBDecimal(currentRockRate);
-  }
-
-  const currentBoulderRate = getCurrentBoulderRate();
-  if (currentBoulderRate.greaterThan(gameData.stats.bestPrestige3Rate)) {
-    gameData.stats.bestPrestige3Rate = new JBDecimal(currentBoulderRate);
-  }
-
-  gameData.resources.metal.add(gameData.derivatives[0].production());
-  gameData.derivatives[0].owned = gameData.derivatives[0].owned.add(gameData.derivatives[1].production());
-  gameData.derivatives[1].owned = gameData.derivatives[1].owned.add(gameData.derivatives[2].production());
-  gameData.derivatives[2].owned = gameData.derivatives[2].owned.add(gameData.derivatives[3].production());
-  gameData.derivatives[3].owned = gameData.derivatives[3].owned.add(gameData.derivatives[4].production());
-  gameData.derivatives[4].owned = gameData.derivatives[4].owned.add(gameData.derivatives[5].production());
-  gameData.derivatives[5].owned = gameData.derivatives[5].owned.add(gameData.derivatives[6].production());
-  gameData.derivatives[6].owned = gameData.derivatives[6].owned.add(gameData.derivatives[7].production());
-
-  gameData.resources.particles.add(gameData.speedDerivatives[0].production());
-  gameData.speedDerivatives[0].owned = gameData.speedDerivatives[0].owned.add(gameData.speedDerivatives[1].production());
-  gameData.speedDerivatives[1].owned = gameData.speedDerivatives[1].owned.add(gameData.speedDerivatives[2].production());
-  gameData.speedDerivatives[2].owned = gameData.speedDerivatives[2].owned.add(gameData.speedDerivatives[3].production());
-  gameData.speedDerivatives[3].owned = gameData.speedDerivatives[3].owned.add(gameData.speedDerivatives[4].production());
-  gameData.speedDerivatives[4].owned = gameData.speedDerivatives[4].owned.add(gameData.speedDerivatives[5].production());
-
-  gameData.resources.timeparticles.add(gameData.timeDerivatives[0].production());
-  gameData.timeDerivatives[0].owned = gameData.timeDerivatives[0].owned.add(gameData.timeDerivatives[1].production());
-  gameData.timeDerivatives[1].owned = gameData.timeDerivatives[1].owned.add(gameData.timeDerivatives[2].production());
-  gameData.timeDerivatives[2].owned = gameData.timeDerivatives[2].owned.add(gameData.timeDerivatives[3].production());
-  gameData.timeDerivatives[3].owned = gameData.timeDerivatives[3].owned.add(gameData.timeDerivatives[4].production());
-  gameData.timeDerivatives[4].owned = gameData.timeDerivatives[4].owned.add(gameData.timeDerivatives[5].production());
-
-  for (let index = 0; index < 12; index++) { // this resets only the first 12 pebbleupgrade limits, hence the unusual for loop
-    const element = gameData.upgrades[index];
-    element.addedlimit = 0;
-  }
-
-  if (gameData.rockUpgrades[5].bought > 0) {
-    for (let index = 0; index < 12; index++) {
-      const element = gameData.upgrades[index];
-      element.addedlimit += 10;
-    }
-  }
-  
-  if (gameData.boulderUpgrades[3].bought > 0) {
-    for (let index = 0; index < 12; index++) {
-      const element = gameData.upgrades[index];
-      element.addedlimit += 10;
-    }
-  }
-
-  gameData.tower.act();
-
-  for (let index = gameData.enemies.length - 1; index >= 0; index--) {
-    const e = gameData.enemies[index];
-    if (e.act()) { //returns true if enemy died
-      gameData.enemies.splice(index, 1);
-    }
-  }
-
-  if (gameData.world.ticksToNextSpawn <= 0 && gameData.world.enemiesToSpawn > 0) {
-    const newEnemy = new Enemy(false);
-    gameData.enemies.push(newEnemy);
-    gameData.world.ticksToNextSpawn += 1000 - (gameData.world.currentWave * 5);
-    gameData.world.enemiesToSpawn -= 1;
-  }
-
-  const autoprestige1 = <HTMLInputElement>document.getElementById('autoprestige1');
-
-  if (gameData.tower.CurrentHitPoints().lessThanOrEqualTo(0)) {
-    gameData.tower.damagetaken = new JBDecimal(0);
-    gameData.challenges.forEach((ch) => { ch.active = false; });
-    if (autoprestige1.checked && pebblesFromPrestige().greaterThan(0)) {
-      init(1);
-      display.addToDisplay('Dust. But I still need more.', 'story');
+  gameData.towers.forEach((t, index) => {
+    if (typeof currentBluePrint[index] === 'undefined') {
+      t.type = '';
     } else {
-      gameData.world.currentWave -= 11;
-      if (gameData.world.currentWave < 0) {
-        gameData.world.currentWave = 0;
-      }
-      gameData.world.deathlevel++;
-      resetSpawns(true);
-      display.addToDisplay('You have been overcome.  The pressure lessens.', 'story');
+      t.type = currentBluePrint[index].towerType;
     }
-  }
-
-  if (gameData.world.enemiesToSpawn === 0 && gameData.enemies.length === 0) {
-    if (gameData.world.currentWave >= gameData.stats.highestEverWave) {
-      gameData.stats.highestEverWave = gameData.world.currentWave;
-    }
-    if (gameData.world.currentWave > gameData.world.highestWaveCompleted) {
-      gameData.world.highestWaveCompleted = gameData.world.currentWave;
-    }
-    resetSpawns(false);
-  }
-
-  gameData.challenges.forEach((ch) => {
-    if (ch.active) {
-      ch.checkForCompletion();
-    }
+    t.bought = 0;
+    t.upgradeLevel = 0;
   });
+}
 
-  if (gameData.stats.highestEverWave >= 20) {
-    if (autoprestige1.checked) {
-      gameData.automation[0].item = 1;
-    } else {
-      gameData.automation[0].item = 0;
-    }
-    const highestwavemultiplier = 5 - (gameData.rockUpgrades[2].bought + gameData.boulderUpgrades[2].bought);
-    gameData.automation.forEach((element, index) => {
-      if (index > 0) { // index 0 is the auto prestige check box.
-        const itemName = 'automation' + (index).toString() + 'item';
-        const valueName = 'automation' + (index).toString() + 'value';
-        const autoitem = <HTMLSelectElement>document.getElementById(itemName);
-        const autovalue = <HTMLSelectElement>document.getElementById(valueName);
-        element.item = parseFloat(autoitem.options[autoitem.selectedIndex].value);
-        element.value = parseFloat(autovalue.options[autovalue.selectedIndex].value);
-        if (gameData.stats.highestEverWave >= index * highestwavemultiplier) {
-          if (element.item === 1 && gameData.challenges[3].completed > 0) {
-            runAutomationRule(element, gameData.producer, gameData.resources.metal, true);
-          } else if (element.item === 2) {
-            runAutomationRule(element, gameData.derivatives[0], gameData.resources.metal, true);
-          } else if (element.item === 3) {
-            runAutomationRule(element, gameData.derivatives[1], gameData.resources.metal, true);
-          } else if (element.item === 4) {
-            runAutomationRule(element, gameData.derivatives[2], gameData.resources.metal, true);
-          } else if (element.item === 5 && gameData.upgrades[12].bought > 0) {
-            runAutomationRule(element, gameData.derivatives[3], gameData.resources.metal, true);
-          } else if (element.item === 6 && gameData.upgrades[12].bought > 1) {
-            runAutomationRule(element, gameData.derivatives[4], gameData.resources.metal, true);
-          } else if (element.item === 7 && gameData.upgrades[12].bought > 2) {
-            runAutomationRule(element, gameData.derivatives[5], gameData.resources.metal, true);
-          } else if (element.item === 8 && gameData.upgrades[12].bought > 3) {
-            runAutomationRule(element, gameData.derivatives[6], gameData.resources.metal, true);
-          } else if (element.item === 9 && gameData.upgrades[12].bought > 4) {
-            runAutomationRule(element, gameData.derivatives[7], gameData.resources.metal, true);
-          } else if (element.item === 10 && gameData.challenges[3].completed > 0) {
-            runAutomationRule(element, gameData.producer, gameData.resources.dust, false);
-          } else if (element.item === 11) {
-            runAutomationRule(element, gameData.derivatives[0], gameData.resources.dust, false);
-          } else if (element.item === 12) {
-            runAutomationRule(element, gameData.derivatives[1], gameData.resources.dust, false);
-          } else if (element.item === 13) {
-            runAutomationRule(element, gameData.derivatives[2], gameData.resources.dust, false);
-          } else if (element.item === 14 && gameData.upgrades[12].bought > 0) {
-            runAutomationRule(element, gameData.derivatives[3], gameData.resources.dust, false);
-          } else if (element.item === 15 && gameData.upgrades[12].bought > 1) {
-            runAutomationRule(element, gameData.derivatives[4], gameData.resources.dust, false);
-          } else if (element.item === 16 && gameData.upgrades[12].bought > 2) {
-            runAutomationRule(element, gameData.derivatives[5], gameData.resources.dust, false);
-          } else if (element.item === 17 && gameData.upgrades[12].bought > 3) {
-            runAutomationRule(element, gameData.derivatives[6], gameData.resources.dust, false);
-          } else if (element.item === 18 && gameData.upgrades[12].bought > 4) {
-            runAutomationRule(element, gameData.derivatives[7], gameData.resources.dust, false);
-          } else if (element.item === 19) {
-            runAutomationRule(element, gameData.equipment[0], gameData.resources.metal, true);
-          } else if (element.item === 20) {
-            runAutomationRule(element, gameData.equipment[1], gameData.resources.metal, true);
-          } else if (element.item === 21) {
-            runAutomationRule(element, gameData.equipment[0], gameData.resources.dust, false);
-          } else if (element.item === 22) {
-            runAutomationRule(element, gameData.equipment[1], gameData.resources.dust, false);
-          }
-        }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function blueprintSave() {
+  const newTBP = new TierBluePrint();
+  gameData.towers.forEach((t) => {
+    const newbp = new Blueprint();
+    newbp.towerType = t.type;
+    newTBP.blueprints.push(newbp);
+  });
+  while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
+    gameData.tierBlueprints.push(new TierBluePrint());
+  }
+  gameData.tierBlueprints[gameData.world.currentTier] = newTBP;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function DeleteEquipment(index: number) {
+  gameData.equipment[index].DestructAbilities();
+  gameData.equipment.splice(index, 1);
+  dirtyEquipment = true;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function MoveEquipment(index: number) {
+  gameData.equipment.unshift(gameData.equipment.splice(index, 1)[0]);
+  dirtyEquipment = true;
+}
+
+function maxMulligansCalc() {
+  let maxMulligans = gameData.upgrades[17].bought;
+  if (gameData.equipment.length > 0) {
+    gameData.equipment[0].abilities.forEach((a) => {
+      if (a.name === 'Mulligans') {
+        maxMulligans += a.levels;
       }
     });
   }
+  return maxMulligans;
 }
 
-function runAutomationRule (rule: Automation, actioner: Purchasable, resource: Resource, notupgrade: boolean = true) {
-  let cost = new JBDecimal(0);
-  if (notupgrade) {
-    cost = new JBDecimal(actioner.buyCost());
-  } else {
-    cost = new JBDecimal(actioner.buyUpgradeCost());
-  }
-
-  if (rule.value === 0) {
-    cost = cost.multiply(1000);
-  } else if (rule.value === 1) {
-    cost = cost.multiply(100);
-  } else if (rule.value === 2) {
-    cost = cost.multiply(10);
-  } else if (rule.value === 3) {
-    cost = cost.multiply(4);
-  } else if (rule.value === 4) {
-    cost = cost.multiply(2);
-  }
-
-  if (resource.amount.greaterThanOrEqualTo(cost)) {
-    if (notupgrade) {
-      actioner.buy();
-    } else {
-      actioner.buyUpgrade();
-    }
-  }
-}
-
-function getParticleBonus () {
-  //let particlebonus = new JBDecimal(gameData.resources.particles.amount.exponent + (gameData.resources.particles.amount.mantissa / 10)).pow(2);
-  let particlebonus = new JBDecimal(gameData.resources.particles.amount);
-  if (particlebonus.lessThan(1)) {
-    particlebonus = new JBDecimal(1);
-  }
-  return particlebonus;
-}
-
-function getTimeParticleBonus () {
-  //let particlebonus = new JBDecimal(gameData.resources.timeparticles.amount.exponent + (gameData.resources.timeparticles.amount.mantissa / 10)).pow(2);
-  let particlebonus = new JBDecimal(gameData.resources.timeparticles.amount);
-  if (particlebonus.lessThan(1)) {
-    particlebonus = new JBDecimal(1);
-  }
-  return particlebonus;
-}
-
-function updateGUI () {
-  if (!gameData.storyElements[0].printed) {
-    display.addToDisplay(gameData.storyElements[0].text, 'story');
-    gameData.storyElements[0].printed = true;
-  }
-
-  if (!gameData.storyElements[1].printed && gameData.derivatives[0].bought > 0) {
-    display.addToDisplay(gameData.storyElements[1].text, 'story');
-    gameData.storyElements[1].printed = true;
-  }
-
-  if (!gameData.storyElements[2].printed && gameData.derivatives[3].bought > 0) {
-    display.addToDisplay(gameData.storyElements[2].text, 'story');
-    gameData.storyElements[2].printed = true;
-  }
-
-  if (!gameData.storyElements[3].printed && gameData.resources.dust.amount.greaterThan(0)) {
-    display.addToDisplay(gameData.storyElements[3].text, 'story');
-    gameData.storyElements[3].printed = true;
-  }
-
-  document.getElementById('particlesamount').innerHTML = gameData.resources.particles.amount.ToString();
-  document.getElementById('particlesb').innerHTML = getParticleBonus().ToString();
-  document.getElementById('timeparticles').innerHTML = gameData.resources.timeparticles.amount.ToString();
-  document.getElementById('timeparticlesbonus').innerHTML = getTimeParticleBonus().ToString();
-
-  document.getElementById('productionderivative').classList.remove('hidden');
-  if (gameData.challenges[3].active || gameData.challenges[3].completed < 1) {
-    document.getElementById('productionderivative').classList.add('hidden');
-  }
-
-  document.getElementById('supervisorderivative').classList.add('hidden');
-  if (gameData.derivatives[0].owned.greaterThan(0)) {
-    document.getElementById('supervisorderivative').classList.remove('hidden');
-  }
-
-  document.getElementById('foremanderivative').classList.add('hidden');
-  if (gameData.derivatives[1].owned.greaterThan(0)) {
-    document.getElementById('foremanderivative').classList.remove('hidden');
-  }
-
-  document.getElementById('managerderivative').classList.add('hidden');
-  document.getElementById('btnBuyUpgrade7').classList.add('hidden');
-  if (gameData.upgrades[12].owned.greaterThan(0)) {
-    document.getElementById('btnBuyUpgrade7').classList.remove('hidden');
-    if (gameData.derivatives[2].owned.greaterThan(0)) {
-      document.getElementById('managerderivative').classList.remove('hidden');
-    }
-  }
-
-  document.getElementById('middlemanagementderivative').classList.add('hidden');
-  document.getElementById('btnBuyUpgrade8').classList.add('hidden');
-  if (gameData.upgrades[12].owned.greaterThan(1)) {
-    document.getElementById('btnBuyUpgrade8').classList.remove('hidden');
-    if (gameData.derivatives[3].owned.greaterThan(0)) {
-      document.getElementById('middlemanagementderivative').classList.remove('hidden');
-    }
-  }
-
-  document.getElementById('uppermanagementderivative').classList.add('hidden');
-  document.getElementById('btnBuyUpgrade9').classList.add('hidden');
-  if (gameData.upgrades[12].owned.greaterThan(2)) {
-    document.getElementById('btnBuyUpgrade9').classList.remove('hidden');
-    if (gameData.derivatives[4].owned.greaterThan(0)) {
-      document.getElementById('uppermanagementderivative').classList.remove('hidden');
-    }
-  }
-
-  document.getElementById('vicepresidentderivative').classList.add('hidden');
-  document.getElementById('btnBuyUpgrade10').classList.add('hidden');
-  if (gameData.upgrades[12].owned.greaterThan(3)) {
-    document.getElementById('btnBuyUpgrade10').classList.remove('hidden');
-    if (gameData.derivatives[5].owned.greaterThan(0)) {
-      document.getElementById('vicepresidentderivative').classList.remove('hidden');
-    }
-  }
-
-  document.getElementById('presidentderivative').classList.add('hidden');
-  document.getElementById('btnBuyUpgrade11').classList.add('hidden');
-  if (gameData.upgrades[12].owned.greaterThan(4)) {
-    document.getElementById('btnBuyUpgrade11').classList.remove('hidden');
-    if (gameData.derivatives[6].owned.greaterThan(0)) {
-      document.getElementById('presidentderivative').classList.remove('hidden');
-    }
-  }
-
-  document.getElementById('particles').classList.add('hidden');
-  document.getElementById('accelerationderivative').classList.add('hidden');
-  document.getElementById('jerkderivative').classList.add('hidden');
-  document.getElementById('snapderivative').classList.add('hidden');
-  document.getElementById('cracklederivative').classList.add('hidden');
-  document.getElementById('popderivative').classList.add('hidden');
-
-  if (gameData.stats.prestige2 > 0) {
-    document.getElementById('particles').classList.remove('hidden');
-    if (gameData.speedDerivatives[0].owned.greaterThan(0)) {
-      document.getElementById('accelerationderivative').classList.remove('hidden');
-    }
-    if (gameData.speedDerivatives[1].owned.greaterThan(0)) {
-      document.getElementById('jerkderivative').classList.remove('hidden');
-    }
-    if (gameData.speedDerivatives[2].owned.greaterThan(0)) {
-      document.getElementById('snapderivative').classList.remove('hidden');
-    }
-    if (gameData.speedDerivatives[3].owned.greaterThan(0)) {
-      document.getElementById('cracklederivative').classList.remove('hidden');
-    }
-    if (gameData.speedDerivatives[4].owned.greaterThan(0)) {
-      document.getElementById('popderivative').classList.remove('hidden');
-    }
-  }
-
-  document.getElementById('time').classList.add('hidden');
-  document.getElementById('time2derivative').classList.add('hidden');
-  document.getElementById('time3derivative').classList.add('hidden');
-  document.getElementById('time4derivative').classList.add('hidden');
-  document.getElementById('time5derivative').classList.add('hidden');
-  document.getElementById('time6derivative').classList.add('hidden');
-
-  if (gameData.stats.prestige3 > 0) {
-    document.getElementById('time').classList.remove('hidden');
-    if (gameData.timeDerivatives[0].owned.greaterThan(0)) {
-      document.getElementById('time2derivative').classList.remove('hidden');
-    }
-    if (gameData.timeDerivatives[1].owned.greaterThan(0)) {
-      document.getElementById('time3derivative').classList.remove('hidden');
-    }
-    if (gameData.timeDerivatives[2].owned.greaterThan(0)) {
-      document.getElementById('time4derivative').classList.remove('hidden');
-    }
-    if (gameData.timeDerivatives[3].owned.greaterThan(0)) {
-      document.getElementById('time5derivative').classList.remove('hidden');
-    }
-    if (gameData.timeDerivatives[4].owned.greaterThan(0)) {
-      document.getElementById('time6derivative').classList.remove('hidden');
-    }
-  }
-
-  document.getElementById('producitonproduction').innerHTML = gameData.producer.productionPerSecDisplay().ToString();
-  document.getElementById('productionbought').innerHTML = gameData.producer.bought.toString();
-  document.getElementById('productionowned').innerHTML = gameData.producer.owned.ToString();
-  document.getElementById('minerbought').innerHTML = gameData.derivatives[0].bought.toString();
-  document.getElementById('minerowned').innerHTML = gameData.derivatives[0].owned.ToString();
-  document.getElementById('minerproduction').innerHTML = gameData.derivatives[0].productionPerSecDisplay().ToString();
-  document.getElementById('supervisorbought').innerHTML = gameData.derivatives[1].bought.toString();
-  document.getElementById('supervisorowned').innerHTML = gameData.derivatives[1].owned.ToString();
-  document.getElementById('supervisorproduction').innerHTML = gameData.derivatives[1].productionPerSecDisplay().ToString();
-  document.getElementById('foremanbought').innerHTML = gameData.derivatives[2].bought.toString();
-  document.getElementById('foremanowned').innerHTML = gameData.derivatives[2].owned.ToString();
-  document.getElementById('foremanproduction').innerHTML = gameData.derivatives[2].productionPerSecDisplay().ToString();
-  document.getElementById('managerbought').innerHTML = gameData.derivatives[3].bought.toString();
-  document.getElementById('managerowned').innerHTML = gameData.derivatives[3].owned.ToString();
-  document.getElementById('managerproduction').innerHTML = gameData.derivatives[3].productionPerSecDisplay().ToString();
-  document.getElementById('middlemanagementbought').innerHTML = gameData.derivatives[4].bought.toString();
-  document.getElementById('middlemanagementowned').innerHTML = gameData.derivatives[4].owned.ToString();
-  document.getElementById('middlemanagementproduction').innerHTML = gameData.derivatives[4].productionPerSecDisplay().ToString();
-  document.getElementById('uppermanagementbought').innerHTML = gameData.derivatives[5].bought.toString();
-  document.getElementById('uppermanagementowned').innerHTML = gameData.derivatives[5].owned.ToString();
-  document.getElementById('uppermanagementproduction').innerHTML = gameData.derivatives[5].productionPerSecDisplay().ToString();
-  document.getElementById('vicepresidentbought').innerHTML = gameData.derivatives[6].bought.toString();
-  document.getElementById('vicepresidentowned').innerHTML = gameData.derivatives[6].owned.ToString();
-  document.getElementById('vicepresidentproduction').innerHTML = gameData.derivatives[6].productionPerSecDisplay().ToString();
-  document.getElementById('presidentbought').innerHTML = gameData.derivatives[7].bought.toString();
-  document.getElementById('presidentowned').innerHTML = gameData.derivatives[7].owned.ToString();
-  document.getElementById('presidentproduction').innerHTML = gameData.derivatives[7].productionPerSecDisplay().ToString();
-
-  document.getElementById('speedbought').innerHTML = gameData.speedDerivatives[0].bought.toString();
-  document.getElementById('speedowned').innerHTML = gameData.speedDerivatives[0].owned.ToString();
-  document.getElementById('speedproduction').innerHTML = gameData.speedDerivatives[0].productionPerSecDisplay().ToString();
-  document.getElementById('accelerationbought').innerHTML = gameData.speedDerivatives[1].bought.toString();
-  document.getElementById('accelerationowned').innerHTML = gameData.speedDerivatives[1].owned.ToString();
-  document.getElementById('accelerationproduction').innerHTML = gameData.speedDerivatives[1].productionPerSecDisplay().ToString();
-  document.getElementById('jerkbought').innerHTML = gameData.speedDerivatives[2].bought.toString();
-  document.getElementById('jerkowned').innerHTML = gameData.speedDerivatives[2].owned.ToString();
-  document.getElementById('jerkproduction').innerHTML = gameData.speedDerivatives[2].productionPerSecDisplay().ToString();
-  document.getElementById('snapbought').innerHTML = gameData.speedDerivatives[3].bought.toString();
-  document.getElementById('snapowned').innerHTML = gameData.speedDerivatives[3].owned.ToString();
-  document.getElementById('snapproduction').innerHTML = gameData.speedDerivatives[3].productionPerSecDisplay().ToString();
-  document.getElementById('cracklebought').innerHTML = gameData.speedDerivatives[4].bought.toString();
-  document.getElementById('crackleowned').innerHTML = gameData.speedDerivatives[4].owned.ToString();
-  document.getElementById('crackleproduction').innerHTML = gameData.speedDerivatives[4].productionPerSecDisplay().ToString();
-  document.getElementById('popbought').innerHTML = gameData.speedDerivatives[5].bought.toString();
-  document.getElementById('popowned').innerHTML = gameData.speedDerivatives[5].owned.ToString();
-  document.getElementById('popproduction').innerHTML = gameData.speedDerivatives[5].productionPerSecDisplay().ToString();
-
-  document.getElementById('time1bought').innerHTML = gameData.timeDerivatives[0].bought.toString();
-  document.getElementById('time1owned').innerHTML = gameData.timeDerivatives[0].owned.ToString();
-  document.getElementById('time1production').innerHTML = gameData.timeDerivatives[0].productionPerSecDisplay().ToString();
-  document.getElementById('time2bought').innerHTML = gameData.timeDerivatives[1].bought.toString();
-  document.getElementById('time2owned').innerHTML = gameData.timeDerivatives[1].owned.ToString();
-  document.getElementById('time2production').innerHTML = gameData.timeDerivatives[1].productionPerSecDisplay().ToString();
-  document.getElementById('time3bought').innerHTML = gameData.timeDerivatives[2].bought.toString();
-  document.getElementById('time3owned').innerHTML = gameData.timeDerivatives[2].owned.ToString();
-  document.getElementById('time3production').innerHTML = gameData.timeDerivatives[2].productionPerSecDisplay().ToString();
-  document.getElementById('time4bought').innerHTML = gameData.timeDerivatives[3].bought.toString();
-  document.getElementById('time4owned').innerHTML = gameData.timeDerivatives[3].owned.ToString();
-  document.getElementById('time4production').innerHTML = gameData.timeDerivatives[3].productionPerSecDisplay().ToString();
-  document.getElementById('time5bought').innerHTML = gameData.timeDerivatives[4].bought.toString();
-  document.getElementById('time5owned').innerHTML = gameData.timeDerivatives[4].owned.ToString();
-  document.getElementById('time5production').innerHTML = gameData.timeDerivatives[4].productionPerSecDisplay().ToString();
-  document.getElementById('time6bought').innerHTML = gameData.timeDerivatives[5].bought.toString();
-  document.getElementById('time6owned').innerHTML = gameData.timeDerivatives[5].owned.ToString();
-  document.getElementById('time6production').innerHTML = gameData.timeDerivatives[5].productionPerSecDisplay().ToString();
-
-  document.getElementById('totalachievementbonus').innerHTML = new JBDecimal(getAchievementBonus()).ToString();
-  document.getElementById('achievementbonus').innerHTML = new JBDecimal(getAchievementsOnlyBonus()).ToString();
-  document.getElementById('tier1bonus').innerHTML = new JBDecimal(getTier1FeatBonus()).ToString();
-  document.getElementById('tier2bonus').innerHTML = new JBDecimal(getTier2FeatBonus()).ToString();
-
-  document.getElementById('attackbought').innerHTML = gameData.equipment[0].bought.toString();
-  document.getElementById('attackproducing').innerHTML = gameData.equipment[0].productionPerUnit().multiply(gameData.tower.baseAttack).ToString();
-  document.getElementById('hullbought').innerHTML = gameData.equipment[1].bought.toString();
-  document.getElementById('hullproducing').innerHTML = gameData.equipment[1].productionPerUnit().multiply(gameData.tower.baseMaxHitPoints).ToString();
-
-  document.getElementById('textToDisplay').innerHTML = display.getDisplayText();
-
-  gameData.derivatives.forEach((d) => { d.updateDisplay(); });
-
-  gameData.speedDerivatives.forEach((d) => { d.updateDisplay(); });
-
-  gameData.timeDerivatives.forEach((d) => { d.updateDisplay(); });
-
-  gameData.producer.updateDisplay();
-
-  gameData.equipment.forEach((e) => { e.updateDisplay(); });
-
-  gameData.upgrades.forEach((u) => { u.updateDisplay(); });
-
-  gameData.rockUpgrades.forEach((u) => { u.updateDisplay(); });
-
-  gameData.boulderUpgrades.forEach((u) => { u.updateDisplay(); });
-
-  let resourceStats = "Metal: " + gameData.resources.metal.amount.ToString() + "<br />";
-  if (gameData.stats.highestEverWave >= 5) {
-    resourceStats += "Dust: " + gameData.resources.dust.amount.ToString() + "<br />";
-  }
-  if (gameData.stats.prestige1 >= 1) {
-    resourceStats += "Pebbles: " + gameData.resources.pebbles.amount.ToString() + "<br />";
-  }
-  if (gameData.stats.prestige2 >= 1) {
-    resourceStats += "Rocks: " + gameData.resources.rocks.amount.ToString() + "<br />";
-  }
-  if (gameData.stats.prestige3 >= 1) {
-    resourceStats += "Boulders: " + gameData.resources.boulders.amount.ToString() + "<br />";
-  }
-  document.getElementById('resourcesText').innerHTML = resourceStats;
-
-  let towerstats = '<b> Attack:' + gameData.tower.Attack().ToString() + '</b><br />';
-  towerstats += 'Shoots: ' + new JBDecimal(gameData.tower.ShotsPerSecond()).ToString() + '/s<br />';
-  towerstats += 'Range: ' + new JBDecimal(gameData.tower.Range()).ToString() + '<br />';
-  if (gameData.challenges[6].completed > 0) {
-    towerstats += 'Crit Chance: ' + new JBDecimal(gameData.tower.critChance(true)).ToString() + '<br />';
-    towerstats += 'Crit Multiplier: ' + new JBDecimal(gameData.tower.critMultiplier(true)).ToString() + '<br />';
-  }
-  towerstats += '<br />';
-  towerstats += '<b>Health: ' + gameData.tower.CurrentHitPoints().ToString() + '/' + gameData.tower.MaxHitPoints().ToString() + '</b><br />';
-  if (gameData.challenges[2].completed > 0) {
-    towerstats += 'Heal: ' + new JBDecimal(gameData.tower.Heal()).ToString() + '%<br />';
-  }
-  if (gameData.challenges[1].completed > 0) {
-    towerstats += 'Shield: ' + new JBDecimal(gameData.tower.Defense()).ToString() + '%<br />';
-  }
-  if (gameData.challenges[7].completed > 0) {
-    towerstats += 'Slow: ' + new JBDecimal(gameData.tower.Slow()).ToString() + '%<br />';
-  }
-
-  document.getElementById('towerStatsText').innerHTML = towerstats;
-  document.getElementById('secondRow').classList.add('hidden');
-
-  document.getElementById('tierinfo').classList.add('hidden');
-  const btndown = document.getElementById('btntierdown') as HTMLButtonElement;
-  btndown.disabled = false;
-  const btnup = document.getElementById('btntierup') as HTMLButtonElement;
-  btnup.disabled = false;
-  if (gameData.world.tierUnlocked > 1) {
-    document.getElementById('currenttier').innerHTML = gameData.world.currentTier.toFixed(0);
-    document.getElementById('tierinfo').classList.remove('hidden');
-    document.getElementById('secondRow').classList.remove('hidden');
-    if (gameData.world.currentTier === 1) {
-      btndown.disabled = true;
-    }
-    if (gameData.world.currentTier === gameData.world.tierUnlocked) {
-      btnup.disabled = true;
-    }
-  }
-
-  document.getElementById('particles-tab').classList.add('hidden');
-  document.getElementById('rockupgrades-tab').classList.add('hidden');
-  if (gameData.stats.prestige2 > 0) {
-    document.getElementById('particles-tab').classList.remove('hidden');
-    document.getElementById('rockupgrades-tab').classList.remove('hidden');
-  }
-
-  document.getElementById('time-tab').classList.add('hidden');
-  document.getElementById('boulderupgrades-tab').classList.add('hidden');
-  if (gameData.stats.prestige3 > 0) {
-    document.getElementById('time-tab').classList.remove('hidden');
-    document.getElementById('boulderupgrades-tab').classList.remove('hidden');
-  }
-
-  if (pebblesFromPrestige().greaterThan(0)) {
-    document.getElementById('btnPrestige1').classList.remove('hidden');
-    document.getElementById('btnPrestige1').innerHTML = 'Prestige for ' + pebblesFromPrestige().ToString() + ' pebbles<br>Current: ' + getCurrentPebbleRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige1Rate.ToString() + '/hr';
-  } else {
-    document.getElementById('btnPrestige1').classList.add('hidden');
-  }
-
-  if (rocksFromPrestige().greaterThan(0)) {
-    document.getElementById('btnPrestige2').classList.remove('hidden');
-    document.getElementById('btnPrestige2').innerHTML = 'Ascend for ' + rocksFromPrestige().ToString() + ' rocks<br>Current: ' + getCurrentRockRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige2Rate.ToString() + '/hr';
-  } else {
-    document.getElementById('btnPrestige2').classList.add('hidden');
-  }
-
-  if (bouldersFromPrestige().greaterThan(0)) {
-    document.getElementById('btnPrestige3').classList.remove('hidden');
-    document.getElementById('btnPrestige3').innerHTML =
-      'Transform for ' + bouldersFromPrestige().ToString() + ' boulders<br>Current: ' + getCurrentBoulderRate().ToString() + ' /hr<br>Best:' + gameData.stats.bestPrestige3Rate.ToString() + '/hr';
-  } else {
-    document.getElementById('btnPrestige3').classList.add('hidden');
-  }
-
-  gameData.Achievements.forEach((a, index) => {
-    const elementName = 'btnAchievement' + (index + 1).toString();
-    if (a.completed) {
-      document.getElementById(elementName).classList.remove('btn-danger');
-      document.getElementById(elementName).classList.add('btn-success');
-    } else {
-      document.getElementById(elementName).classList.add('btn-danger');
-      document.getElementById(elementName).classList.remove('btn-success');
-    }
-  });
-
-  gameData.tier1Feats.forEach((a, index) => {
-    const elementName = 'btn1Tier' + (index + 1).toString();
-    if (a.completed) {
-      document.getElementById(elementName).classList.remove('btn-danger');
-      document.getElementById(elementName).classList.add('btn-success');
-    } else {
-      document.getElementById(elementName).classList.add('btn-danger');
-      document.getElementById(elementName).classList.remove('btn-success');
-    }
-  });
-
-  gameData.tier2Feats.forEach((a, index) => {
-    const elementName = 'btn2Tier' + (index + 1).toString();
-    if (a.completed) {
-      document.getElementById(elementName).classList.remove('btn-danger');
-      document.getElementById(elementName).classList.add('btn-success');
-    } else {
-      document.getElementById(elementName).classList.add('btn-danger');
-      document.getElementById(elementName).classList.remove('btn-success');
-    }
-  });
-
-  if (gameData.stats.prestige2 < 1 && gameData.stats.prestige3 < 1) {
-    document.getElementById('shieldchallenge').classList.add('hidden');
-    document.getElementById('rangechallenge').classList.add('hidden');
-  } else {
-    document.getElementById('shieldchallenge').classList.remove('hidden');
-    document.getElementById('rangechallenge').classList.remove('hidden');
-  }
-
-  if (gameData.stats.prestige3 < 1) {
-    document.getElementById('critchallenge').classList.add('hidden');
-    document.getElementById('slowchallenge').classList.add('hidden');
-  } else {
-    document.getElementById('critchallenge').classList.remove('hidden');
-    document.getElementById('slowchallenge').classList.remove('hidden');
-  }
-
-  document.getElementById('tier1div').classList.add('hidden');
-  if (gameData.world.tierUnlocked > 0) {
-    document.getElementById('tier1div').classList.remove('hidden');
-  }
-
-  document.getElementById('tier2div').classList.add('hidden');
-  if (gameData.world.tierUnlocked > 1) {
-    document.getElementById('tier2div').classList.remove('hidden');
-  }
-
-
-  document.getElementById('challengesTabNav').classList.add('hidden');
-  document.getElementById('automationTabNav').classList.add('hidden');  
-  if (gameData.stats.highestEverWave >= 20) {
-    document.getElementById('challengesTabNav').classList.remove('hidden');
-    document.getElementById('automationTabNav').classList.remove('hidden');  
-  }
-
-  const canvas = display.canvas;
-  const ctx = display.ctx;
-  if (canvas.getContext) {
-    const originalHeight = canvas.height;
-    const originalWidth = canvas.width;
-
-    const dimensions = getObjectFitSize(true, canvas.clientWidth, canvas.clientHeight, canvas.width, canvas.height);
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = dimensions.width * dpr;
-    canvas.height = dimensions.height * dpr;
-
-    const ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
-    ctx.scale(ratio * dpr * canvas.height / canvas.scrollHeight, ratio * dpr * canvas.width / canvas.scrollWidth); // adjust this!
-
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.height, canvas.height);
-
-    display.DrawTower();
-
-    ctx.globalAlpha = 1.0;
-    gameData.tower.bullets.forEach((b) => { b.update(); });
-
-    gameData.enemies.forEach((e) => {
-      e.update();
-      e.bullets.forEach((b) => { b.update(); });
-    });
-
-    ctx.font = 'bold 15px Arial';
-    ctx.fillStyle = 'red';
-    ctx.fillText('Drone Attack: ' + display.drone.Attack().ToString(), 10, 460);
-    ctx.fillText('Drone Hp: ' + display.drone.MaxHitPoints().ToString(), 10, 480);
-
-    ctx.font = '10px Arial';
-    ctx.fillStyle = 'white';
-    ctx.fillText(gameData.world.currentTickLength + 'ms', 10, 510);
-    if (gameData.world.ticksLeftOver > 50) {
-      ctx.fillText(display.getPrettyTimeFromMilliSeconds(gameData.world.ticksLeftOver) + ' banked', 10, 500);
-    }
-    ctx.font = '15px Arial';
-    ctx.fillText('Wave: ' + gameData.world.currentWave + ' / ' + getWavesNeededForTier(), 210, 15);
-    ctx.fillText('Unspawned: ' + gameData.world.enemiesToSpawn.toString() + '(' + getSpecialsCount().toString() + ')', 10, 15);
-
-    if (gameData.world.ticksToNextSpawn > 1000) {
-      ctx.fillStyle = 'red';
-      ctx.fillText('Time to next enemy: ' + display.getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn), 10, 30);
-    }
-  }
-
-  document.getElementById('auto1').classList.add('hidden');
-  document.getElementById('auto2').classList.add('hidden');
-  document.getElementById('auto3').classList.add('hidden');
-  document.getElementById('auto4').classList.add('hidden');
-  document.getElementById('auto5').classList.add('hidden');
-  document.getElementById('auto6').classList.add('hidden');
-  document.getElementById('auto7').classList.add('hidden');
-  document.getElementById('auto8').classList.add('hidden');
-  document.getElementById('auto9').classList.add('hidden');
-  document.getElementById('auto10').classList.add('hidden');
-  document.getElementById('auto11').classList.add('hidden');
-  document.getElementById('auto12').classList.add('hidden');
-  document.getElementById('auto13').classList.add('hidden');
-  document.getElementById('auto14').classList.add('hidden');
-  document.getElementById('auto15').classList.add('hidden');
-  document.getElementById('auto16').classList.add('hidden');
-  document.getElementById('auto17').classList.add('hidden');
-  document.getElementById('auto18').classList.add('hidden');
-  document.getElementById('auto19').classList.add('hidden');
-  document.getElementById('auto20').classList.add('hidden');
-  document.getElementById('auto21').classList.add('hidden');
-  document.getElementById('auto22').classList.add('hidden');
-
-  const highestwavemultiplier = 5 - gameData.rockUpgrades[2].bought - gameData.boulderUpgrades[2].bought;
-
-  if (gameData.stats.highestEverWave >= 4 * highestwavemultiplier) {
-    document.getElementById('auto1').classList.remove('hidden');
-    document.getElementById('auto2').classList.remove('hidden');
-    document.getElementById('auto3').classList.remove('hidden');
-    document.getElementById('auto4').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 5 * highestwavemultiplier) {
-    document.getElementById('auto5').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 6 * highestwavemultiplier) {
-    document.getElementById('auto6').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 7 * highestwavemultiplier) {
-    document.getElementById('auto7').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 8 * highestwavemultiplier) {
-    document.getElementById('auto8').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 9 * highestwavemultiplier) {
-    document.getElementById('auto9').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 10 * highestwavemultiplier) {
-    document.getElementById('auto10').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 11 * highestwavemultiplier) {
-    document.getElementById('auto11').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 12 * highestwavemultiplier) {
-    document.getElementById('auto12').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 13 * highestwavemultiplier) {
-    document.getElementById('auto13').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 14 * highestwavemultiplier) {
-    document.getElementById('auto14').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 15 * highestwavemultiplier) {
-    document.getElementById('auto15').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 16 * highestwavemultiplier) {
-    document.getElementById('auto16').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 17 * highestwavemultiplier) {
-    document.getElementById('auto17').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 18 * highestwavemultiplier) {
-    document.getElementById('auto18').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 19 * highestwavemultiplier) {
-    document.getElementById('auto19').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 20 * highestwavemultiplier) {
-    document.getElementById('auto20').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 21 * highestwavemultiplier) {
-    document.getElementById('auto21').classList.remove('hidden');
-  }
-  if (gameData.stats.highestEverWave >= 22 * highestwavemultiplier) {
-    document.getElementById('auto22').classList.remove('hidden');
-  }
-
-  document.getElementById('btnChallengeQuit').classList.add('hidden');
-
-  gameData.challenges.forEach((ch, index) => {
-    if (ch.active) {
-      document.getElementById('btnChallengeQuit').classList.remove('hidden');
-      document.getElementById('secondRow').classList.remove('hidden');
-    }
-    ch.updateDisplay(index);
-  });
-
-  document.getElementById('prestige1count').innerHTML = gameData.stats.prestige1.toString();
-  document.getElementById('prestige1time').innerHTML = display.getPrettyTimeFromMilliSeconds(gameData.stats.prestige1ticks);
-  document.getElementById('prestige2count').innerHTML = gameData.stats.prestige2.toString();
-  document.getElementById('prestige2time').innerHTML = display.getPrettyTimeFromMilliSeconds(gameData.stats.prestige2ticks);
-  document.getElementById('prestige3count').innerHTML = gameData.stats.prestige3.toString();
-  document.getElementById('prestige3time').innerHTML = display.getPrettyTimeFromMilliSeconds(gameData.stats.prestige3ticks);
-  document.getElementById('highestwavereached').innerHTML = gameData.stats.highestEverWave.toString();
-
-  let prestige1history = '<br />';
-  gameData.stats.last10Prestige1amounts.forEach((amt, index) => {
-    const ticks = gameData.stats.last10Prestige1times[index];
-    const tier = gameData.stats.last10Prestige1tier[index];
-    const waves = gameData.stats.last10Prestige1waves[index];
-    const rate = display.PrettyRatePerTime(amt, ticks);
-    const newline =
-      index.toString() +
-      ' reached tier ' +
-      tier.toString() +
-      ' wave ' +
-      waves.toString() +
-      ' took ' +
-      display.getPrettyTimeFromMilliSeconds(ticks) +
-      ' and gave ' +
-      amt.ToString() +
-      ' for an average of: ' + rate;
-
-    prestige1history += newline + '</br />';
-  });
-  document.getElementById('prestige1history').innerHTML = prestige1history;
-
-  let prestige2history = '<br />';
-  gameData.stats.last10Prestige2amounts.forEach((amt, index) => {
-    const ticks = gameData.stats.last10Prestige2times[index];
-    const rate = display.PrettyRatePerTime(amt, ticks);
-    const newline = index.toString() + ' took ' + display.getPrettyTimeFromMilliSeconds(ticks) + ' and gave ' + amt.ToString() + ' for an average of ' + rate;
-    prestige2history += newline + '</br />';
-  });
-  document.getElementById('prestige2history').innerHTML = prestige2history;
-
-  let prestige3history = '<br />';
-  gameData.stats.last10Prestige3amounts.forEach((amt, index) => {
-    const ticks = gameData.stats.last10Prestige3times[index];
-    const rate = display.PrettyRatePerTime(amt, ticks);
-    const newline = index.toString() + ' took ' + display.getPrettyTimeFromMilliSeconds(ticks) + ' and gave ' + amt.ToString() + ' for an average of ' + rate;
-    prestige3history += newline + '</br />';
-  });
-  document.getElementById('prestige3history').innerHTML = prestige3history;
-}
-
-function changeTier (value: string) {
-  CheckAchievementCompletions();
-  if (value === 'Down') {
-    gameData.world.currentTier--;
-    if (gameData.world.currentTier < 1) {
-      gameData.world.currentTier = 1;
-    }
-  }
-  if (value === 'Up') {
-    gameData.world.currentTier++;
-    if (gameData.world.currentTier > gameData.world.tierUnlocked) {
-      gameData.world.tierUnlocked = gameData.world.currentTier;
-    }
-  }
-  init(2);
-}
-
-// adapted from: https://www.npmjs.com/package/intrinsic-scale
-function getObjectFitSize (contains: boolean /* true = contain, false = cover */, containerWidth: number, containerHeight: number, width: number, height: number) {
-  const doRatio = width / height;
-  const cRatio = containerWidth / containerHeight;
-  let targetWidth = 0;
-  let targetHeight = 0;
-  const test = contains ? doRatio > cRatio : doRatio < cRatio;
-
-  if (test) {
-    targetWidth = containerWidth;
-    targetHeight = targetWidth / doRatio;
-  } else {
-    targetHeight = containerHeight;
-    targetWidth = targetHeight * doRatio;
-  }
-
-  return {
-    width: targetWidth,
-    height: targetHeight,
-    x: (containerWidth - targetWidth) / 2,
-    y: (containerHeight - targetHeight) / 2
-  };
-}
-
-function quitChallenges () {
-  gameData.challenges.forEach((ch) => {
-    if (ch.active) {
-      ch.quit();
-    }
-  });
-}
-
-function pebblesFromPrestige () {
-  return gameData.resources.dust.amount.divide(10 - gameData.rockUpgrades[1].bought).floor();
-}
-
-function rocksFromPrestige () {
-  return gameData.resources.pebbles.amount.add(pebblesFromPrestige()).divide(100 - (gameData.boulderUpgrades[1].bought * 10)).floor(); ;
-}
-
-function bouldersFromPrestige () {
-  return gameData.resources.rocks.amount.add(rocksFromPrestige()).divide(1000).floor();
-}
-
-// eslint-disable-next-line no-unused-vars
-function prestige1 () {
-  quitChallenges();
-  init(1);
-}
-
-// eslint-disable-next-line no-unused-vars
-function prestige2 () {
-  quitChallenges();
-  init(2);
-}
-
-// eslint-disable-next-line no-unused-vars
-function prestige3 () {
-  quitChallenges();
-  init(3);
-}
-
-// eslint-disable-next-line no-unused-vars
-function resetGame () {
-  localStorage.clear();
-  location.reload();
-}
-
-function getSpecialsCount () {
-  return (
-    gameData.world.bossEnemiesToSpawn +
-    gameData.world.cannonEnemiesToSpawn +
-    gameData.world.fastEnemiesToSpawn +
-    gameData.world.rangedEnemiesToSpawn +
-    gameData.world.tankEnemiesToSpawn +
-    gameData.world.bradleyEnemiesToSpawn +
-    gameData.world.triremeEnemiesToSpawn +
-    gameData.world.cavalierEnemiesToSpwan +
-    gameData.world.scorpionEnemiesToSpawn +
-    gameData.world.paladinEnemiesToSpawn +
-    gameData.world.oliphantEnemiesToSpawn +
-    gameData.world.falconEnemiesToSpawn +
-    gameData.world.blitzEnemiesToSpawn +
-    gameData.world.archerEnemiesToSpawn +
-    gameData.world.titanEnemiesToSpawn
-  );
-}
-
-function getSpecialsArray () {
-  const choicesArr = [];
-  for (let index = 0; index < gameData.world.fastEnemiesToSpawn; index++) {
-    choicesArr.push('F');
-  }
-  for (let index = 0; index < gameData.world.tankEnemiesToSpawn; index++) {
-    choicesArr.push('T');
-  }
-  for (let index = 0; index < gameData.world.rangedEnemiesToSpawn; index++) {
-    choicesArr.push('R');
-  }
-  for (let index = 0; index < gameData.world.bossEnemiesToSpawn; index++) {
-    choicesArr.push('B');
-  }
-  for (let index = 0; index < gameData.world.cannonEnemiesToSpawn; index++) {
-    choicesArr.push('C');
-  }
-  for (let index = 0; index < gameData.world.bradleyEnemiesToSpawn; index++) {
-    choicesArr.push('b');
-  }
-  for (let index = 0; index < gameData.world.triremeEnemiesToSpawn; index++) {
-    choicesArr.push('t');
-  }
-  for (let index = 0; index < gameData.world.cavalierEnemiesToSpwan; index++) {
-    choicesArr.push('c');
-  }
-  for (let index = 0; index < gameData.world.scorpionEnemiesToSpawn; index++) {
-    choicesArr.push('S');
-  }
-  for (let index = 0; index < gameData.world.oliphantEnemiesToSpawn; index++) {
-    choicesArr.push('O');
-  }
-  for (let index = 0; index < gameData.world.paladinEnemiesToSpawn; index++) {
-    choicesArr.push('P');
-  }
-  for (let index = 0; index < gameData.world.blitzEnemiesToSpawn; index++) {
-    choicesArr.push('z');
-  }
-  for (let index = 0; index < gameData.world.falconEnemiesToSpawn; index++) {
-    choicesArr.push('f');
-  }
-  for (let index = 0; index < gameData.world.archerEnemiesToSpawn; index++) {
-    choicesArr.push('a');
-  }
-  for (let index = 0; index < gameData.world.titanEnemiesToSpawn; index++) {
-    choicesArr.push('ti');
-  }
-  return choicesArr;
-}
-
-function getNumberOfEnemies (wave: number) {
+function getNumberOfEnemies(wave: number) {
   let div = wave - (gameData.world.currentTier - 1);
   if (div < 1) {
     div = 1;
@@ -1010,64 +198,81 @@ function getNumberOfEnemies (wave: number) {
 }
 
 function getWavesNeededForTier() {
-  return 90 + (gameData.world.currentTier * 10);
+  return 90 + gameData.world.currentTier * 10;
 }
 
-function resetSpawns (killexistingenemies: boolean = true) {
-  gameData.world.currentWave++;
-  CheckAchievementCompletions(); // check before resetting to new tier
-
-  
-  if (gameData.world.currentWave > getWavesNeededForTier()) {
-    quitChallenges();
-    if (gameData.world.currentTier === gameData.world.tierUnlocked) {
-      changeTier('Up');
-    } else {
-      init(1);
+function quitChallenges() {
+  gameData.challenges.forEach((ch) => {
+    if (ch.active) {
+      ch.quit();
     }
-  }
+  });
+}
 
-  display.drone = new Enemy(true);
-  gameData.world.enemiesToSpawn = 9 + gameData.world.currentWave - gameData.rockUpgrades[12].bought;
-
-  gameData.world.fastEnemiesToSpawn = getNumberOfEnemies(5);
-  gameData.world.tankEnemiesToSpawn = getNumberOfEnemies(10);
-  gameData.world.rangedEnemiesToSpawn = getNumberOfEnemies(15);
-  gameData.world.cannonEnemiesToSpawn = getNumberOfEnemies(20);
-  gameData.world.archerEnemiesToSpawn = getNumberOfEnemies(25);
-  gameData.world.bradleyEnemiesToSpawn = getNumberOfEnemies(30);
-  gameData.world.triremeEnemiesToSpawn = getNumberOfEnemies(35);
-  gameData.world.cavalierEnemiesToSpwan = getNumberOfEnemies(40);
-  gameData.world.scorpionEnemiesToSpawn = getNumberOfEnemies(45);
-  gameData.world.paladinEnemiesToSpawn = getNumberOfEnemies(50);
-  gameData.world.oliphantEnemiesToSpawn = getNumberOfEnemies(55);
-  gameData.world.blitzEnemiesToSpawn = getNumberOfEnemies(60);
-  gameData.world.falconEnemiesToSpawn = getNumberOfEnemies(65);
-  gameData.world.titanEnemiesToSpawn = getNumberOfEnemies(70);
-
-  if (gameData.world.currentWave % 10 === 0) {
-    gameData.world.bossEnemiesToSpawn = 1;
-  } else {
-    gameData.world.bossEnemiesToSpawn = 0;
-  }
-  if (killexistingenemies) {
-    gameData.enemies = [];
-    gameData.tower.damagetaken = new JBDecimal(0);
-    gameData.tower.bullets = [];
-    gameData.world.ticksToNextSpawn = 100000 * gameData.world.deathlevel;
-  } else {
-    display.addToDisplay('Wave ' + (gameData.world.currentWave - 1) + ' completed!', 'story');
-    gameData.world.ticksToNextSpawn = 1000;
-  }
-
-  if (gameData.world.enemiesToSpawn < getSpecialsCount()) {
-    gameData.world.enemiesToSpawn = getSpecialsCount();
+function removeAllChildNodes(parent) {
+  while (parent.firstChild) {
+    parent.removeChild(parent.firstChild);
   }
 }
 
-function init (prestigelevel: number = 0) {
+function createTowerSites() {
+  let leftToRight = true;
+  let currenty = 15;
+  let currentx = 5;
+  const tierSize = 40 + gameData.world.currentTier * 10;
+  let index = 0;
+
+  gameData.towers = [];
+
+  removeAllChildNodes(document.getElementById('TowerUnBoughtInfo'));
+  removeAllChildNodes(document.getElementById('TowerBoughtInfo'));
+
+  while (currenty <= tierSize) {
+    if (leftToRight) {
+      currentx = 5;
+      while (currentx <= tierSize - 10) {
+        const currentTower = new Tower(new Vector(currentx, currenty), index);
+        gameData.towers.push(currentTower);
+        currentTower.active = true;
+        index += 1;
+        currentx += 10;
+      }
+    } else {
+      currentx = tierSize - 5;
+      while (currentx > 10) {
+        const currentTower = new Tower(new Vector(currentx, currenty), index);
+        gameData.towers.push(currentTower);
+        currentTower.active = true;
+        index += 1;
+        currentx -= 10;
+      }
+    }
+    currenty += 20;
+    leftToRight = !leftToRight;
+  }
+}
+
+function getSpecialsCount() {
+  return (
+    gameData.world.bossEnemiesToSpawn +
+    gameData.world.fastEnemiesToSpawn +
+    gameData.world.tankEnemiesToSpawn +
+    gameData.world.bradleyEnemiesToSpawn +
+    gameData.world.paladinEnemiesToSpawn +
+    gameData.world.knightEnemiesToSpawn +
+    gameData.world.flyerEnemiesToSpawn +
+    gameData.world.dumboEnemiesToSpawn +
+    gameData.world.clericEnemiesToSpawn +
+    gameData.world.hummingbirdEnemiesToSpawn
+  );
+}
+
+function init(prestigelevel = 0) {
   if (prestigelevel >= 1) {
     display.prestige1DisplayReset();
+    gameData.towers.forEach((t) => {
+      t.delete();
+    });
     if (pebblesFromPrestige().greaterThan(0)) {
       gameData.stats.last10Prestige1amounts.unshift(pebblesFromPrestige());
       gameData.stats.last10Prestige1amounts.splice(10);
@@ -1089,31 +294,46 @@ function init (prestigelevel: number = 0) {
     gameData.world.deathlevel = 0;
     gameData.world.currentWave = 0;
     gameData.world.highestWaveCompleted = 0;
+    // eslint-disable-next-line no-use-before-define
     resetSpawns(true);
 
-    gameData.derivatives.forEach((d, index) => {
+    gameData.derivatives.forEach((d) => {
       d.bought = 0;
       d.owned = new JBDecimal(0);
       d.upgradeLevel = 0;
-      if (gameData.rockUpgrades[11].bought) {
-        if (index - 3 < gameData.upgrades[12].bought) {
-          // which derivatives recieve intial inventory is controlled by which are unlocked
-          d.owned = new JBDecimal(gameData.stats.prestige2);
-        }
-      }
     });
 
-    gameData.speedDerivatives.forEach((d) => { d.owned = new JBDecimal(d.bought); });
+    gameData.resources.metal.subtract(new JBDecimal(10));
+
+    gameData.derivatives[0].bought += 1;
+    gameData.derivatives[0].owned = gameData.derivatives[0].owned.add(1);
+
+    if (gameData.rockUpgrades[7].bought > 0) {
+      gameData.resources.metal.add(new JBDecimal(1000));
+    }
+
+    gameData.speedDerivatives.forEach((d) => {
+      d.owned = new JBDecimal(d.bought);
+    });
 
     gameData.producer.bought = 0;
     gameData.producer.owned = new JBDecimal(0);
     gameData.producer.upgradeLevel = 0;
 
-    gameData.equipment.forEach((e) => {
-      e.bought = 0;
-      e.owned = new JBDecimal(0);
-      e.upgradeLevel = 0;
-    });
+    if (gameData.tierblueprintsauto) {
+      while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
+        gameData.tierBlueprints.push(new TierBluePrint());
+      }
+      const currentBluePrint = gameData.tierBlueprints[gameData.world.currentTier];
+
+      gameData.towers.forEach((t, index) => {
+        if (typeof currentBluePrint.blueprints[index] === 'undefined') {
+          t.type = '';
+        } else {
+          t.type = currentBluePrint.blueprints[index].towerType;
+        }
+      });
+    }
   }
 
   if (prestigelevel >= 2) {
@@ -1134,24 +354,22 @@ function init (prestigelevel: number = 0) {
     gameData.resources.rocks.add(rocksFromPrestige());
     gameData.resources.pebbles.amount = new JBDecimal(0);
 
-    gameData.challenges.forEach((c) => { c.completed = 0; });
+    gameData.challenges.forEach((c) => {
+      c.completed = 0;
+    });
+    gameData.world.autoChallenge = false;
+    gameData.world.nextAutoChallenge = 0;
 
     gameData.upgrades.forEach((u) => {
       u.bought = 0;
       u.owned = new JBDecimal(0);
     });
 
-    gameData.derivatives.forEach((d, index) => {
-      d.bought = 0;
-      d.owned = new JBDecimal(0);
-      d.upgradeLevel = 0;
-      if (gameData.rockUpgrades[11].bought) {
-        if (index - 3 < gameData.upgrades[12].bought) {
-          // which derivatives recieve intial inventory is controlled by which are unlocked
-          d.owned = new JBDecimal(gameData.stats.prestige2);
-        }
-      }
-    });
+    // gameData.derivatives.forEach((d) => {
+    //   d.bought = 0;
+    //   d.owned = new JBDecimal(0);
+    //   d.upgradeLevel = 0;
+    //   });
   }
 
   if (prestigelevel >= 3) {
@@ -1168,6 +386,7 @@ function init (prestigelevel: number = 0) {
     gameData.stats.prestige2 = 0;
     gameData.resources.boulders.add(bouldersFromPrestige());
     gameData.resources.rocks.amount = new JBDecimal(0);
+    gameData.resources.timeparticles.amount = new JBDecimal(0);
 
     gameData.rockUpgrades.forEach((u) => {
       u.bought = 0;
@@ -1185,28 +404,34 @@ function init (prestigelevel: number = 0) {
       d.owned = new JBDecimal(0);
       d.upgradeLevel = 0;
     });
-    gameData.world.currentTier = 1;
   }
 
   if (prestigelevel === 0) {
     gameData = new SaveGameData('new');
     let total = 0;
-    for (let index = 1; index <= 10000; index++) {
+    for (let index = 1; index <= 10000; index += 1) {
       total += Math.ceil(Math.sqrt(index));
       internalInflationArray.push(total);
     }
     total = 0;
-    for (let index = 0; index <= 100; index++) {
+    for (let index = 0; index <= 100; index += 1) {
       total += index;
       achievementbonusarray.push(total);
     }
+
+    gameData.resources.metal.subtract(new JBDecimal(10));
+
+    gameData.derivatives[0].bought += 1;
+    gameData.derivatives[0].owned = gameData.derivatives[0].owned.add(1);
+
+    createTowerSites();
 
     const savegame = JSON.parse(localStorage.getItem('save'));
     if (savegame !== null) {
       gameData.name = savegame.name;
 
       if (typeof savegame.storyElements !== 'undefined') {
-        for (let index = 0; index < savegame.storyElements.length; index++) {
+        for (let index = 0; index < savegame.storyElements.length; index += 1) {
           const element = savegame.storyElements[index];
           gameData.storyElements[index].printed = element.printed;
         }
@@ -1215,7 +440,7 @@ function init (prestigelevel: number = 0) {
       if (typeof savegame.stats.prestige2 !== 'undefined') {
         gameData.stats.bestPrestige2Rate.mantissa = savegame.stats.bestPrestige2Rate.mantissa;
         gameData.stats.bestPrestige2Rate.exponent = savegame.stats.bestPrestige2Rate.exponent;
-        for (let index = 0; index < savegame.stats.last10Prestige2amounts.length; index++) {
+        for (let index = 0; index < savegame.stats.last10Prestige2amounts.length; index += 1) {
           const element = savegame.stats.last10Prestige2amounts[index];
           const item = new JBDecimal(1);
           item.mantissa = element.mantissa;
@@ -1230,7 +455,7 @@ function init (prestigelevel: number = 0) {
       if (typeof savegame.stats.prestige3 !== 'undefined') {
         gameData.stats.bestPrestige3Rate.mantissa = savegame.stats.bestPrestige3Rate.mantissa;
         gameData.stats.bestPrestige3Rate.exponent = savegame.stats.bestPrestige3Rate.exponent;
-        for (let index = 0; index < savegame.stats.last10Prestige3amounts.length; index++) {
+        for (let index = 0; index < savegame.stats.last10Prestige3amounts.length; index += 1) {
           const element = savegame.stats.last10Prestige3amounts[index];
           const item = new JBDecimal(1);
           item.mantissa = element.mantissa;
@@ -1249,7 +474,7 @@ function init (prestigelevel: number = 0) {
       gameData.stats.bestPrestige1Rate.exponent = savegame.stats.bestPrestige1Rate.exponent;
       gameData.stats.highestEverWave = savegame.stats.highestEverWave;
       if (typeof savegame.stats.last10Prestige1tier !== 'undefined') {
-        for (let index = 0; index < savegame.stats.last10Prestige1amounts.length; index++) {
+        for (let index = 0; index < savegame.stats.last10Prestige1amounts.length; index += 1) {
           const element = savegame.stats.last10Prestige1amounts[index];
           const item = new JBDecimal(1);
           item.mantissa = element.mantissa;
@@ -1271,60 +496,95 @@ function init (prestigelevel: number = 0) {
       gameData.world.enemiesToSpawn = savegame.world.enemiesToSpawn;
       gameData.world.fastEnemiesToSpawn = savegame.world.fastEnemiesToSpawn;
       gameData.world.highestWaveCompleted = savegame.world.highestWaveCompleted;
-      gameData.world.rangedEnemiesToSpawn = savegame.world.rangedEnemiesToSpawn;
+      if (typeof savegame.world.knightEnemiesToSpawn !== 'undefined') {
+        gameData.world.knightEnemiesToSpawn = savegame.world.knightEnemiesToSpawn;
+      }
       gameData.world.tankEnemiesToSpawn = savegame.world.tankEnemiesToSpawn;
-      gameData.world.bradleyEnemiesToSpawn = savegame.world.bradleyEnemiesToSpawn;
-      gameData.world.cannonEnemiesToSpawn = savegame.world.cannonEnemiesToSpawn;
-      gameData.world.cavalierEnemiesToSpwan = savegame.world.cavalierEnemiesToSpwan;
-      gameData.world.scorpionEnemiesToSpawn = savegame.world.scorpionEnemiesToSpawn;
+      if (typeof savegame.world.clericEnemiesToSpawn !== 'undefined') {
+        gameData.world.clericEnemiesToSpawn = savegame.world.clericEnemiesToSpawn;
+      }
+      if (typeof savegame.world.bradleyEnemiesToSpawn !== 'undefined') {
+        gameData.world.bradleyEnemiesToSpawn = savegame.world.bradleyEnemiesToSpawn;
+      }
+      if (typeof savegame.world.paladinEnemiesToSpawn !== 'undefined') {
+        gameData.world.paladinEnemiesToSpawn = savegame.world.paladinEnemiesToSpawn;
+      }
+      gameData.world.hummingbirdEnemiesToSpawn = savegame.world.hummingbirdEnemiesToSpawn;
+      gameData.world.dumboEnemiesToSpawn = savegame.world.dumboEnemiesToSpawn;
+      gameData.world.flyerEnemiesToSpawn = savegame.world.flyerEnemiesToSpawn;
       gameData.world.tierUnlocked = savegame.world.tierUnlocked;
       gameData.world.currentTier = savegame.world.currentTier;
-      gameData.world.paladinEnemiesToSpawn = savegame.world.paladinEnemiesToSpawn;
-      gameData.world.oliphantEnemiesToSpawn = savegame.world.oliphantEnemiesToSpawn;
-      gameData.world.blitzEnemiesToSpawn = savegame.world.blitzEnemiesToSpawn;
-      gameData.world.falconEnemiesToSpawn = savegame.world.falconEnemiesToSpawn;
-      if (typeof savegame.world.archerEnemiesToSpawn !== 'undefined') {
-        gameData.world.archerEnemiesToSpawn = savegame.world.archerEnemiesToSpawn;
-      }
-      if (typeof savegame.world.titanEnemiesToSpawn !== 'undefined') {
-        gameData.world.titanEnemiesToSpawn = savegame.world.titanEnemiesToSpawn;
-      }
-      gameData.world.triremeEnemiesToSpawn = savegame.world.triremeEnemiesToSpawn;
       gameData.world.timeElapsed = savegame.world.timeElapsed;
       gameData.world.ticksToNextSpawn = savegame.world.ticksToNextSpawn;
+      if (typeof savegame.world.autoChallenge !== 'undefined') {
+        gameData.world.autoChallenge = savegame.world.autoChallenge;
+        gameData.world.nextAutoChallenge = savegame.world.nextAutoChallenge;
+      }
 
-      for (let index = 0; index < savegame.enemies.length; index++) {
+      while (gameData.tierBlueprints.length < gameData.world.tierUnlocked + 1) {
+        const newGuy = new TierBluePrint();
+        gameData.tierBlueprints.push(newGuy);
+      }
+
+      if (typeof savegame.tierBlueprints !== 'undefined') {
+        savegame.tierBlueprints.forEach((tbp, tbpIndex) => {
+          gameData.tierBlueprints[tbpIndex] = tbp;
+        });
+      }
+
+      if (typeof savegame.tactics !== 'undefined') {
+        gameData.tactics.fastest = savegame.tactics.fastest;
+        gameData.tactics.highestHealth = savegame.tactics.highestHealth;
+        gameData.tactics.lowestHealth = savegame.tactics.lowestHealth;
+        gameData.tactics.healer = savegame.tactics.healer;
+      }
+
+      for (let index = 0; index < savegame.enemies.length; index += 1) {
         const element = savegame.enemies[index];
         const newEnemy = new Enemy(false);
         newEnemy.pos.x = element.pos.x;
         newEnemy.pos.y = element.pos.y;
-        newEnemy.baseAttack.mantissa = element.baseAttack.mantissa;
-        newEnemy.baseAttack.exponent = element.baseAttack.exponent;
-        newEnemy.baseDefense.mantissa = element.baseDefense.mantissa;
-        newEnemy.baseDefense.exponent = element.baseDefense.exponent;
-        newEnemy.baseHeal.mantissa = element.baseHeal.mantissa;
-        newEnemy.baseHeal.exponent = element.baseHeal.exponent;
         newEnemy.baseMaxHitPoints.mantissa = element.baseMaxHitPoints.mantissa;
         newEnemy.baseMaxHitPoints.exponent = element.baseMaxHitPoints.exponent;
-        newEnemy.baseRange = element.baseRange;
-        newEnemy.baseShotsPerSec = element.baseShotsPerSec;
         newEnemy.damagetaken.mantissa = element.damagetaken.mantissa;
         newEnemy.damagetaken.exponent = element.damagetaken.exponent;
         newEnemy.movementPerSec = element.movementPerSec;
-        newEnemy.player = false;
-        newEnemy.target.x = 0;
-        newEnemy.target.y = 0;
-        newEnemy.ticksToNextBullet = element.ticksToNextBullet;
+        newEnemy.isBullet = false;
+        newEnemy.slowed = element.slowed;
+        newEnemy.targetList = [];
+        element.targetList.forEach((t: { x: number; y: number }) => {
+          newEnemy.targetList.push(new Vector(t.x, t.y));
+        });
+        // element.targetList.forEach(t => newEnemy.targetList.push(new movingObject(t.pos.x, t.pos.y, t.movementPerSec, [])))
+        newEnemy.targetListIndex = element.targetListIndex;
         newEnemy.type = element.type;
 
-        element.bullets.forEach(b => newEnemy.bullets.push(new Bullet(b.pos.x, b.pos.y, 0, 0, b.damage, b.crit)));
+        element.bullets.forEach((b) =>
+          newEnemy.bullets.push(new Bullet(new Vector(b.pos.x, b.pos.y), element, b.damage, b.defenseDamage, b.crit))
+        );
 
         gameData.enemies.push(newEnemy);
       }
 
-      gameData.tower.damagetaken.exponent = savegame.tower.damagetaken.exponent;
-      gameData.tower.damagetaken.mantissa = savegame.tower.damagetaken.mantissa;
-      gameData.tower.ticksToNextBullet = 0;
+      createTowerSites();
+
+      // gameData.towers = [];
+      for (let index = 0; index < gameData.towers.length; index += 1) {
+        const element = savegame.towers[index];
+        const newTower = gameData.towers[index];
+        newTower.type = element.type;
+        newTower.bought = element.bought;
+        newTower.upgradeLevel = element.upgradeLevel;
+        newTower.ticksToNextBullet = element.ticksToNextBullet;
+        newTower.autoOn = element.autoOn;
+
+        // element.bullets.forEach(b => newTower.bullets.push(new Bullet(new Vector(b.pos.x, b.pos.y), element, b.damage, b.crit)));
+        // gameData.towers.push(newTower)
+      }
+
+      if (typeof savegame.tierblueprintsauto !== 'undefined') {
+        gameData.tierblueprintsauto = savegame.tierblueprintsauto;
+      }
 
       gameData.resources.dust.amount.mantissa = savegame.resources.dust.amount.mantissa;
       gameData.resources.dust.amount.exponent = savegame.resources.dust.amount.exponent;
@@ -1334,21 +594,18 @@ function init (prestigelevel: number = 0) {
       gameData.resources.pebbles.amount.exponent = savegame.resources.pebbles.amount.exponent;
       gameData.resources.rocks.amount.mantissa = savegame.resources.rocks.amount.mantissa;
       gameData.resources.rocks.amount.exponent = savegame.resources.rocks.amount.exponent;
-      if (typeof savegame.resources.boulders !== 'undefined') {
-        gameData.resources.boulders.amount.mantissa = savegame.resources.boulders.amount.mantissa;
-        gameData.resources.boulders.amount.exponent = savegame.resources.boulders.amount.exponent;
+      gameData.resources.boulders.amount.mantissa = savegame.resources.boulders.amount.mantissa;
+      gameData.resources.boulders.amount.exponent = savegame.resources.boulders.amount.exponent;
+      gameData.resources.particles.amount.mantissa = savegame.resources.particles.amount.mantissa;
+      gameData.resources.particles.amount.exponent = savegame.resources.particles.amount.exponent;
+      gameData.resources.timeparticles.amount.mantissa = savegame.resources.timeparticles.amount.mantissa;
+      gameData.resources.timeparticles.amount.exponent = savegame.resources.timeparticles.amount.exponent;
+      if (typeof savegame.resources.shards !== 'undefined') {
+        gameData.resources.shards.amount.mantissa = savegame.resources.shards.amount.mantissa;
+        gameData.resources.shards.amount.exponent = savegame.resources.shards.amount.exponent;
       }
 
-      if (typeof savegame.resources.particles !== 'undefined') {
-        gameData.resources.particles.amount.mantissa = savegame.resources.particles.amount.mantissa;
-        gameData.resources.particles.amount.exponent = savegame.resources.particles.amount.exponent;
-      }
-      if (typeof savegame.resources.timeparticles !== 'undefined') {
-        gameData.resources.timeparticles.amount.mantissa = savegame.resources.timeparticles.amount.mantissa;
-        gameData.resources.timeparticles.amount.exponent = savegame.resources.timeparticles.amount.exponent;
-      }
-
-      for (let index = 0; index < savegame.upgrades.length; index++) {
+      for (let index = 0; index < savegame.upgrades.length; index += 1) {
         const element = savegame.upgrades[index];
         gameData.upgrades[index].bought = element.bought;
         gameData.upgrades[index].owned.exponent = element.owned.exponent;
@@ -1356,7 +613,7 @@ function init (prestigelevel: number = 0) {
       }
 
       if (typeof savegame.rockUpgrades !== 'undefined') {
-        for (let index = 0; index < savegame.rockUpgrades.length; index++) {
+        for (let index = 0; index < savegame.rockUpgrades.length; index += 1) {
           const element = savegame.rockUpgrades[index];
           gameData.rockUpgrades[index].bought = element.bought;
           gameData.rockUpgrades[index].owned.exponent = element.owned.exponent;
@@ -1365,7 +622,7 @@ function init (prestigelevel: number = 0) {
       }
 
       if (typeof savegame.boulderUpgrades !== 'undefined') {
-        for (let index = 0; index < savegame.boulderUpgrades.length; index++) {
+        for (let index = 0; index < savegame.boulderUpgrades.length; index += 1) {
           const element = savegame.boulderUpgrades[index];
           gameData.boulderUpgrades[index].bought = element.bought;
           gameData.boulderUpgrades[index].owned.exponent = element.owned.exponent;
@@ -1373,15 +630,16 @@ function init (prestigelevel: number = 0) {
         }
       }
 
-      for (let index = 0; index < savegame.derivatives.length; index++) {
+      for (let index = 0; index < savegame.derivatives.length; index += 1) {
         const element = gameData.derivatives[index];
         element.bought = savegame.derivatives[index].bought;
         element.owned.mantissa = savegame.derivatives[index].owned.mantissa;
         element.owned.exponent = savegame.derivatives[index].owned.exponent;
         element.upgradeLevel = savegame.derivatives[index].upgradeLevel;
+        element.autoOn = savegame.derivatives[index].autoOn;
       }
 
-      for (let index = 0; index < savegame.speedDerivatives.length; index++) {
+      for (let index = 0; index < savegame.speedDerivatives.length; index += 1) {
         const element = gameData.speedDerivatives[index];
         element.bought = savegame.speedDerivatives[index].bought;
         element.owned.mantissa = savegame.speedDerivatives[index].owned.mantissa;
@@ -1390,7 +648,7 @@ function init (prestigelevel: number = 0) {
       }
 
       if (typeof savegame.timeDerivatives !== 'undefined') {
-        for (let index = 0; index < savegame.timeDerivatives.length; index++) {
+        for (let index = 0; index < savegame.timeDerivatives.length; index += 1) {
           const element = gameData.timeDerivatives[index];
           element.bought = savegame.timeDerivatives[index].bought;
           element.owned.mantissa = savegame.timeDerivatives[index].owned.mantissa;
@@ -1403,87 +661,1329 @@ function init (prestigelevel: number = 0) {
       gameData.producer.owned.mantissa = savegame.producer.owned.mantissa;
       gameData.producer.owned.exponent = savegame.producer.owned.exponent;
       gameData.producer.upgradeLevel = savegame.producer.upgradeLevel;
+      gameData.producer.autoOn = savegame.producer.autoOn;
 
-      for (let index = 0; index < gameData.equipment.length; index++) {
-        const element = gameData.equipment[index];
-        element.bought = savegame.equipment[index].bought;
-        element.owned.mantissa = savegame.equipment[index].owned.mantissa;
-        element.owned.exponent = savegame.equipment[index].owned.exponent;
-        element.upgradeLevel = savegame.equipment[index].upgradeLevel;
+      if (typeof savegame.equipment !== 'undefined') {
+        savegame.equipment.forEach((e) => {
+          const newEquipment = new Equipment(e.name);
+          e.abilities.forEach((a) => {
+            const newAbility = new EquipmentAbility(a.name);
+            newAbility.levels = a.levels;
+            newEquipment.abilities.push(newAbility);
+          });
+          gameData.equipment.push(newEquipment);
+        });
       }
-      for (let index = 0; index < savegame.challenges.length; index++) {
+
+      for (let index = 0; index < savegame.challenges.length; index += 1) {
         const element = gameData.challenges[index];
         element.active = savegame.challenges[index].active;
         element.completed = savegame.challenges[index].completed;
       }
-      for (let index = 0; index < savegame.Achievements.length; index++) {
+
+      for (let index = 0; index < savegame.Achievements.length; index += 1) {
         const element = savegame.Achievements[index];
         gameData.Achievements[index].completed = element.completed;
       }
 
-      for (let index = 0; index < savegame.tier1Feats.length; index++) {
-        const element = savegame.tier1Feats[index];
-        gameData.tier1Feats[index].completed = element.completed;
+      while (gameData.tierfeats.length < gameData.world.tierUnlocked) {
+        gameData.tierfeats.push(createFeatsForTier(gameData.tierfeats.length + 1));
       }
 
-      if (typeof savegame.tier2Feats !== 'undefined') {
-        for (let index = 0; index < savegame.tier2Feats.length; index++) {
-          const element = savegame.tier2Feats[index];
-          gameData.tier2Feats[index].completed = element.completed;
-        }
-      }
-
-      if (typeof savegame.automation !== 'undefined') {
-        for (let index = 0; index < savegame.automation.length; index++) {
-          const element = savegame.automation[index];
-          if (index === 0) {
-            const autoprestige1 = <HTMLInputElement>document.getElementById('autoprestige1');
-            if (element.item === 0) {
-              autoprestige1.checked = false;
-            } else {
-              autoprestige1.checked = true;
-            }
-          } else {
-            const itemName = 'automation' + (index).toString() + 'item';
-            const valueName = 'automation' + (index).toString() + 'value';
-            const autoitem = <HTMLSelectElement>document.getElementById(itemName);
-            const autovalue = <HTMLSelectElement>document.getElementById(valueName);
-            autoitem.selectedIndex = element.item;
-            autovalue.selectedIndex = element.value;
-          }
-        }
+      if (typeof savegame.tierfeats !== 'undefined') {
+        savegame.tierfeats.forEach((tf, tierindex) => {
+          tf.feats.forEach((f, featindex) => {
+            gameData.tierfeats[tierindex].feats[featindex].completed =
+              savegame.tierfeats[tierindex].feats[featindex].completed;
+          });
+        });
       }
     }
   }
   display.drone = new Enemy(true);
-
+  if (gameData.stats.prestige1 > 0 || gameData.stats.prestige2 > 0 || gameData.stats.prestige3 > 0) {
+    display.addToDisplay('Here we go again', DisplayCategory.Story);
+  } else {
+    display.addToDisplay('Our story begins', DisplayCategory.Story);
+  }
   CheckAchievementCompletions();
   initted = true;
 }
 
-// eslint-disable-next-line no-unused-vars
-function saveGameClick () {
+function resetSpawns(killexistingenemies = true) {
+  gameData.world.currentWave += 1;
+  gameData.challenges.forEach((ch) => {
+    if (ch.active) {
+      ch.checkForCompletion();
+    }
+  });
+
+  CheckAchievementCompletions(); // check before resetting to new tier
+
+  if (gameData.world.currentWave > getWavesNeededForTier()) {
+    // earned new equipment
+    const newEquipment = new Equipment(`Tier ${gameData.world.currentTier.toString()}`);
+    newEquipment.NewEquipment(gameData.world.currentTier);
+    gameData.equipment.push(newEquipment);
+
+    gameData.world.nextSaveGameTime = new Date();
+
+    quitChallenges();
+    if (gameData.world.currentTier === gameData.world.tierUnlocked) {
+      gameData.world.tierUnlocked += 1;
+      while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
+        gameData.tierBlueprints.push(new TierBluePrint());
+      }
+    }
+    init(1);
+  }
+
+  display.drone = new Enemy(true);
+  gameData.world.enemiesToSpawn = 9 + gameData.world.currentWave - gameData.rockUpgrades[8].bought;
+
+  gameData.world.tankEnemiesToSpawn = getNumberOfEnemies(5);
+  gameData.world.fastEnemiesToSpawn = getNumberOfEnemies(10);
+  gameData.world.flyerEnemiesToSpawn = getNumberOfEnemies(15);
+  gameData.world.clericEnemiesToSpawn = getNumberOfEnemies(20);
+  gameData.world.bradleyEnemiesToSpawn = getNumberOfEnemies(25);
+  gameData.world.dumboEnemiesToSpawn = getNumberOfEnemies(30);
+  gameData.world.hummingbirdEnemiesToSpawn = getNumberOfEnemies(35);
+  gameData.world.knightEnemiesToSpawn = getNumberOfEnemies(40);
+  if (gameData.world.currentTier > 1) {
+    gameData.world.paladinEnemiesToSpawn = getNumberOfEnemies(45);
+  }
+
+  if (gameData.world.currentWave % 10 === 0) {
+    gameData.world.bossEnemiesToSpawn = 1;
+  } else {
+    gameData.world.bossEnemiesToSpawn = 0;
+  }
+  if (killexistingenemies) {
+    gameData.enemies.forEach((e) => {
+      e.bullets = [];
+    });
+    gameData.enemies = [];
+    gameData.world.ticksToNextSpawn = 1000;
+  } else {
+    display.addToDisplay(`Wave ${gameData.world.currentWave - 1} completed!`, DisplayCategory.Story);
+    gameData.world.ticksToNextSpawn = 1000;
+  }
+
+  if (gameData.world.enemiesToSpawn < getSpecialsCount()) {
+    gameData.world.enemiesToSpawn = getSpecialsCount();
+  }
+}
+
+function processStuff(ticks: number) {
+  if (gameData.boulderUpgrades[5].bought > 0) {
+    AutoBuyPebbles();
+  }
+
+  while (gameData.tierfeats.length < gameData.world.tierUnlocked) {
+    gameData.tierfeats.push(createFeatsForTier(gameData.tierfeats.length + 1));
+  }
+
+  gameData.challenges.forEach((c) => {
+    c.available = false;
+  });
+
+  gameData.challenges[0].available = true;
+  gameData.challenges[1].available = true;
+  gameData.challenges[2].available = true;
+  gameData.challenges[3].available = true;
+
+  const achievementbonus = getAchievementBonus();
+
+  if (achievementbonus > 5) {
+    gameData.challenges[4].available = true;
+  }
+
+  if (achievementbonus > 20) {
+    gameData.challenges[5].available = true;
+  }
+
+  if (achievementbonus > 25) {
+    gameData.challenges[6].available = true;
+  }
+
+  if (achievementbonus > 100) {
+    gameData.challenges[7].available = true;
+  }
+
+  if (gameData.world.autoChallenge) {
+    let challengeActive = false;
+    gameData.challenges.forEach((c) => {
+      if (c.active) {
+        challengeActive = true;
+      }
+    });
+
+    if (!challengeActive) {
+      if (gameData.challenges[gameData.world.nextAutoChallenge].available) {
+        gameData.challenges[gameData.world.nextAutoChallenge].setActive();
+      }
+      gameData.world.nextAutoChallenge += 1;
+      if (gameData.world.nextAutoChallenge >= gameData.challenges.length) {
+        gameData.world.nextAutoChallenge = 0;
+      }
+    }
+    gameData.challenges.forEach((c) => {
+      if (c.completed === 0 && !c.active && c.available) {
+        c.setActive();
+      }
+    });
+  }
+
+  gameData.stats.prestige1ticks += ticks;
+  gameData.stats.prestige2ticks += ticks;
+  gameData.stats.prestige3ticks += ticks;
+  gameData.world.ticksToNextSpawn -= ticks;
+
+  gameData.producer.costMultiplier = 10 - gameData.rockUpgrades[5].bought;
+
+  const currentPebbleRate = getCurrentPebbleRate();
+
+  if (currentPebbleRate.greaterThan(gameData.stats.bestPrestige1Rate)) {
+    gameData.stats.bestPrestige1Rate = new JBDecimal(currentPebbleRate);
+  }
+
+  const currentRockRate = getCurrentRockRate();
+  if (currentRockRate.greaterThan(gameData.stats.bestPrestige2Rate)) {
+    gameData.stats.bestPrestige2Rate = new JBDecimal(currentRockRate);
+  }
+
+  const currentBoulderRate = getCurrentBoulderRate();
+  if (currentBoulderRate.greaterThan(gameData.stats.bestPrestige3Rate)) {
+    gameData.stats.bestPrestige3Rate = new JBDecimal(currentBoulderRate);
+  }
+
+  gameData.resources.metal.add(gameData.derivatives[0].production());
+  // gameData.resources.metal.add(gameData.derivatives[1].production());
+  // gameData.resources.metal.add(gameData.derivatives[2].production());
+  // gameData.resources.metal.add(gameData.derivatives[3].production());
+  // gameData.resources.metal.add(gameData.derivatives[4].production());
+  // gameData.resources.metal.add(gameData.derivatives[5].production());
+  // gameData.resources.metal.add(gameData.derivatives[6].production());
+  // gameData.resources.metal.add(gameData.derivatives[7].production());
+
+  gameData.derivatives[0].owned = gameData.derivatives[0].owned.add(gameData.derivatives[1].production());
+  gameData.derivatives[1].owned = gameData.derivatives[1].owned.add(gameData.derivatives[2].production());
+  gameData.derivatives[2].owned = gameData.derivatives[2].owned.add(gameData.derivatives[3].production());
+  gameData.derivatives[3].owned = gameData.derivatives[3].owned.add(gameData.derivatives[4].production());
+  gameData.derivatives[4].owned = gameData.derivatives[4].owned.add(gameData.derivatives[5].production());
+  gameData.derivatives[5].owned = gameData.derivatives[5].owned.add(gameData.derivatives[6].production());
+  gameData.derivatives[6].owned = gameData.derivatives[6].owned.add(gameData.derivatives[7].production());
+
+  gameData.resources.particles.add(gameData.speedDerivatives[0].production());
+  gameData.speedDerivatives[0].owned = gameData.speedDerivatives[0].owned.add(
+    gameData.speedDerivatives[1].production()
+  );
+  gameData.speedDerivatives[1].owned = gameData.speedDerivatives[1].owned.add(
+    gameData.speedDerivatives[2].production()
+  );
+  gameData.speedDerivatives[2].owned = gameData.speedDerivatives[2].owned.add(
+    gameData.speedDerivatives[3].production()
+  );
+  gameData.speedDerivatives[3].owned = gameData.speedDerivatives[3].owned.add(
+    gameData.speedDerivatives[4].production()
+  );
+  gameData.speedDerivatives[4].owned = gameData.speedDerivatives[4].owned.add(
+    gameData.speedDerivatives[5].production()
+  );
+
+  gameData.resources.timeparticles.add(gameData.timeDerivatives[0].production());
+  gameData.timeDerivatives[0].owned = gameData.timeDerivatives[0].owned.add(gameData.timeDerivatives[1].production());
+  gameData.timeDerivatives[1].owned = gameData.timeDerivatives[1].owned.add(gameData.timeDerivatives[2].production());
+  gameData.timeDerivatives[2].owned = gameData.timeDerivatives[2].owned.add(gameData.timeDerivatives[3].production());
+  gameData.timeDerivatives[3].owned = gameData.timeDerivatives[3].owned.add(gameData.timeDerivatives[4].production());
+  gameData.timeDerivatives[4].owned = gameData.timeDerivatives[4].owned.add(gameData.timeDerivatives[5].production());
+
+  gameData.upgrades.forEach((u) => {
+    u.addedlimit = 0;
+  });
+
+  gameData.derivatives.forEach((u) => {
+    if (u.index <= 2) {
+      u.active = true;
+    } else if (u.index - 2 <= gameData.upgrades[8].bought) {
+      u.active = true;
+    } else {
+      u.active = false;
+    }
+  });
+
+  if (gameData.challenges[1].active || gameData.challenges[1].completed < 1) {
+    gameData.producer.active = false;
+  } else {
+    gameData.producer.active = true;
+  }
+
+  if (lastachievementcount > 20) {
+    gameData.producer.autoBuy();
+    gameData.derivatives.forEach((u) => {
+      u.autoBuy();
+    });
+  }
+
+  if (lastachievementcount > 25) {
+    gameData.towers.forEach((t) => {
+      t.autoBuy();
+    });
+  }
+
+  if (gameData.rockUpgrades[6].bought > 0) {
+    gameData.upgrades.forEach((u, index) => {
+      if (index <= 1) {
+        u.addedlimit += 10;
+      }
+      if (index > 8) {
+        if (index !== 17) {
+          u.addedlimit += 10;
+        }
+      }
+    });
+  }
+
+  if (gameData.boulderUpgrades[2].bought > 0) {
+    gameData.upgrades.forEach((u, index) => {
+      if (index <= 1) {
+        u.addedlimit += 10;
+      }
+      if (index > 8) {
+        u.addedlimit += 10;
+      }
+    });
+  }
+
+  for (let index = gameData.enemies.length - 1; index >= 0; index--) {
+    const e = gameData.enemies[index];
+    if (e.act()) {
+      // returns true if enemy died
+      gameData.enemies[index].bullets = [];
+      gameData.enemies.splice(index, 1);
+    } else if (e.pos.y >= gameData.world.currentTier * 10 + 40) {
+      // returns true if enemy has made it off board
+      gameData.world.mulligansused += 1;
+
+      const maxMulligans = maxMulligansCalc();
+
+      if (gameData.world.mulligansused > maxMulligans) {
+        gameData.challenges.forEach((ch) => {
+          if (ch.active) {
+            ch.fail();
+          }
+        });
+        gameData.world.deathlevel += 1;
+        gameData.world.mulligansused = 0;
+        gameData.world.currentWave -= gameData.world.deathlevel;
+        if (gameData.world.currentWave < 1) {
+          gameData.world.currentWave = 1;
+        }
+        resetSpawns(true);
+        display.addToDisplay('You have been overcome.  The pressure lessens.', DisplayCategory.Story);
+        break;
+      } else {
+        e.pos = new Vector(0, 5);
+        e.targetListIndex = 0;
+      }
+    }
+  }
+
+  gameData.towers.forEach((t) => {
+    t.act();
+  });
+
+  // for (let index = gameData.towers.length - 1; index >= 0; index--) {
+  //   const t = gameData.towers[index];
+  //   t.act();
+  // }
+
+  if (gameData.world.ticksToNextSpawn <= 0 && gameData.world.enemiesToSpawn > 0) {
+    const newEnemy = new Enemy(false);
+    gameData.enemies.push(newEnemy);
+    gameData.world.ticksToNextSpawn += 1000 - gameData.world.currentWave * 5;
+    gameData.world.enemiesToSpawn -= 1;
+  }
+
+  // const autoprestige1 = <HTMLInputElement>document.getElementById('autoprestige1');
+
+  // if (gameData.tower.CurrentHitPoints().lessThanOrEqualTo(0)) {
+  //   gameData.tower.damagetaken = new JBDecimal(0);
+  //   gameData.challenges.forEach((ch) => { ch.active = false; });
+  //   if (autoprestige1.checked && pebblesFromPrestige().greaterThan(0)) {
+  //     init(1);
+  //     display.addToDisplay('Dust. But I still need more.', 'story');
+  //   } else {
+  //     gameData.world.currentWave -= 11;
+  //     if (gameData.world.currentWave < 0) {
+  //       gameData.world.currentWave = 0;
+  //     }
+  //     gameData.world.deathlevel += 1;
+  //     resetSpawns(true);
+  //     display.addToDisplay('You have been overcome.  The pressure lessens.', 'story');
+  //   }
+  // }
+
+  if (gameData.world.enemiesToSpawn === 0 && gameData.enemies.length === 0) {
+    if (gameData.world.currentWave > gameData.stats.highestEverWave) {
+      gameData.stats.highestEverWave = gameData.world.currentWave;
+    }
+    if (gameData.world.currentWave > gameData.world.highestWaveCompleted) {
+      gameData.world.highestWaveCompleted = gameData.world.currentWave;
+    }
+    resetSpawns(false);
+  }
+
+  gameData.challenges.forEach((ch) => {
+    if (ch.active) {
+      ch.checkForCompletion();
+    }
+  });
+}
+
+function getParticleBonus() {
+  let particlebonus = new JBDecimal(gameData.resources.particles.amount);
+  if (particlebonus.lessThan(1)) {
+    particlebonus = new JBDecimal(1);
+  }
+  return particlebonus;
+}
+
+function getTimeParticleBonus() {
+  let particlebonus = new JBDecimal(gameData.resources.timeparticles.amount);
+  if (particlebonus.lessThan(1)) {
+    particlebonus = new JBDecimal(1);
+  }
+  return particlebonus;
+}
+
+function getObjectFitSize(
+  contains: boolean /* true = contain, false = cover */,
+  containerWidth: number,
+  containerHeight: number,
+  width: number,
+  height: number
+) {
+  const doRatio = width / height;
+  const cRatio = containerWidth / containerHeight;
+  let targetWidth = 0;
+  let targetHeight = 0;
+  const test = contains ? doRatio > cRatio : doRatio < cRatio;
+
+  if (test) {
+    targetWidth = containerWidth;
+    targetHeight = targetWidth / doRatio;
+  } else {
+    targetHeight = containerHeight;
+    targetWidth = targetHeight * doRatio;
+  }
+
+  return {
+    width: targetWidth,
+    height: targetHeight,
+    x: (containerWidth - targetWidth) / 2,
+    y: (containerHeight - targetHeight) / 2,
+  };
+}
+
+function updateGUI() {
+  ChooseTutorial();
+
+  if (document.getElementById('towertab').classList.contains('active')) {
+    document.getElementById('TowerBluePrint').classList.add('hidden');
+    if (gameData.world.tierUnlocked > 0) {
+      document.getElementById('TowerBluePrint').classList.remove('hidden');
+      if (gameData.tierblueprintsauto) {
+        document.getElementById('blueprintLoadAuto').innerHTML = 'Turn Off';
+        document.getElementById('blueprintLoadAuto').classList.add('bg-success');
+        document.getElementById('blueprintLoadAuto').classList.remove('bg-danger');
+      } else {
+        document.getElementById('blueprintLoadAuto').innerHTML = 'Turn On';
+        document.getElementById('blueprintLoadAuto').classList.remove('bg-success');
+        document.getElementById('blueprintLoadAuto').classList.add('bg-danger');
+      }
+    }
+
+    document.getElementById('btnhealerTactic').classList.add('hidden');
+    if (gameData.rockUpgrades[11].bought > 0) {
+      document.getElementById('btnhealerTactic').classList.remove('hidden');
+    }
+
+    document.getElementById('btnfastestTactic').classList.add('bg-danger');
+    document.getElementById('btnhealerTactic').classList.add('bg-danger');
+    document.getElementById('btnhighestTactic').classList.add('bg-danger');
+    document.getElementById('btnlowestTactic').classList.add('bg-danger');
+    if (gameData.tactics.fastest) {
+      document.getElementById('btnfastestTactic').classList.add('bg-success');
+      document.getElementById('btnfastestTactic').classList.remove('bg-danger');
+    }
+    if (gameData.tactics.healer) {
+      document.getElementById('btnhealerTactic').classList.add('bg-success');
+      document.getElementById('btnhealerTactic').classList.remove('bg-danger');
+    }
+    if (gameData.tactics.highestHealth) {
+      document.getElementById('btnhighestTactic').classList.add('bg-success');
+      document.getElementById('btnhighestTactic').classList.remove('bg-danger');
+    }
+    if (gameData.tactics.lowestHealth) {
+      document.getElementById('btnlowestTactic').classList.add('bg-success');
+      document.getElementById('btnlowestTactic').classList.remove('bg-danger');
+    }
+
+    if (dirtyTowers) {
+      document.getElementById('TowerUnboughtHeader').classList.add('hidden');
+      document.getElementById('TowerBoughtHeader').classList.add('hidden');
+      removeAllChildNodes(document.getElementById('TowerUnBoughtInfo'));
+      removeAllChildNodes(document.getElementById('TowerBoughtInfo'));
+      gameData.towers.forEach((t) => {
+        t.CreateDisplay();
+      });
+      dirtyTowers = false;
+    }
+  }
+
+  if (document.getElementById('resourcestab').classList.contains('active')) {
+    document.getElementById('particlesamount').innerHTML = gameData.resources.particles.amount.ToString();
+    document.getElementById('particlesb').innerHTML = getParticleBonus().ToString();
+    document.getElementById('timeparticles').innerHTML = gameData.resources.timeparticles.amount.ToString();
+    document.getElementById('timeparticlesbonus').innerHTML = getTimeParticleBonus().ToString();
+
+    document.getElementById('particles').classList.add('hidden');
+    document.getElementById('accelerationderivative').classList.add('hidden');
+    document.getElementById('jerkderivative').classList.add('hidden');
+    document.getElementById('snapderivative').classList.add('hidden');
+    document.getElementById('cracklederivative').classList.add('hidden');
+    document.getElementById('popderivative').classList.add('hidden');
+
+    if (gameData.stats.prestige2 > 0) {
+      document.getElementById('particles').classList.remove('hidden');
+      if (gameData.speedDerivatives[0].owned.greaterThan(0)) {
+        document.getElementById('accelerationderivative').classList.remove('hidden');
+      }
+      if (gameData.speedDerivatives[1].owned.greaterThan(0)) {
+        document.getElementById('jerkderivative').classList.remove('hidden');
+      }
+      if (gameData.speedDerivatives[2].owned.greaterThan(0)) {
+        document.getElementById('snapderivative').classList.remove('hidden');
+      }
+      if (gameData.speedDerivatives[3].owned.greaterThan(0)) {
+        document.getElementById('cracklederivative').classList.remove('hidden');
+      }
+      if (gameData.speedDerivatives[4].owned.greaterThan(0)) {
+        document.getElementById('popderivative').classList.remove('hidden');
+      }
+    }
+
+    if (lastachievementcount > 25) {
+      document.getElementById('btnAutoBuyProduction').classList.remove('hidden');
+      document.getElementById('btnAutoBuyMiner').classList.remove('hidden');
+      document.getElementById('btnAutoBuySupervisor').classList.remove('hidden');
+      document.getElementById('btnAutoBuyForeman').classList.remove('hidden');
+      document.getElementById('btnAutoBuyManager').classList.remove('hidden');
+      document.getElementById('btnAutoBuyMiddleManagement').classList.remove('hidden');
+      document.getElementById('btnAutoBuyUpperManagement').classList.remove('hidden');
+      document.getElementById('btnAutoBuyVicePresident').classList.remove('hidden');
+      document.getElementById('btnAutoBuyPresident').classList.remove('hidden');
+
+      document.getElementById('btnAutoBuyProduction').classList.add('bg-danger');
+      document.getElementById('btnAutoBuyProduction').classList.remove('bg-success');
+      if (gameData.producer.autoOn) {
+        document.getElementById('btnAutoBuyProduction').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuyProduction').classList.add('bg-success');
+      }
+
+      document.getElementById('btnAutoBuyMiner').classList.add('bg-danger');
+      document.getElementById('btnAutoBuyMiner').classList.remove('bg-success');
+      if (gameData.derivatives[0].autoOn) {
+        document.getElementById('btnAutoBuyMiner').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuyMiner').classList.add('bg-success');
+      }
+
+      document.getElementById('btnAutoBuySupervisor').classList.add('bg-danger');
+      document.getElementById('btnAutoBuySupervisor').classList.remove('bg-success');
+      if (gameData.derivatives[1].autoOn) {
+        document.getElementById('btnAutoBuySupervisor').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuySupervisor').classList.add('bg-success');
+      }
+
+      document.getElementById('btnAutoBuyForeman').classList.add('bg-danger');
+      document.getElementById('btnAutoBuyForeman').classList.remove('bg-success');
+      if (gameData.derivatives[2].autoOn) {
+        document.getElementById('btnAutoBuyForeman').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuyForeman').classList.add('bg-success');
+      }
+
+      document.getElementById('btnAutoBuyManager').classList.add('bg-danger');
+      document.getElementById('btnAutoBuyManager').classList.remove('bg-success');
+      if (gameData.derivatives[3].autoOn) {
+        document.getElementById('btnAutoBuyManager').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuyManager').classList.add('bg-success');
+      }
+
+      document.getElementById('btnAutoBuyMiddleManagement').classList.add('bg-danger');
+      document.getElementById('btnAutoBuyMiddleManagement').classList.remove('bg-success');
+      if (gameData.derivatives[4].autoOn) {
+        document.getElementById('btnAutoBuyMiddleManagement').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuyMiddleManagement').classList.add('bg-success');
+      }
+
+      document.getElementById('btnAutoBuyUpperManagement').classList.add('bg-danger');
+      document.getElementById('btnAutoBuyUpperManagement').classList.remove('bg-success');
+      if (gameData.derivatives[5].autoOn) {
+        document.getElementById('btnAutoBuyUpperManagement').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuyUpperManagement').classList.add('bg-success');
+      }
+
+      document.getElementById('btnAutoBuyVicePresident').classList.add('bg-danger');
+      document.getElementById('btnAutoBuyVicePresident').classList.remove('bg-success');
+      if (gameData.derivatives[6].autoOn) {
+        document.getElementById('btnAutoBuyVicePresident').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuyVicePresident').classList.add('bg-success');
+      }
+
+      document.getElementById('btnAutoBuyPresident').classList.add('bg-danger');
+      document.getElementById('btnAutoBuyPresident').classList.remove('bg-success');
+      if (gameData.derivatives[7].autoOn) {
+        document.getElementById('btnAutoBuyPresident').classList.remove('bg-danger');
+        document.getElementById('btnAutoBuyPresident').classList.add('bg-success');
+      }
+    } else {
+      document.getElementById('btnAutoBuyProduction').classList.add('hidden');
+      document.getElementById('btnAutoBuyMiner').classList.add('hidden');
+      document.getElementById('btnAutoBuySupervisor').classList.add('hidden');
+      document.getElementById('btnAutoBuyForeman').classList.add('hidden');
+      document.getElementById('btnAutoBuyManager').classList.add('hidden');
+      document.getElementById('btnAutoBuyMiddleManagement').classList.add('hidden');
+      document.getElementById('btnAutoBuyUpperManagement').classList.add('hidden');
+      document.getElementById('btnAutoBuyVicePresident').classList.add('hidden');
+      document.getElementById('btnAutoBuyPresident').classList.add('hidden');
+    }
+
+    document.getElementById('time').classList.add('hidden');
+    document.getElementById('time2derivative').classList.add('hidden');
+    document.getElementById('time3derivative').classList.add('hidden');
+    document.getElementById('time4derivative').classList.add('hidden');
+    document.getElementById('time5derivative').classList.add('hidden');
+    document.getElementById('time6derivative').classList.add('hidden');
+
+    if (gameData.stats.prestige3 > 0) {
+      document.getElementById('time').classList.remove('hidden');
+      if (gameData.timeDerivatives[0].owned.greaterThan(0)) {
+        document.getElementById('time2derivative').classList.remove('hidden');
+      }
+      if (gameData.timeDerivatives[1].owned.greaterThan(0)) {
+        document.getElementById('time3derivative').classList.remove('hidden');
+      }
+      if (gameData.timeDerivatives[2].owned.greaterThan(0)) {
+        document.getElementById('time4derivative').classList.remove('hidden');
+      }
+      if (gameData.timeDerivatives[3].owned.greaterThan(0)) {
+        document.getElementById('time5derivative').classList.remove('hidden');
+      }
+      if (gameData.timeDerivatives[4].owned.greaterThan(0)) {
+        document.getElementById('time6derivative').classList.remove('hidden');
+      }
+    }
+
+    document.getElementById('producitonproduction').innerHTML = gameData.producer.productionPerSecDisplay().ToString();
+    document.getElementById('productionbought').innerHTML = gameData.producer.bought.toString();
+    document.getElementById('productionowned').innerHTML = gameData.producer.owned.ToString();
+    document.getElementById('minerbought').innerHTML = gameData.derivatives[0].bought.toString();
+    document.getElementById('minerowned').innerHTML = gameData.derivatives[0].owned.ToString();
+    document.getElementById('minerproduction').innerHTML = gameData.derivatives[0].productionPerSecDisplay().ToString();
+    document.getElementById('supervisorbought').innerHTML = gameData.derivatives[1].bought.toString();
+    document.getElementById('supervisorowned').innerHTML = gameData.derivatives[1].owned.ToString();
+    document.getElementById('supervisorproduction').innerHTML = gameData.derivatives[1]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('foremanbought').innerHTML = gameData.derivatives[2].bought.toString();
+    document.getElementById('foremanowned').innerHTML = gameData.derivatives[2].owned.ToString();
+    document.getElementById('foremanproduction').innerHTML = gameData.derivatives[2]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('managerbought').innerHTML = gameData.derivatives[3].bought.toString();
+    document.getElementById('managerowned').innerHTML = gameData.derivatives[3].owned.ToString();
+    document.getElementById('managerproduction').innerHTML = gameData.derivatives[3]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('middlemanagementbought').innerHTML = gameData.derivatives[4].bought.toString();
+    document.getElementById('middlemanagementowned').innerHTML = gameData.derivatives[4].owned.ToString();
+    document.getElementById('middlemanagementproduction').innerHTML = gameData.derivatives[4]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('uppermanagementbought').innerHTML = gameData.derivatives[5].bought.toString();
+    document.getElementById('uppermanagementowned').innerHTML = gameData.derivatives[5].owned.ToString();
+    document.getElementById('uppermanagementproduction').innerHTML = gameData.derivatives[5]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('vicepresidentbought').innerHTML = gameData.derivatives[6].bought.toString();
+    document.getElementById('vicepresidentowned').innerHTML = gameData.derivatives[6].owned.ToString();
+    document.getElementById('vicepresidentproduction').innerHTML = gameData.derivatives[6]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('presidentbought').innerHTML = gameData.derivatives[7].bought.toString();
+    document.getElementById('presidentowned').innerHTML = gameData.derivatives[7].owned.ToString();
+    document.getElementById('presidentproduction').innerHTML = gameData.derivatives[7]
+      .productionPerSecDisplay()
+      .ToString();
+
+    document.getElementById('speedbought').innerHTML = gameData.speedDerivatives[0].bought.toString();
+    document.getElementById('speedowned').innerHTML = gameData.speedDerivatives[0].owned.ToString();
+    document.getElementById('speedproduction').innerHTML = gameData.speedDerivatives[0]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('accelerationbought').innerHTML = gameData.speedDerivatives[1].bought.toString();
+    document.getElementById('accelerationowned').innerHTML = gameData.speedDerivatives[1].owned.ToString();
+    document.getElementById('accelerationproduction').innerHTML = gameData.speedDerivatives[1]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('jerkbought').innerHTML = gameData.speedDerivatives[2].bought.toString();
+    document.getElementById('jerkowned').innerHTML = gameData.speedDerivatives[2].owned.ToString();
+    document.getElementById('jerkproduction').innerHTML = gameData.speedDerivatives[2]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('snapbought').innerHTML = gameData.speedDerivatives[3].bought.toString();
+    document.getElementById('snapowned').innerHTML = gameData.speedDerivatives[3].owned.ToString();
+    document.getElementById('snapproduction').innerHTML = gameData.speedDerivatives[3]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('cracklebought').innerHTML = gameData.speedDerivatives[4].bought.toString();
+    document.getElementById('crackleowned').innerHTML = gameData.speedDerivatives[4].owned.ToString();
+    document.getElementById('crackleproduction').innerHTML = gameData.speedDerivatives[4]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('popbought').innerHTML = gameData.speedDerivatives[5].bought.toString();
+    document.getElementById('popowned').innerHTML = gameData.speedDerivatives[5].owned.ToString();
+    document.getElementById('popproduction').innerHTML = gameData.speedDerivatives[5]
+      .productionPerSecDisplay()
+      .ToString();
+
+    document.getElementById('time1bought').innerHTML = gameData.timeDerivatives[0].bought.toString();
+    document.getElementById('time1owned').innerHTML = gameData.timeDerivatives[0].owned.ToString();
+    document.getElementById('time1production').innerHTML = gameData.timeDerivatives[0]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('time2bought').innerHTML = gameData.timeDerivatives[1].bought.toString();
+    document.getElementById('time2owned').innerHTML = gameData.timeDerivatives[1].owned.ToString();
+    document.getElementById('time2production').innerHTML = gameData.timeDerivatives[1]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('time3bought').innerHTML = gameData.timeDerivatives[2].bought.toString();
+    document.getElementById('time3owned').innerHTML = gameData.timeDerivatives[2].owned.ToString();
+    document.getElementById('time3production').innerHTML = gameData.timeDerivatives[2]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('time4bought').innerHTML = gameData.timeDerivatives[3].bought.toString();
+    document.getElementById('time4owned').innerHTML = gameData.timeDerivatives[3].owned.ToString();
+    document.getElementById('time4production').innerHTML = gameData.timeDerivatives[3]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('time5bought').innerHTML = gameData.timeDerivatives[4].bought.toString();
+    document.getElementById('time5owned').innerHTML = gameData.timeDerivatives[4].owned.ToString();
+    document.getElementById('time5production').innerHTML = gameData.timeDerivatives[4]
+      .productionPerSecDisplay()
+      .ToString();
+    document.getElementById('time6bought').innerHTML = gameData.timeDerivatives[5].bought.toString();
+    document.getElementById('time6owned').innerHTML = gameData.timeDerivatives[5].owned.ToString();
+    document.getElementById('time6production').innerHTML = gameData.timeDerivatives[5]
+      .productionPerSecDisplay()
+      .ToString();
+
+    gameData.derivatives.forEach((d) => {
+      d.updateDisplay();
+    });
+
+    gameData.speedDerivatives.forEach((d) => {
+      d.updateDisplay();
+    });
+
+    gameData.timeDerivatives.forEach((d) => {
+      d.updateDisplay();
+    });
+
+    gameData.producer.updateDisplay();
+  }
+
+  if (document.getElementById('upgradestab').classList.contains('active')) {
+    gameData.upgrades.forEach((u) => {
+      u.updateDisplay();
+    });
+
+    gameData.rockUpgrades.forEach((u) => {
+      u.updateDisplay();
+    });
+
+    gameData.boulderUpgrades.forEach((u) => {
+      u.updateDisplay();
+    });
+  }
+
+  if (document.getElementById('challengestab').classList.contains('active')) {
+    if (gameData.world.autoChallenge) {
+      document.getElementById('btnChallengeAuto').classList.remove('bg-danger');
+      document.getElementById('btnChallengeAuto').classList.add('bg-success');
+      document.getElementById('btnChallengeAuto').innerHTML = 'Turn Auto Challenge Off';
+    } else {
+      document.getElementById('btnChallengeAuto').classList.add('bg-danger');
+      document.getElementById('btnChallengeAuto').classList.remove('bg-success');
+      document.getElementById('btnChallengeAuto').innerHTML = 'Turn Auto Challenge On';
+    }
+
+    if (getAchievementBonus() > 28) {
+      document.getElementById('btnChallengeAuto').classList.remove('hidden');
+    } else {
+      document.getElementById('btnChallengeAuto').classList.add('hidden');
+      gameData.world.autoChallenge = false;
+    }
+
+    if (gameData.challenges[4].available) {
+      document.getElementById('poisonchallenge').classList.remove('hidden');
+    } else {
+      document.getElementById('poisonchallenge').classList.add('hidden');
+    }
+
+    if (gameData.challenges[5].available) {
+      document.getElementById('slowchallenge').classList.remove('hidden');
+    } else {
+      document.getElementById('slowchallenge').classList.add('hidden');
+    }
+
+    if (gameData.challenges[6].available) {
+      document.getElementById('critchallenge').classList.remove('hidden');
+    } else {
+      document.getElementById('critchallenge').classList.add('hidden');
+    }
+
+    if (gameData.challenges[7].available) {
+      document.getElementById('sbchallenge').classList.remove('hidden');
+    } else {
+      document.getElementById('sbchallenge').classList.add('hidden');
+    }
+
+    gameData.challenges.forEach((ch, index) => {
+      ch.updateDisplay(index);
+    });
+  }
+
+  if (document.getElementById('achievementtab').classList.contains('active')) {
+    document.getElementById('totalachievementbonus').innerHTML = new JBDecimal(getAchievementBonus()).ToString();
+    let achBonusText = `${new JBDecimal(getAchievementsOnlyBonus()).ToString()}x`;
+    gameData.tierfeats.forEach((tf, index) => {
+      if (getTierBonus(index) > 1) {
+        achBonusText += `<br /> Tier ${(index + 1).toString()}: ${getTierBonus(index).toString()}x`;
+      }
+    });
+    document.getElementById('achievementbonus').innerHTML = achBonusText;
+
+    gameData.Achievements.forEach((a) => {
+      a.draw();
+    });
+
+    gameData.tierfeats.forEach((tf) => {
+      tf.feats.forEach((f) => {
+        f.draw();
+      });
+    });
+  }
+
+  if (document.getElementById('equipmenttab').classList.contains('active')) {
+    const equipmentdisplay = `Shards: ${gameData.resources.shards.amount.toString()}`;
+
+    document.getElementById('shardinfo').innerHTML = equipmentdisplay;
+
+    if (gameData.equipment.length > 0) {
+      if (dirtyEquipment) {
+        const EquipInfoDiv = document.getElementById('EquipmentInfo');
+        removeAllChildNodes(EquipInfoDiv);
+
+        const newLabelRow = document.createElement('div');
+        newLabelRow.classList.add('row', 'p-0', 'm-0', 'bg-dark');
+
+        const NameCol = document.createElement('div');
+        NameCol.classList.add('col-md-2', 'p-0', 'm-0', 'text-medium', 'text-center');
+        NameCol.innerHTML = 'Name';
+        newLabelRow.appendChild(NameCol);
+
+        const PromoteCol = document.createElement('div');
+        PromoteCol.classList.add('col-md-1', 'p-0', 'm-0', 'text-medium', 'text-center');
+        PromoteCol.innerHTML = 'Move';
+        newLabelRow.appendChild(PromoteCol);
+
+        const DeleteCol = document.createElement('div');
+        DeleteCol.classList.add('col-md-2', 'p-0', 'm-0', 'text-medium', 'text-end');
+        DeleteCol.innerHTML = 'Delete';
+        newLabelRow.appendChild(DeleteCol);
+
+        const AbilitiesCol = document.createElement('div');
+        AbilitiesCol.classList.add('col-md-6', 'p-0', 'm-0', 'text-medium', 'text-center');
+
+        const newAbilityRow = document.createElement('div');
+        newAbilityRow.classList.add('row', 'p-0', 'm-0');
+
+        const AbilityNameCol = document.createElement('div');
+        AbilityNameCol.classList.add('col-md-3', 'p-0', 'm-0', 'text-small', 'text-center');
+        AbilityNameCol.innerHTML = 'Ability';
+        newAbilityRow.appendChild(AbilityNameCol);
+
+        const UpgradeCol = document.createElement('div');
+        UpgradeCol.classList.add('col-md-6', 'p-0', 'm-0', 'text-center');
+        UpgradeCol.innerHTML = 'Upgrade and Cost';
+        newAbilityRow.appendChild(UpgradeCol);
+
+        const LevelCol = document.createElement('div');
+        LevelCol.classList.add('col-md-3', 'p-0', 'm-0', 'text-center');
+        LevelCol.innerHTML = 'Level';
+        newAbilityRow.appendChild(LevelCol);
+
+        AbilitiesCol.appendChild(newAbilityRow);
+        newLabelRow.appendChild(AbilitiesCol);
+        EquipInfoDiv.appendChild(newLabelRow);
+
+        const activeLabelRow = document.createElement('div');
+        activeLabelRow.classList.add('row', 'p-0', 'm-0');
+        const ActiveLabel = document.createElement('div');
+        ActiveLabel.classList.add('col-md-12', 'p-0', 'm-0', 'text-medium', 'text-center', 'bg-secondary');
+        ActiveLabel.innerHTML = 'Active';
+        activeLabelRow.appendChild(ActiveLabel);
+        EquipInfoDiv.appendChild(activeLabelRow);
+
+        EquipInfoDiv.appendChild(gameData.equipment[0].CreateDisplay(0));
+
+        if (gameData.equipment.length > 1) {
+          const SavedLabelRow = document.createElement('div');
+          SavedLabelRow.classList.add('row', 'p-0', 'm-0');
+          const SavedLabel = document.createElement('div');
+          SavedLabel.classList.add('col-md-12', 'p-0', 'm-0', 'text-medium', 'text-center', 'bg-secondary');
+          SavedLabel.innerHTML = 'Saved';
+          SavedLabelRow.appendChild(SavedLabel);
+          EquipInfoDiv.appendChild(SavedLabelRow);
+
+          let savedindexmax = 5;
+          if (gameData.equipment.length < savedindexmax) {
+            savedindexmax = gameData.equipment.length;
+          }
+
+          for (let index = 1; index < savedindexmax; index += 1) {
+            EquipInfoDiv.appendChild(gameData.equipment[index].CreateDisplay(index));
+          }
+
+          if (gameData.equipment.length > savedindexmax) {
+            const ExtraLabelRow = document.createElement('div');
+            ExtraLabelRow.classList.add('row', 'p-0', 'm-0');
+            const ExtraLabel = document.createElement('div');
+            ExtraLabel.classList.add('col-md-12', 'p-0', 'm-0', 'text-medium', 'text-center', 'bg-secondary');
+            ExtraLabel.innerHTML = 'Pool';
+            ExtraLabelRow.appendChild(ExtraLabel);
+            EquipInfoDiv.appendChild(ExtraLabelRow);
+
+            for (let index = savedindexmax; index < gameData.equipment.length; index += 1) {
+              EquipInfoDiv.appendChild(gameData.equipment[index].CreateDisplay(index));
+            }
+          }
+        }
+
+        const glossaryRow = document.createElement('div');
+        glossaryRow.classList.add('row', 'p-0', 'm-0');
+        const glossarytext = document.createElement('div');
+        glossarytext.classList.add('col-md-12', 'p-0', 'm-0', 'text-small', 'text-left', 'bg-dark');
+        glossarytext.innerHTML =
+          'Click the A button to activate.  click the S button to move into a save slot.(in the future there will be a limit on number of saved gems)<br />The X button will destroy the gem and gain you shards to use to improve other gems.<br /> Metal Production - multiplier of x to all levels of metal production<br />Gun Attack - multiplier of 1 + (x/10) to Gun Towers<br />Mulligans - gain x muligans<br />Crit Multiplier - gain a bonus of x / 10 added to Crit Multiplier<br />Crit Chance - gain x to Crit Chance<br />Poison Effect - multiplier of 1 + (x/10) to Poison Towers';
+        glossaryRow.appendChild(glossarytext);
+        EquipInfoDiv.appendChild(glossaryRow);
+
+        dirtyEquipment = false;
+      }
+    }
+  }
+
+  if (document.getElementById('statisticstab').classList.contains('active')) {
+    document.getElementById('prestige1count').innerHTML = gameData.stats.prestige1.toString();
+    document.getElementById('prestige1time').innerHTML = display.getPrettyTimeFromMilliSeconds(
+      gameData.stats.prestige1ticks
+    );
+    document.getElementById('prestige2count').innerHTML = gameData.stats.prestige2.toString();
+    document.getElementById('prestige2time').innerHTML = display.getPrettyTimeFromMilliSeconds(
+      gameData.stats.prestige2ticks
+    );
+    document.getElementById('prestige3count').innerHTML = gameData.stats.prestige3.toString();
+    document.getElementById('prestige3time').innerHTML = display.getPrettyTimeFromMilliSeconds(
+      gameData.stats.prestige3ticks
+    );
+    document.getElementById('highestwavereached').innerHTML = gameData.stats.highestEverWave.toString();
+
+    let prestige1history = '<br />';
+    gameData.stats.last10Prestige1amounts.forEach((amt, index) => {
+      const ticks = gameData.stats.last10Prestige1times[index];
+      const tier = gameData.stats.last10Prestige1tier[index];
+      const waves = gameData.stats.last10Prestige1waves[index];
+      const rate = display.PrettyRatePerTime(amt, ticks);
+      const newline = `${index.toString()} reached tier ${tier.toString()} wave ${waves.toString()} took ${display.getPrettyTimeFromMilliSeconds(
+        ticks
+      )} and gave ${amt.ToString()} for an average of: ${rate}`;
+
+      prestige1history += `${newline}</br />`;
+    });
+    document.getElementById('prestige1history').innerHTML = prestige1history;
+
+    let prestige2history = '<br />';
+    gameData.stats.last10Prestige2amounts.forEach((amt, index) => {
+      const ticks = gameData.stats.last10Prestige2times[index];
+      const rate = display.PrettyRatePerTime(amt, ticks);
+      const newline = `${index.toString()} took ${display.getPrettyTimeFromMilliSeconds(
+        ticks
+      )} and gave ${amt.ToString()} for an average of ${rate}`;
+      prestige2history += `${newline}</br />`;
+    });
+    document.getElementById('prestige2history').innerHTML = prestige2history;
+
+    let prestige3history = '<br />';
+    gameData.stats.last10Prestige3amounts.forEach((amt, index) => {
+      const ticks = gameData.stats.last10Prestige3times[index];
+      const rate = display.PrettyRatePerTime(amt, ticks);
+      const newline = `${index.toString()} took ${display.getPrettyTimeFromMilliSeconds(
+        ticks
+      )} and gave ${amt.ToString()} for an average of ${rate}`;
+      prestige3history += `${newline}</br />`;
+    });
+    document.getElementById('prestige3history').innerHTML = prestige3history;
+  }
+
+  document.getElementById('productionderivative').classList.remove('hidden');
+  if (!gameData.producer.active) {
+    document.getElementById('productionderivative').classList.add('hidden');
+  }
+
+  document.getElementById('supervisorderivative').classList.add('hidden');
+  if (gameData.derivatives[0].owned.greaterThan(0)) {
+    document.getElementById('supervisorderivative').classList.remove('hidden');
+  }
+
+  document.getElementById('foremanderivative').classList.add('hidden');
+  if (gameData.derivatives[1].owned.greaterThan(0)) {
+    document.getElementById('foremanderivative').classList.remove('hidden');
+  }
+
+  document.getElementById('managerderivative').classList.add('hidden');
+  document.getElementById('btnBuyUpgrade12').classList.add('hidden');
+  if (gameData.derivatives[3].active) {
+    document.getElementById('btnBuyUpgrade12').classList.remove('hidden');
+    if (gameData.derivatives[2].owned.greaterThan(0)) {
+      document.getElementById('managerderivative').classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('middlemanagementderivative').classList.add('hidden');
+  document.getElementById('btnBuyUpgrade13').classList.add('hidden');
+  if (gameData.derivatives[4].active) {
+    document.getElementById('btnBuyUpgrade13').classList.remove('hidden');
+    if (gameData.derivatives[3].owned.greaterThan(0)) {
+      document.getElementById('middlemanagementderivative').classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('uppermanagementderivative').classList.add('hidden');
+  document.getElementById('btnBuyUpgrade14').classList.add('hidden');
+  if (gameData.derivatives[5].active) {
+    document.getElementById('btnBuyUpgrade14').classList.remove('hidden');
+    if (gameData.derivatives[4].owned.greaterThan(0)) {
+      document.getElementById('uppermanagementderivative').classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('vicepresidentderivative').classList.add('hidden');
+  document.getElementById('btnBuyUpgrade15').classList.add('hidden');
+  if (gameData.derivatives[6].active) {
+    document.getElementById('btnBuyUpgrade15').classList.remove('hidden');
+    if (gameData.derivatives[5].owned.greaterThan(0)) {
+      document.getElementById('vicepresidentderivative').classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('presidentderivative').classList.add('hidden');
+  document.getElementById('btnBuyUpgrade16').classList.add('hidden');
+  if (gameData.derivatives[7].active) {
+    document.getElementById('btnBuyUpgrade16').classList.remove('hidden');
+    if (gameData.derivatives[6].owned.greaterThan(0)) {
+      document.getElementById('presidentderivative').classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('textToDisplay').innerHTML = display.getDisplayText();
+
+  let resourceStats = `Metal: ${gameData.resources.metal.amount.ToString()}<br />`;
+  if (gameData.stats.highestEverWave >= 5) {
+    resourceStats += `Dust: ${gameData.resources.dust.amount.ToString()}<br />`;
+  }
+  if (gameData.resources.pebbles.amount.greaterThan(0)) {
+    resourceStats += `Pebbles: ${gameData.resources.pebbles.amount.ToString()}<br />`;
+    document.getElementById('upgradePebbles').innerHTML = gameData.resources.pebbles.amount.ToString();
+  }
+  if (gameData.stats.prestige2 >= 1) {
+    resourceStats += `Rocks: ${gameData.resources.rocks.amount.ToString()}<br />`;
+    document.getElementById('upgradeRocks').innerHTML = gameData.resources.rocks.amount.ToString();
+  }
+  if (gameData.stats.prestige3 >= 1) {
+    resourceStats += `Boulders: ${gameData.resources.boulders.amount.ToString()}<br />`;
+    document.getElementById('upgradeBoulders').innerHTML = gameData.resources.boulders.amount.ToString();
+  }
+  document.getElementById('resourcesText').innerHTML = resourceStats;
+
+  let towerstats = `<b>Shots: ${new JBDecimal(gameData.towers[0].ShotsPerSecond()).ToString()}<br />`;
+  towerstats += `Range: ${new JBDecimal(gameData.towers[0].Range()).ToString()}<br />`;
+  if (gameData.challenges[6].completed > 0) {
+    towerstats += `Crit Chance: ${new JBDecimal(gameData.towers[0].critChance()).ToString()}%<br />`;
+    towerstats += `Crit Multiplier: ${new JBDecimal(gameData.towers[0].critMultiplier()).ToString()}<br />`;
+  }
+  if (gameData.challenges[7].completed > 0 && !gameData.challenges[7].active) {
+    towerstats += `Shield Damage: ${new JBDecimal(gameData.towers[0].DefenseDamage()).multiply(100).ToString()}%<br />`;
+  }
+
+  document.getElementById('towerStatsText').innerHTML = towerstats;
+
+  document.getElementById('tierinfo').classList.add('hidden');
+  const btndown = document.getElementById('btntierdown') as HTMLButtonElement;
+  btndown.disabled = false;
+  const btnup = document.getElementById('btntierup') as HTMLButtonElement;
+  btnup.disabled = false;
+  document.getElementById('equipmentTabNav').classList.add('hidden');
+  if (gameData.world.tierUnlocked > 1) {
+    document.getElementById('equipmentTabNav').classList.remove('hidden');
+    document.getElementById('currenttier').innerHTML = gameData.world.currentTier.toFixed(0);
+    document.getElementById('tierinfo').classList.remove('hidden');
+    if (gameData.world.currentTier === 1) {
+      btndown.disabled = true;
+    }
+    if (gameData.world.currentTier === gameData.world.tierUnlocked) {
+      btnup.disabled = true;
+    }
+  }
+
+  document.getElementById('particles-tab').classList.add('hidden');
+  document.getElementById('rockupgrades-tab').classList.add('hidden');
+  if (gameData.stats.prestige2 > 0 || rocksFromPrestige().greaterThan(0)) {
+    document.getElementById('particles-tab').classList.remove('hidden');
+    document.getElementById('rockupgrades-tab').classList.remove('hidden');
+  }
+
+  document.getElementById('time-tab').classList.add('hidden');
+  document.getElementById('boulderupgrades-tab').classList.add('hidden');
+  if (gameData.stats.prestige3 > 0 || bouldersFromPrestige().greaterThan(0)) {
+    document.getElementById('time-tab').classList.remove('hidden');
+    document.getElementById('boulderupgrades-tab').classList.remove('hidden');
+  }
+
+  if (pebblesFromPrestige().greaterThan(0)) {
+    document.getElementById('btnPrestige1').classList.remove('hidden');
+    document.getElementById(
+      'btnPrestige1'
+    ).innerHTML = `Prestige for ${pebblesFromPrestige().ToString()} pebbles<br>Current: ${getCurrentPebbleRate().ToString()} /hr<br>Best:${gameData.stats.bestPrestige1Rate.ToString()}/hr`;
+  } else {
+    document.getElementById('btnPrestige1').classList.add('hidden');
+  }
+
+  if (rocksFromPrestige().greaterThan(0)) {
+    document.getElementById('btnPrestige2').classList.remove('hidden');
+    document.getElementById(
+      'btnPrestige2'
+    ).innerHTML = `Ascend for ${rocksFromPrestige().ToString()} rocks<br>Current: ${getCurrentRockRate().ToString()} /hr<br>Best:${gameData.stats.bestPrestige2Rate.ToString()}/hr`;
+  } else {
+    document.getElementById('btnPrestige2').classList.add('hidden');
+  }
+
+  if (bouldersFromPrestige().greaterThan(0)) {
+    document.getElementById('btnPrestige3').classList.remove('hidden');
+    document.getElementById(
+      'btnPrestige3'
+    ).innerHTML = `Transform for ${bouldersFromPrestige().ToString()} boulders<br>Current: ${getCurrentBoulderRate().ToString()} /hr<br>Best:${gameData.stats.bestPrestige3Rate.ToString()}/hr`;
+  } else {
+    document.getElementById('btnPrestige3').classList.add('hidden');
+  }
+
+  document.getElementById('challengesTabNav').classList.remove('hidden');
+  if (gameData.stats.highestEverWave <= 20) {
+    document.getElementById('challengesTabNav').classList.add('hidden');
+  }
+
+  const { canvas } = display;
+  const { ctx } = display;
+  if (canvas.getContext) {
+    const originalHeight = canvas.height;
+    const originalWidth = canvas.width;
+
+    const dimensions = getObjectFitSize(true, canvas.clientWidth, canvas.clientHeight, canvas.width, canvas.height);
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = dimensions.width * dpr;
+    canvas.height = dimensions.height * dpr;
+
+    const ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
+    ctx.scale((ratio * dpr * canvas.width) / canvas.scrollWidth, (ratio * dpr * canvas.height) / canvas.scrollHeight); // adjust this!
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // add possible build sites
+
+    gameData.towers.forEach((t) => {
+      t.draw();
+    });
+
+    ctx.globalAlpha = 1.0;
+
+    gameData.enemies.forEach((e) => {
+      e.draw();
+      e.bullets.forEach((b) => {
+        b.draw();
+      });
+    });
+
+    display.drawText(
+      `Drone Hp: ${display.drone.MaxHitPoints().ToString()}`,
+      new Vector(39 + 10 * gameData.world.currentTier, 1),
+      'white',
+      '15px Arial',
+      'right',
+      'top'
+    );
+    const mulligans = maxMulligansCalc() - gameData.world.mulligansused;
+    if (mulligans > 0) {
+      display.drawText(
+        `${mulligans.toString()} mulligans`,
+        new Vector(1, 4),
+        'white',
+        'bold 10px Arial',
+        'left',
+        'middle'
+      );
+    }
+
+    display.drawText(
+      `${gameData.world.currentTickLength}ms`,
+      new Vector(1, 39 + 10 * gameData.world.currentTier),
+      'white',
+      'bold 10px Arial',
+      'left',
+      'bottom'
+    );
+    ctx.font = '15px Arial';
+    display.drawText(
+      `Wave: ${gameData.world.currentWave} / ${getWavesNeededForTier()}`,
+      new Vector((40 + 10 * gameData.world.currentTier) / 2, 1),
+      'white',
+      '15px Arial',
+      'center',
+      'top'
+    );
+    display.drawText(
+      `Unspawned: ${gameData.world.enemiesToSpawn.toString()}(${getSpecialsCount().toString()})`,
+      new Vector(1, 1),
+      'white',
+      '15px Arial',
+      'left',
+      'top'
+    );
+
+    if (gameData.world.ticksToNextSpawn > 1000) {
+      ctx.fillStyle = 'red';
+      ctx.fillText(
+        `Time to next enemy: ${display.getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn)}`,
+        10,
+        30
+      );
+    }
+  }
+
+  if (gameSpeedFast) {
+    document.getElementById('btnNormalSpeed').classList.add('btn-danger');
+    document.getElementById('btnNormalSpeed').classList.remove('btn-success');
+    document.getElementById('btnFastSpeed').classList.remove('btn-danger');
+    document.getElementById('btnFastSpeed').classList.add('btn-success');
+  } else {
+    document.getElementById('btnNormalSpeed').classList.remove('btn-danger');
+    document.getElementById('btnNormalSpeed').classList.add('btn-success');
+    document.getElementById('btnFastSpeed').classList.add('btn-danger');
+    document.getElementById('btnFastSpeed').classList.remove('btn-success');
+  }
+
+  if (gameData.world.paused) {
+    document.getElementById('btnPause').classList.add('btn-danger');
+    document.getElementById('btnPause').classList.remove('btn-success');
+  } else {
+    document.getElementById('btnPause').classList.remove('btn-danger');
+    document.getElementById('btnPause').classList.add('btn-success');
+  }
+
+  const activeChallenges = ActiveChallenges();
+
+  if (activeChallenges > 0) {
+    document.getElementById('btnChallengeQuit').classList.remove('hidden');
+  } else {
+    document.getElementById('btnChallengeQuit').classList.add('hidden');
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function changeTier(value: string) {
+  CheckAchievementCompletions();
+  if (value === 'Down') {
+    gameData.world.currentTier -= 1;
+    if (gameData.world.currentTier < 1) {
+      gameData.world.currentTier = 1;
+    }
+  }
+  if (value === 'Up') {
+    gameData.world.currentTier += 1;
+    if (gameData.world.currentTier > gameData.world.tierUnlocked) {
+      gameData.world.tierUnlocked = gameData.world.currentTier;
+    }
+  }
+  createTowerSites();
+  init(2);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function prestige1() {
+  quitChallenges();
+  init(1);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function prestige2() {
+  quitChallenges();
+  init(2);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function prestige3() {
+  quitChallenges();
+  init(3);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function resetGame() {
+  localStorage.clear();
+
+  // eslint-disable-next-line no-restricted-globals
+  location.reload();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function saveGameClick() {
   gameData.world.nextSaveGameTime = new Date();
 }
 
-// eslint-disable-next-line no-unused-vars
-function resetStoryElements () {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function resetStoryElements() {
   // eslint-disable-next-line no-return-assign
-  gameData.storyElements.forEach((e) => e.printed = false);
+  gameData.storyElements.forEach((e) => (e.printed = false));
 }
 
-// eslint-disable-next-line no-unused-vars
-function cheat1 () {
-  if (gameData.resources.dust.amount.greaterThan(100)) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function cheat1() {
+  if (gameData.resources.dust.amount.greaterThan(1)) {
     gameData.resources.dust.amount = gameData.resources.dust.amount.multiply(2);
   } else {
     gameData.resources.dust.amount = new JBDecimal(100);
   }
-}
-
-// eslint-disable-next-line no-unused-vars
-function cheat2 () {
-  gameData.world.ticksLeftOver += 1000 * 60 * 60 * 24;
 }
 
 window.setInterval(function () {
@@ -1494,26 +1994,27 @@ window.setInterval(function () {
       }
       return; // still waiting on pageload
     }
-    if (gameData.world.paused) {
-      return;
-    }
 
     const currentTime = new Date();
 
-    let ticksForCurrentTick = currentTime.getTime() - gameData.world.lastProcessTick.getTime() + gameData.world.ticksLeftOver;
+    let ticksForCurrentTick = currentTime.getTime() - gameData.world.lastProcessTick.getTime();
     if (ticksForCurrentTick > 50) {
-      gameData.world.ticksLeftOver = ticksForCurrentTick - 50;
       ticksForCurrentTick = 50;
-    } else {
-      gameData.world.ticksLeftOver = 0;
+    }
+
+    if (gameSpeedFast) {
+      ticksForCurrentTick = 50;
     }
     gameData.world.lastProcessTick = Object.assign(currentTime);
+    gameData.world.currentTickLength = ticksForCurrentTick;
 
     if (currentTime > gameData.world.nextSaveGameTime) {
       saveGame(currentTime);
     }
 
-    processStuff(ticksForCurrentTick);
+    if (!gameData.world.paused) {
+      processStuff(ticksForCurrentTick);
+    }
 
     updateGUI();
   } catch (error) {

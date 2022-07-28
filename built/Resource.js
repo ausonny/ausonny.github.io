@@ -1,5 +1,4 @@
-/* global JBDecimal */
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Resource {
     constructor(name) {
         this.name = name;
