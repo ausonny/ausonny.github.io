@@ -6,7 +6,7 @@ function internalInflationCost(increase: number) {
     internalInflationArray = [];
     let total = 0;
     for (let index = 1; index <= increase * 1.1; index++) {
-      total += Math.ceil(Math.sqrt(index));
+      total += Math.floor(Math.sqrt(index));
       internalInflationArray.push(total);
     }
   }
@@ -194,6 +194,7 @@ class Purchasable {
       count += 1;
 
       CheckAchievementCompletions();
+      dirtyUpgrades = true;
     }
   }
 

@@ -53,10 +53,7 @@ class EquipmentAbility {
     // eslint-disable-next-line func-names
     upgradeButton.addEventListener('click', function () {
       gameData.equipment[indexEquipment].abilities[indexAbility].buy();
-      display.addToDisplay(
-        `${gameData.equipment[indexEquipment].abilities[indexAbility].name} updated`,
-        DisplayCategory.Story
-      );
+      display.addToDisplay(`${gameData.equipment[indexEquipment].abilities[indexAbility].name} updated`, DisplayCategory.Story);
       dirtyEquipment = true;
     });
     UpgradeCol.appendChild(upgradeButton);
@@ -97,7 +94,7 @@ class Equipment {
   }
 
   NewEquipment(tier: number) {
-    let maxAbilities = Math.ceil((tier + 1) / 10);
+    let maxAbilities = Math.ceil((tier + 1) / 5);
     if (maxAbilities > 1) {
       maxAbilities = Math.ceil(Math.random() * maxAbilities);
     }
@@ -115,19 +112,22 @@ class Equipment {
   CreatePossibleAbilities() {
     const possibles = [];
     possibles.push('Gun Attack');
+    possibles.push('Missile Attack');
+    possibles.push('Cannon Attack');
     possibles.push('Critical Chance');
     possibles.push('Crit Multiplier');
     possibles.push('Metal Production');
     possibles.push('Mulligans');
     possibles.push('Poison Effect');
+    if (gameData.world.currentTier > 1) {
+      possibles.push('Shield Break');
+    }
     return possibles;
   }
 
   CreateDisplay(index: number) {
-    // const equipmentInfoDiv = document.getElementById('EquipmentInfo');
-
     const newEquipmentRow = document.createElement('div');
-    newEquipmentRow.classList.add('row', 'p-0', 'm-0');
+    newEquipmentRow.classList.add('row', 'p-0', 'm-0', 'border', 'border-light');
 
     const NameCol = document.createElement('div');
     NameCol.classList.add('col-md-2', 'p-0', 'm-0', 'text-medium', 'text-center');
@@ -142,7 +142,7 @@ class Equipment {
     activeButton.innerHTML = 'A';
     activeButton.classList.add('bg-primary', 'text-light', 'equipmentbutton');
     if (index === 0) {
-      activeButton.classList.add('hidden');
+      activeButton.classList.add('d-none');
     }
     // eslint-disable-next-line func-names
     activeButton.addEventListener('click', function () {
@@ -156,7 +156,7 @@ class Equipment {
     saveButton.innerHTML = 'S';
     saveButton.classList.add('bg-primary', 'text-light', 'equipmentbutton');
     if (index < 5) {
-      saveButton.classList.add('hidden');
+      saveButton.classList.add('d-none');
     }
     // eslint-disable-next-line func-names
     saveButton.addEventListener('click', function () {
@@ -177,12 +177,10 @@ class Equipment {
     deleteButton.classList.add('bg-primary', 'text-light', 'equipmentbutton');
     // eslint-disable-next-line func-names
     deleteButton.addEventListener('click', function () {
-      display.addToDisplay(`${this.name} deleted`, DisplayCategory.Story);
       DeleteEquipment(index);
       dirtyEquipment = true;
     });
     DeleteCol.appendChild(deleteButton);
-    newEquipmentRow.appendChild(DeleteCol);
 
     const AbilitiesCol = document.createElement('div');
     AbilitiesCol.classList.add('col-md-6', 'p-0', 'm-0', 'text-start');
@@ -190,6 +188,7 @@ class Equipment {
       AbilitiesCol.appendChild(a.createDisplay(aindex, index));
     });
     newEquipmentRow.appendChild(AbilitiesCol);
+    newEquipmentRow.appendChild(DeleteCol);
     return newEquipmentRow;
   }
 }

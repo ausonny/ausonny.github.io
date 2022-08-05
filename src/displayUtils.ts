@@ -24,6 +24,30 @@ class DisplayItem {
   }
 }
 
+class FloatingText {
+  text: string;
+
+  color: string;
+
+  framesleft: number;
+
+  pos: Vector;
+
+  constructor(text: string, color: string, pos: Vector) {
+    this.text = text;
+    this.color = color;
+    this.framesleft = 1000;
+    this.pos = pos;
+  }
+
+  draw() {
+    display.drawText(this.text, this.pos, this.color, 'bold 10px Arial', 'center', 'bottom');
+    this.framesleft -= 1;
+    this.pos.x += 0.01;
+    this.pos.y -= 0.01;
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Display {
   textToDisplay: DisplayItem[];
@@ -48,6 +72,8 @@ class Display {
 
   drone: Enemy;
 
+  floaters: FloatingText[];
+
   constructor() {
     this.textToDisplay = [];
     this.textToDisplayGameSave = [];
@@ -56,9 +82,22 @@ class Display {
     this.textToDisplayChallenge = [];
     this.textToDisplayStory = [];
     this.texttoDisplayTutorial = [];
+    this.floaters = [];
     this.displayindex = 0;
     this.canvas = document.getElementById('gameBoard') as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d');
+  }
+
+  showFloaters() {
+    for (let index = this.floaters.length - 1; index >= 0; index--) {
+      const element = this.floaters[index];
+      element.framesleft -= 1;
+      if (element.framesleft < 0) {
+        this.floaters.splice(index);
+        break;
+      }
+      element.draw();
+    }
   }
 
   prestige1DisplayReset() {
@@ -104,11 +143,7 @@ class Display {
       this.texttoDisplayTutorial.unshift(newItem);
       this.texttoDisplayTutorial.splice(1);
     }
-    this.textToDisplay = this.textToDisplayAchievement
-      .concat(this.textToDisplayChallenge)
-      .concat(this.textToDisplayGameSave)
-      .concat(this.textToDisplayLoot)
-      .concat(this.textToDisplayStory);
+    this.textToDisplay = this.textToDisplayAchievement.concat(this.textToDisplayChallenge).concat(this.textToDisplayGameSave).concat(this.textToDisplayLoot).concat(this.textToDisplayStory);
     this.textToDisplay.sort((a, b) => (a.index < b.index ? 1 : -1));
     let activechallenges = false;
     let txt = 'Challenges Active:';
@@ -237,7 +272,7 @@ class Display {
 
   // eslint-disable-next-line class-methods-use-this
   TierScaling(value: number) {
-    const tiersize = 40 + 10 * gameData.world.currentTier;
+    const tiersize = 40 + 10 * Math.ceil(gameData.world.currentTier / 5);
     const test = 520;
     return (value / tiersize) * test; // is canvas.width right?
   }
@@ -297,14 +332,7 @@ class Display {
     this.ctx.fill();
   }
 
-  drawText(
-    text: string,
-    position: Vector,
-    color: string,
-    font: string,
-    align: CanvasTextAlign,
-    baseline: CanvasTextBaseline
-  ) {
+  drawText(text: string, position: Vector, color: string, font: string, align: CanvasTextAlign, baseline: CanvasTextBaseline) {
     const scaledx = this.TierScaling(position.x);
     const scaledy = this.TierScaling(position.y);
 
@@ -366,19 +394,9 @@ class Display {
     }
 
     this.ctx.fillStyle = leftcolor;
-    this.ctx.fillRect(
-      this.TierScaling(position.x) - squareSize / 2,
-      this.TierScaling(position.y) - squareSize / 2,
-      squareSize / 2,
-      squareSize
-    );
+    this.ctx.fillRect(this.TierScaling(position.x) - squareSize / 2, this.TierScaling(position.y) - squareSize / 2, squareSize / 2, squareSize);
     this.ctx.fillStyle = rightcolor;
-    this.ctx.fillRect(
-      this.TierScaling(position.x),
-      this.TierScaling(position.y) - squareSize / 2,
-      squareSize / 2,
-      squareSize
-    );
+    this.ctx.fillRect(this.TierScaling(position.x), this.TierScaling(position.y) - squareSize / 2, squareSize / 2, squareSize);
   }
 
   // DrawTower () {

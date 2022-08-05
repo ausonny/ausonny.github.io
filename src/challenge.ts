@@ -16,13 +16,7 @@ class Challenge {
 
   available: boolean;
 
-  constructor(
-    name: string,
-    description: string,
-    bonusDescription: string,
-    startingWaveToComplete: number,
-    wavePerComplete: number
-  ) {
+  constructor(name: string, description: string, bonusDescription: string, startingWaveToComplete: number, wavePerComplete: number) {
     this.name = name;
     this.description = description;
     this.bonusDescription = bonusDescription;
@@ -37,16 +31,19 @@ class Challenge {
     this.active = true;
     init(1);
     display.addToDisplay(`Challenge ${this.name} begun`, DisplayCategory.Challenge);
+    dirtyTowers = true;
   }
 
   quit() {
     this.active = false;
     display.addToDisplay('Challenge exited', DisplayCategory.Challenge);
+    dirtyTowers = true;
   }
 
   fail() {
     this.active = false;
     display.addToDisplay('Challenge failed!', DisplayCategory.Challenge);
+    dirtyTowers = true;
   }
 
   waveRequiredforCompletion() {

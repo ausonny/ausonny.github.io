@@ -16,6 +16,20 @@ class DisplayItem {
         this.category = category;
     }
 }
+class FloatingText {
+    constructor(text, color, pos) {
+        this.text = text;
+        this.color = color;
+        this.framesleft = 1000;
+        this.pos = pos;
+    }
+    draw() {
+        display.drawText(this.text, this.pos, this.color, 'bold 10px Arial', 'center', 'bottom');
+        this.framesleft -= 1;
+        this.pos.x += 0.01;
+        this.pos.y -= 0.01;
+    }
+}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Display {
     constructor() {
@@ -26,9 +40,21 @@ class Display {
         this.textToDisplayChallenge = [];
         this.textToDisplayStory = [];
         this.texttoDisplayTutorial = [];
+        this.floaters = [];
         this.displayindex = 0;
         this.canvas = document.getElementById('gameBoard');
         this.ctx = this.canvas.getContext('2d');
+    }
+    showFloaters() {
+        for (let index = this.floaters.length - 1; index >= 0; index--) {
+            const element = this.floaters[index];
+            element.framesleft -= 1;
+            if (element.framesleft < 0) {
+                this.floaters.splice(index);
+                break;
+            }
+            element.draw();
+        }
     }
     prestige1DisplayReset() {
         this.textToDisplayGameSave = [];
@@ -74,11 +100,7 @@ class Display {
             this.texttoDisplayTutorial.unshift(newItem);
             this.texttoDisplayTutorial.splice(1);
         }
-        this.textToDisplay = this.textToDisplayAchievement
-            .concat(this.textToDisplayChallenge)
-            .concat(this.textToDisplayGameSave)
-            .concat(this.textToDisplayLoot)
-            .concat(this.textToDisplayStory);
+        this.textToDisplay = this.textToDisplayAchievement.concat(this.textToDisplayChallenge).concat(this.textToDisplayGameSave).concat(this.textToDisplayLoot).concat(this.textToDisplayStory);
         this.textToDisplay.sort((a, b) => (a.index < b.index ? 1 : -1));
         let activechallenges = false;
         let txt = 'Challenges Active:';
@@ -197,7 +219,7 @@ class Display {
     }
     // eslint-disable-next-line class-methods-use-this
     TierScaling(value) {
-        const tiersize = 40 + 10 * gameData.world.currentTier;
+        const tiersize = 40 + 10 * Math.ceil(gameData.world.currentTier / 5);
         const test = 520;
         return (value / tiersize) * test; // is canvas.width right?
     }

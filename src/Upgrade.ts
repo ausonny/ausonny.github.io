@@ -4,15 +4,7 @@ class Upgrade extends Purchasable {
 
   description: string;
 
-  constructor(
-    name: string,
-    description: string,
-    baseCost: number,
-    costMultiplier: number,
-    resource: Resource,
-    buyButton: HTMLElement,
-    limit: number
-  ) {
+  constructor(name: string, description: string, baseCost: number, costMultiplier: number, resource: Resource, buyButton: HTMLElement, limit: number) {
     super(baseCost, costMultiplier, resource, 0, 1, new Resource('dummy'), 0, limit, buyButton, false, buyButton);
     this.name = name;
     this.description = description;

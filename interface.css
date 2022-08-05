@@ -59,7 +59,7 @@ canvas {
 }
 
 .upgradebutton {
-  width: 254px;
+  width: 251px;
   margin: 1px;
   height: 90px;
 }
@@ -68,6 +68,18 @@ canvas {
   width: 30px;
   margin: 1px;
   height: 30px;
+}
+
+.red {
+  background-color: red;
+}
+
+.yellow {
+  background-color: yellow;
+}
+
+.orange {
+  background-color: orange;
 }
 
 .hidden{

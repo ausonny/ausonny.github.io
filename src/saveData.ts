@@ -15,7 +15,7 @@ function ChooseTutorial() {
     return;
   }
 
-  if (gameData.derivatives[1].owned.lessThan(1)) {
+  if (gameData.derivatives[0].owned.lessThan(3)) {
     display.addToDisplay(gameData.storyElements[1].text, DisplayCategory.Tutorial);
     return;
   }
@@ -68,6 +68,7 @@ class SaveGameData {
     ticksToNextSpawn: number;
     fastEnemiesToSpawn: number;
     tankEnemiesToSpawn: number;
+    medicEnemiesToSpawn: number;
     bradleyEnemiesToSpawn: number;
     paladinEnemiesToSpawn: number;
     knightEnemiesToSpawn: number;
@@ -80,13 +81,6 @@ class SaveGameData {
     mulligansused: number;
     autoChallenge: boolean;
     nextAutoChallenge: number;
-  };
-
-  tactics: {
-    highestHealth: boolean;
-    lowestHealth: boolean;
-    healer: boolean;
-    fastest: boolean;
   };
 
   towers: Tower[];
@@ -160,7 +154,7 @@ class SaveGameData {
   constructor(name: string) {
     this.name = name;
 
-    this.version = 0.2;
+    this.version = 2;
 
     this.dummyChallenge = new Challenge('d', 'd,', 'd', 0, 0);
     this.dummyUpgrade = new Upgrade('d', 'd', 0, 1, new Resource('d'), document.getElementById('btnBuyUpgrade0'), 0);
@@ -203,18 +197,7 @@ class SaveGameData {
       shards: new Resource('Shards'),
     };
 
-    this.tactics = {
-      highestHealth: false,
-      lowestHealth: false,
-      healer: false,
-      fastest: true,
-    };
-
     this.towers = [];
-    // for (let index = 0; index < 32; index++) {
-    //   const newTower = new Tower(new Vector(0,0), index)
-    //   this.towers.push(newTower);
-    // }
 
     this.resources.metal.amount = new JBDecimal(10);
 
@@ -232,6 +215,7 @@ class SaveGameData {
       ticksToNextSpawn: 1000,
       fastEnemiesToSpawn: 0,
       tankEnemiesToSpawn: 0,
+      medicEnemiesToSpawn: 0,
       bradleyEnemiesToSpawn: 0,
       paladinEnemiesToSpawn: 0,
       knightEnemiesToSpawn: 0,
@@ -248,550 +232,72 @@ class SaveGameData {
     this.world.nextSaveGameTime.setMilliseconds(this.world.nextSaveGameTime.getMilliseconds() + 1000 * 60 * 5);
 
     this.upgrades = [];
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade0',
-        'Adds .1 to Attack additive<br />',
-        1,
-        1.4,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade0'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade1',
-        'Loot + 10% multiplicative<br />',
-        1,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade1'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade2',
-        'Bonus to metal producers from current run time',
-        1,
-        1,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade2'),
-        1
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade3',
-        'Bonus to metal producers from unspent pebbles',
-        5,
-        1,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade3'),
-        1
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade4',
-        'Bonus to metal producers from number of prestiges',
-        1,
-        1,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade4'),
-        1
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade5',
-        'Double bonus from Production Challenges<br />',
-        100,
-        1,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade5'),
-        1
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade6',
-        'Each Gun level bought increases its strength by 1%',
-        10,
-        10,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade6'),
-        1
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade7',
-        'Each metal producer bought increases its production by 1% multiplicative',
-        1,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade7'),
-        10
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade8',
-        'Unlock new Metal Producer<br />',
-        1,
-        10,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade8'),
-        5
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade9',
-        'Miners x2 productivity<br />',
-        1,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade9'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade10',
-        'Supervisors x2 productivity<br />',
-        2,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade10'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade11',
-        'Foremen x2 productivity<br />',
-        4,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade11'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade12',
-        'Managers x2 productivity<br />',
-        8,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade12'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade13',
-        'Middle Managers x2 productivity<br />',
-        16,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade13'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade14',
-        'Upper Managers x2 productivity<br />',
-        32,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade14'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade15',
-        'Vice Presidents x2 productivity<br />',
-        64,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade15'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade16',
-        'Presidents x2 productivity<br />',
-        128,
-        1.5,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade16'),
-        15
-      )
-    );
-    this.upgrades.push(
-      new Upgrade(
-        'Upgrade17',
-        'Add 1 Mulligan<br />',
-        1,
-        10,
-        this.resources.pebbles,
-        document.getElementById('btnBuyUpgrade17'),
-        100
-      )
-    );
+    this.upgrades.push(new Upgrade('Upgrade0', 'Gun Attack + 10% multiplicative<br />', 1, 1.4, this.resources.pebbles, document.getElementById('btnBuyUpgrade0'), 15));
+    this.upgrades.push(new Upgrade('Upgrade1', 'Loot + 10% multiplicative<br />', 1, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade1'), 15));
+    this.upgrades.push(new Upgrade('Upgrade2', 'Bonus to metal producers from current run time', 1, 1, this.resources.pebbles, document.getElementById('btnBuyUpgrade2'), 1));
+    this.upgrades.push(new Upgrade('Upgrade3', 'Bonus to metal producers from unspent pebbles', 5, 1, this.resources.pebbles, document.getElementById('btnBuyUpgrade3'), 1));
+    this.upgrades.push(new Upgrade('Upgrade4', 'Bonus to metal producers from number of prestiges', 1, 1, this.resources.pebbles, document.getElementById('btnBuyUpgrade4'), 1));
+    this.upgrades.push(new Upgrade('Upgrade5', 'Double bonus from Production Challenges<br />', 100, 1, this.resources.pebbles, document.getElementById('btnBuyUpgrade5'), 1));
+    this.upgrades.push(new Upgrade('Upgrade6', 'Each Gun level bought increases its strength by 1%', 10, 10, this.resources.pebbles, document.getElementById('btnBuyUpgrade6'), 1));
+    this.upgrades.push(new Upgrade('Upgrade7', 'Each metal producer bought increases its production by 1% multiplicative', 1, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade7'), 10));
+    this.upgrades.push(new Upgrade('Upgrade8', 'Unlock new Metal Producer<br />', 1, 5, this.resources.pebbles, document.getElementById('btnBuyUpgrade8'), 7));
+    this.upgrades.push(new Upgrade('Upgrade9', 'Miners x2 productivity<br />', 1, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade9'), 15));
+    this.upgrades.push(new Upgrade('Upgrade10', 'Supervisors x2 productivity<br />', 2, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade10'), 15));
+    this.upgrades.push(new Upgrade('Upgrade11', 'Foremen x2 productivity<br />', 4, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade11'), 15));
+    this.upgrades.push(new Upgrade('Upgrade12', 'Managers x2 productivity<br />', 8, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade12'), 15));
+    this.upgrades.push(new Upgrade('Upgrade13', 'Middle Managers x2 productivity<br />', 16, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade13'), 15));
+    this.upgrades.push(new Upgrade('Upgrade14', 'Upper Managers x2 productivity<br />', 32, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade14'), 15));
+    this.upgrades.push(new Upgrade('Upgrade15', 'Vice Presidents x2 productivity<br />', 64, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade15'), 15));
+    this.upgrades.push(new Upgrade('Upgrade16', 'Presidents x2 productivity<br />', 128, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade16'), 15));
+    this.upgrades.push(new Upgrade('Upgrade17', 'Add 1 Mulligan<br />', 1, 10, this.resources.pebbles, document.getElementById('btnBuyUpgrade17'), 100));
+    this.upgrades.push(new Upgrade('Upgrade18', 'Each Missile level bought increases its strength by 1%', 10, 10, this.resources.pebbles, document.getElementById('btnBuyUpgrade18'), 1));
+    this.upgrades.push(new Upgrade('Upgrade19', 'Each Cannon level bought increases its strength by 1%', 10, 10, this.resources.pebbles, document.getElementById('btnBuyUpgrade19'), 1));
+    this.upgrades.push(new Upgrade('Upgrade20', 'Missile Attack + 10% multiplicative<br />', 1, 1.4, this.resources.pebbles, document.getElementById('btnBuyUpgrade20'), 15));
+    this.upgrades.push(new Upgrade('Upgrade21', 'Cannon Attack + 10% multiplicative<br />', 1, 1.4, this.resources.pebbles, document.getElementById('btnBuyUpgrade21'), 15));
 
     this.rockUpgrades = [];
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade0',
-        'Reduce cost of pebbles by one Dust<br />',
-        1,
-        0,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade0'),
-        80
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade1',
-        'Double bonus from Gun Attack upgrade<br />',
-        1,
-        10,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade1'),
-        10
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade2',
-        'Double bonus from Loot pebble upgrade<br />',
-        10,
-        1,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade2'),
-        1
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade3',
-        'Increase Effectiveness of Inflation Challenges<br />',
-        1,
-        5,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade3'),
-        10
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade4',
-        'Double bonus from Production Challenges<br />',
-        1,
-        1,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade4'),
-        1
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade5',
-        'Reduce Cost Multiplier of Producer by 1<br />',
-        5,
-        10,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade5'),
-        8
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade6',
-        'Increase upgrade limits of certain pebble upgrades',
-        10,
-        1,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade6'),
-        1
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade7',
-        'Each run begins with 1000 metal<br />',
-        1,
-        1,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade7'),
-        1
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade8',
-        'Each wave contains one fewer drone<br />',
-        1,
-        0,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade8'),
-        100
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade9',
-        'Particles gain bonus from run time<br />',
-        1,
-        0,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade9'),
-        1
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade10',
-        'Increase shooting speed bonus from challenge completions',
-        10,
-        6,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade10'),
-        10
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade11',
-        'Unlock Prioritize healer tactic<br />',
-        10000,
-        1,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade11'),
-        1
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade12',
-        'Increase Energy Weapon attack<br />',
-        1000,
-        10,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade12'),
-        10
-      )
-    );
-    this.rockUpgrades.push(
-      new Upgrade(
-        'Upgrade13',
-        'Increase Poison effectiveness<br />',
-        25,
-        5,
-        this.resources.rocks,
-        document.getElementById('btnBuyRockUpgrade13'),
-        10
-      )
-    );
+    this.rockUpgrades.push(new Upgrade('Upgrade0', 'Reduce cost of pebbles by one Dust<br />', 1, 0, this.resources.rocks, document.getElementById('btnBuyRockUpgrade0'), 80));
+    this.rockUpgrades.push(new Upgrade('Upgrade1', 'Double bonus from Gun Attack upgrade<br />', 1, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade1'), 10));
+    this.rockUpgrades.push(new Upgrade('Upgrade2', 'Double bonus from Loot pebble upgrade<br />', 10, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade2'), 1));
+    this.rockUpgrades.push(new Upgrade('Upgrade3', 'Increase Effectiveness of Inflation Challenges', 1, 5, this.resources.rocks, document.getElementById('btnBuyRockUpgrade3'), 10));
+    this.rockUpgrades.push(new Upgrade('Upgrade4', 'Double bonus from Production Challenges<br />', 1, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade4'), 1));
+    this.rockUpgrades.push(new Upgrade('Upgrade5', 'Reduce Cost Multiplier of Producer by 1<br />', 5, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade5'), 8));
+    this.rockUpgrades.push(new Upgrade('Upgrade6', 'Increase upgrade limits of certain pebble upgrades', 10, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade6'), 1));
+    this.rockUpgrades.push(new Upgrade('Upgrade7', 'Each run begins with 1000 metal<br />', 1, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade7'), 1));
+    this.rockUpgrades.push(new Upgrade('Upgrade8', 'Each wave contains one fewer drone<br />', 1, 0, this.resources.rocks, document.getElementById('btnBuyRockUpgrade8'), 100));
+    this.rockUpgrades.push(new Upgrade('Upgrade9', 'Particles gain bonus from run time<br />', 1, 0, this.resources.rocks, document.getElementById('btnBuyRockUpgrade9'), 1));
+    this.rockUpgrades.push(new Upgrade('Upgrade10', 'Increase shooting speed bonus from challenge completions', 10, 6, this.resources.rocks, document.getElementById('btnBuyRockUpgrade10'), 10));
+    this.rockUpgrades.push(new Upgrade('Upgrade11', 'Unlock Prioritize healer tactic<br />', 1, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade11'), 1));
+    this.rockUpgrades.push(new Upgrade('Upgrade12', 'Increase Shield Break on guns<br />', 1000, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade12'), 10));
+    this.rockUpgrades.push(new Upgrade('Upgrade13', 'Increase Poison effectiveness<br />', 1, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade13'), 10));
+    this.rockUpgrades.push(new Upgrade('Upgrade14', 'Each poison bought increases its production by 1% multiplicative', 100, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade14'), 1));
+    this.rockUpgrades.push(new Upgrade('Upgrade15', 'Double bonus from Missile Attack upgrade<br />', 1, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade15'), 10));
+    this.rockUpgrades.push(new Upgrade('Upgrade16', 'Double bonus from Cannon Attack upgrade<br />', 1, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade16'), 10));
 
     this.boulderUpgrades = [];
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade0',
-        'Lower Challenge Limit by 1<br />',
-        1,
-        10,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade0'),
-        1
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade1',
-        'Reduce cost of rocks by one pebble<br />',
-        1,
-        2,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade1'),
-        800
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade2',
-        'Increase upgrade limits on certain pebble upgrades',
-        10,
-        1,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade2'),
-        1
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade3',
-        'Double Production of all metal producers<br />',
-        1,
-        1,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade3'),
-        1
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade4',
-        'Double bonus from Gun Attack upgrade<br />',
-        1,
-        10,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade4'),
-        10
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade5',
-        'Gain Pebbles from 1% of dust every second<br />',
-        1,
-        10,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade5'),
-        1
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade6',
-        'Increase effectiveness of Crits Challenge<br />',
-        1,
-        10,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade6'),
-        10
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade7',
-        'Add 1 to Crit Multiplier<br />',
-        10,
-        10,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade7'),
-        10
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade8',
-        'Increase Shield Break from Gun Attack<br />',
-        1,
-        10,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade8'),
-        10
-      )
-    );
-    this.boulderUpgrades.push(
-      new Upgrade(
-        'Upgrade9',
-        'Increase Poison Effectiveness<br />',
-        1,
-        10,
-        this.resources.boulders,
-        document.getElementById('btnBuyBoulderUpgrade9'),
-        10
-      )
-    );
+    this.boulderUpgrades.push(new Upgrade('Upgrade0', 'Lower Challenge Limit by 1<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade0'), 1));
+    this.boulderUpgrades.push(new Upgrade('Upgrade1', 'Reduce cost of rocks by one pebble<br />', 1, 2, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade1'), 800));
+    this.boulderUpgrades.push(new Upgrade('Upgrade2', 'Increase upgrade limits on certain pebble upgrades', 10, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade2'), 1));
+    this.boulderUpgrades.push(new Upgrade('Upgrade3', 'Double Production of all metal producers<br />', 1, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade3'), 1));
+    this.boulderUpgrades.push(new Upgrade('Upgrade4', 'Double bonus from Gun Attack upgrade<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade4'), 10));
+    this.boulderUpgrades.push(new Upgrade('Upgrade5', 'Gain Pebbles from 1% of dust every second<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade5'), 1));
+    this.boulderUpgrades.push(new Upgrade('Upgrade6', 'Increase effectiveness of Crits Challenge<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade6'), 10));
+    this.boulderUpgrades.push(new Upgrade('Upgrade7', 'Add 1 to Crit Multiplier<br />', 10, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade7'), 10));
+    this.boulderUpgrades.push(new Upgrade('Upgrade8', 'Increase Shield Break from Gun Attack<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade8'), 10));
+    this.boulderUpgrades.push(new Upgrade('Upgrade9', 'Increase Poison Effectiveness<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade9'), 10));
+    this.boulderUpgrades.push(new Upgrade('Upgrade10', 'Double bonus from Missile Attack upgrade<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade10'), 10));
+    this.boulderUpgrades.push(new Upgrade('Upgrade11', 'Double bonus from Cannon Attack upgrade<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade11'), 10));
 
-    this.producer = new Producer(
-      'Production Multiplier',
-      0,
-      1000,
-      10,
-      this.resources.metal,
-      this.resources.dust,
-      document.getElementById('btnBuyProduction'),
-      document.getElementById('btnBuyProductionDustUpgrade'),
-      this.dummyUpgrade,
-      20
-    );
+    this.producer = new Producer('Production Multiplier', 0, 1000, 10, this.resources.metal, this.resources.dust, document.getElementById('btnBuyProduction'), document.getElementById('btnBuyProductionDustUpgrade'), this.dummyUpgrade, 20);
 
     this.derivatives = [];
+    this.derivatives.push(new Derivative('Miner', 0, 10, 1.5, this.resources.metal, this.resources.dust, document.getElementById('btnBuyMiner'), document.getElementById('btnBuyMinerDustUpgrade'), this.upgrades[9], 20, 1, true));
     this.derivatives.push(
-      new Derivative(
-        'Miner',
-        0,
-        10,
-        1.5,
-        this.resources.metal,
-        this.resources.dust,
-        document.getElementById('btnBuyMiner'),
-        document.getElementById('btnBuyMinerDustUpgrade'),
-        this.upgrades[9],
-        20,
-        1,
-        true
-      )
+      new Derivative('Supervisor', 1, 100, 1.6, this.resources.metal, this.resources.dust, document.getElementById('btnBuySupervisor'), document.getElementById('btnBuySupervisorDustUpgrade'), this.upgrades[10], 20, 0.1, true)
     );
+    this.derivatives.push(new Derivative('Foreman', 2, 1000, 1.7, this.resources.metal, this.resources.dust, document.getElementById('btnBuyForeman'), document.getElementById('btnBuyForemanDustUpgrade'), this.upgrades[11], 20, 0.01, true));
     this.derivatives.push(
-      new Derivative(
-        'Supervisor',
-        1,
-        100,
-        1.6,
-        this.resources.metal,
-        this.resources.dust,
-        document.getElementById('btnBuySupervisor'),
-        document.getElementById('btnBuySupervisorDustUpgrade'),
-        this.upgrades[10],
-        20,
-        0.1,
-        true
-      )
-    );
-    this.derivatives.push(
-      new Derivative(
-        'Foreman',
-        2,
-        1000,
-        1.7,
-        this.resources.metal,
-        this.resources.dust,
-        document.getElementById('btnBuyForeman'),
-        document.getElementById('btnBuyForemanDustUpgrade'),
-        this.upgrades[11],
-        20,
-        0.01,
-        true
-      )
-    );
-    this.derivatives.push(
-      new Derivative(
-        'Manager',
-        3,
-        10000,
-        1.8,
-        this.resources.metal,
-        this.resources.dust,
-        document.getElementById('btnBuyManager'),
-        document.getElementById('btnBuyManagerDustUpgrade'),
-        this.upgrades[12],
-        20,
-        0.001,
-        true
-      )
+      new Derivative('Manager', 3, 10000, 1.8, this.resources.metal, this.resources.dust, document.getElementById('btnBuyManager'), document.getElementById('btnBuyManagerDustUpgrade'), this.upgrades[12], 20, 0.001, true)
     );
     this.derivatives.push(
       new Derivative(
@@ -826,250 +332,38 @@ class SaveGameData {
       )
     );
     this.derivatives.push(
-      new Derivative(
-        'Vice President',
-        6,
-        1e7,
-        2.1,
-        this.resources.metal,
-        this.resources.dust,
-        document.getElementById('btnBuyVicePresident'),
-        document.getElementById('btnBuyVicePresidentDustUpgrade'),
-        this.upgrades[15],
-        20,
-        0.000001,
-        true
-      )
+      new Derivative('Vice President', 6, 1e7, 2.1, this.resources.metal, this.resources.dust, document.getElementById('btnBuyVicePresident'), document.getElementById('btnBuyVicePresidentDustUpgrade'), this.upgrades[15], 20, 0.000001, true)
     );
     this.derivatives.push(
-      new Derivative(
-        'President',
-        7,
-        1e8,
-        2.2,
-        this.resources.metal,
-        this.resources.dust,
-        document.getElementById('btnBuyPresident'),
-        document.getElementById('btnBuyPresidentDustUpgrade'),
-        this.upgrades[16],
-        20,
-        0.0000001,
-        true
-      )
+      new Derivative('President', 7, 1e8, 2.2, this.resources.metal, this.resources.dust, document.getElementById('btnBuyPresident'), document.getElementById('btnBuyPresidentDustUpgrade'), this.upgrades[16], 20, 0.0000001, true)
     );
 
     this.speedDerivatives = [];
+    this.speedDerivatives.push(new Derivative2('Speed', 0, 1, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuySpeed'), document.getElementById('btnBuySpeed'), this.dummyUpgrade, 0, 1, false));
     this.speedDerivatives.push(
-      new Derivative2(
-        'Speed',
-        0,
-        1,
-        2,
-        this.resources.rocks,
-        new Resource('dummy'),
-        document.getElementById('btnBuySpeed'),
-        document.getElementById('btnBuySpeed'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
+      new Derivative2('Acceleration', 0, 10, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuyAcceleration'), document.getElementById('btnBuyAcceleration'), this.dummyUpgrade, 0, 1, false)
     );
-    this.speedDerivatives.push(
-      new Derivative2(
-        'Acceleration',
-        0,
-        10,
-        2,
-        this.resources.rocks,
-        new Resource('dummy'),
-        document.getElementById('btnBuyAcceleration'),
-        document.getElementById('btnBuyAcceleration'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.speedDerivatives.push(
-      new Derivative2(
-        'Jerk',
-        0,
-        100,
-        2,
-        this.resources.rocks,
-        new Resource('dummy'),
-        document.getElementById('btnBuyJerk'),
-        document.getElementById('btnBuyJerk'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.speedDerivatives.push(
-      new Derivative2(
-        'Snap',
-        0,
-        1e4,
-        2,
-        this.resources.rocks,
-        new Resource('dummy'),
-        document.getElementById('btnBuySnap'),
-        document.getElementById('btnBuySnap'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.speedDerivatives.push(
-      new Derivative2(
-        'Crackle',
-        0,
-        1e7,
-        2,
-        this.resources.rocks,
-        new Resource('dummy'),
-        document.getElementById('btnBuyCrackle'),
-        document.getElementById('btnBuyMiner'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.speedDerivatives.push(
-      new Derivative2(
-        'Pop',
-        0,
-        1e11,
-        2,
-        this.resources.rocks,
-        new Resource('dummy'),
-        document.getElementById('btnBuyPop'),
-        document.getElementById('btnBuyMiner'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
+    this.speedDerivatives.push(new Derivative2('Jerk', 0, 100, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuyJerk'), document.getElementById('btnBuyJerk'), this.dummyUpgrade, 0, 1, false));
+    this.speedDerivatives.push(new Derivative2('Snap', 0, 1e4, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuySnap'), document.getElementById('btnBuySnap'), this.dummyUpgrade, 0, 1, false));
+    this.speedDerivatives.push(new Derivative2('Crackle', 0, 1e7, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuyCrackle'), document.getElementById('btnBuyMiner'), this.dummyUpgrade, 0, 1, false));
+    this.speedDerivatives.push(new Derivative2('Pop', 0, 1e11, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuyPop'), document.getElementById('btnBuyMiner'), this.dummyUpgrade, 0, 1, false));
 
     this.timeDerivatives = [];
-    this.timeDerivatives.push(
-      new Derivative2(
-        'Time1',
-        0,
-        1,
-        2,
-        this.resources.boulders,
-        new Resource('dummy'),
-        document.getElementById('btnBuyTime1'),
-        document.getElementById('btnBuyTime1'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.timeDerivatives.push(
-      new Derivative2(
-        'Time2',
-        0,
-        10,
-        2,
-        this.resources.boulders,
-        new Resource('dummy'),
-        document.getElementById('btnBuyTime2'),
-        document.getElementById('btnBuyTime2'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.timeDerivatives.push(
-      new Derivative2(
-        'Time3',
-        0,
-        100,
-        2,
-        this.resources.boulders,
-        new Resource('dummy'),
-        document.getElementById('btnBuyTime3'),
-        document.getElementById('btnBuyTime3'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.timeDerivatives.push(
-      new Derivative2(
-        'Time4',
-        0,
-        1e4,
-        2,
-        this.resources.boulders,
-        new Resource('dummy'),
-        document.getElementById('btnBuyTime4'),
-        document.getElementById('btnBuyTime4'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.timeDerivatives.push(
-      new Derivative2(
-        'Time5',
-        0,
-        1e7,
-        2,
-        this.resources.boulders,
-        new Resource('dummy'),
-        document.getElementById('btnBuyTime5'),
-        document.getElementById('btnBuyTime5'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
-    this.timeDerivatives.push(
-      new Derivative2(
-        'Time6',
-        0,
-        1e11,
-        2,
-        this.resources.boulders,
-        new Resource('dummy'),
-        document.getElementById('btnBuyTime6'),
-        document.getElementById('btnBuyTime6'),
-        this.dummyUpgrade,
-        0,
-        1,
-        false
-      )
-    );
+    this.timeDerivatives.push(new Derivative2('Time1', 0, 1, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime1'), document.getElementById('btnBuyTime1'), this.dummyUpgrade, 0, 1, false));
+    this.timeDerivatives.push(new Derivative2('Time2', 0, 10, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime2'), document.getElementById('btnBuyTime2'), this.dummyUpgrade, 0, 1, false));
+    this.timeDerivatives.push(new Derivative2('Time3', 0, 100, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime3'), document.getElementById('btnBuyTime3'), this.dummyUpgrade, 0, 1, false));
+    this.timeDerivatives.push(new Derivative2('Time4', 0, 1e4, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime4'), document.getElementById('btnBuyTime4'), this.dummyUpgrade, 0, 1, false));
+    this.timeDerivatives.push(new Derivative2('Time5', 0, 1e7, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime5'), document.getElementById('btnBuyTime5'), this.dummyUpgrade, 0, 1, false));
+    this.timeDerivatives.push(new Derivative2('Time6', 0, 1e11, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime6'), document.getElementById('btnBuyTime6'), this.dummyUpgrade, 0, 1, false));
 
     this.challenges = [];
-    this.challenges.push(
-      new Challenge('Inflation', 'Inflation starts at 1', 'Inflation starts 5 percent later per completion', 5, 5)
-    );
-    this.challenges.push(
-      new Challenge('Production', 'Production Bonus is disabled', 'Add .01 to production bonus', 20, 10)
-    );
-    this.challenges.push(
-      new Challenge('Shooting Speed', 'Shooting Speed is set to 1/s', 'Increase shooting speed', 20, 10)
-    );
+    this.challenges.push(new Challenge('Inflation', 'Inflation starts at 1', 'Inflation starts 5 percent later per completion', 5, 5));
+    this.challenges.push(new Challenge('Production', 'Production Bonus is disabled', 'Add .01 to production bonus', 20, 10));
+    this.challenges.push(new Challenge('Shooting Speed', 'Shooting Speed is set to 1/s', 'Increase shooting speed', 20, 10));
     this.challenges.push(new Challenge('Range', 'Tower Range is set to 15', 'Increase Tower Range', 20, 10));
-    this.challenges.push(new Challenge('Poison', 'No Poison Tower', 'Unlock and improve Poison Tower', 15, 10));
+    this.challenges.push(new Challenge('Poison', 'No Poison Tower', 'Unlock and improve Poison Tower', 15, 15));
     this.challenges.push(new Challenge('Slow', 'Slow tower disabled', 'Slow Tower unlocked and improved', 30, 15));
-    this.challenges.push(
-      new Challenge('Crits', 'Critical Attacks are disabled', 'Unlock and improve critical hits', 35, 15)
-    );
+    this.challenges.push(new Challenge('Crits', 'Critical Attacks are disabled', 'Unlock and improve critical hits', 35, 15));
     this.challenges.push(new Challenge('Shield Break', 'No Shield Break', 'Unlock and improve shield break', 40, 20));
 
     this.tierBlueprints = [];
@@ -1083,17 +377,17 @@ class SaveGameData {
 
     this.Achievements = [];
 
-    this.Achievements.push(new Achievement(1, 'Tower1', 'Buy first Tower', 0, 1));
-    this.Achievements.push(new Achievement(2, 'Tower2', 'Buy second Tower', 0, 2));
-    this.Achievements.push(new Achievement(3, 'Tower4', 'Buy fourth Tower', 0, 4));
-    this.Achievements.push(new Achievement(4, 'Tower8', 'Buy eighth Tower', 0, 8));
-    this.Achievements.push(new Achievement(5, 'Tower16', 'Buy sixteenth Tower', 0, 16));
+    this.Achievements.push(new Achievement(1, 'Tower1', 'Buy first Tower level', 0, 1));
+    this.Achievements.push(new Achievement(2, 'Tower2', 'Buy ten Tower levels', 0, 10));
+    this.Achievements.push(new Achievement(3, 'Tower4', 'Buy fifty Tower levels', 0, 50));
+    this.Achievements.push(new Achievement(4, 'Tower8', 'Buy one hundred Tower levels', 0, 100));
+    this.Achievements.push(new Achievement(5, 'Tower16', 'Buy five hundred Tower levels', 0, 500));
 
-    this.Achievements.push(new Achievement(6, 'Tower32', 'Buy thirty-second Tower', 0, 32));
-    this.Achievements.push(new Achievement(7, 'Tower64', 'Buy sixty-fourth Tower', 0, 64));
-    this.Achievements.push(new Achievement(8, 'Tower100', 'Buy hindredth Tower', 0, 100));
-    this.Achievements.push(new Achievement(9, 'Tower200', 'Buy two hundredth Tower', 0, 200));
-    this.Achievements.push(new Achievement(10, 'Tower400', 'Buy four hundredth Tower', 0, 400));
+    this.Achievements.push(new Achievement(6, 'Tower32', 'Buy one thousand Tower levels', 0, 1000));
+    this.Achievements.push(new Achievement(7, 'Tower64', 'Buy five thousand Tower levels', 0, 5000));
+    this.Achievements.push(new Achievement(8, 'Tower100', 'Buy ten thousand Tower levels', 0, 10000));
+    this.Achievements.push(new Achievement(9, 'Tower200', 'Buy fifty thousand Tower levels', 0, 50000));
+    this.Achievements.push(new Achievement(10, 'Tower400', 'Buy one hundred thousand Tower levels', 0, 100000));
 
     this.Achievements.push(new Achievement(11, 'Challenge1', 'Complete first Challenge', 1, 1));
     this.Achievements.push(new Achievement(12, 'Challenge2', 'Complete two Challenges', 1, 2));
@@ -1257,22 +551,18 @@ class SaveGameData {
 
     this.storyElements.push(
       new Story(
-        "Welcome to Continuous! Continuous is a tower defense game with incremental and idle elements. See the white boxes moving through the maze?  We don't like them.  If one of them reaches the end the wave will start again. First lets build a few Gun Towers.  Pick any of the 8 slots listed below and click the Buy Gun button. Buy at least 3."
+        "Welcome to Continuous! Continuous is a tower defense game with incremental and idle elements. See the white boxes moving through the maze?  We don't like them.  If one of them reaches the end the wave will start again. Initially you can build three towers.  A Gun Tower, a Missile Tower and a Cannon Tower.  Build any of them on any of the available slots. You should build all three when you can afford them."
       )
     );
     this.storyElements.push(
       new Story(
-        'Now we should improve our economy.  Click on the Resources tab.  Currently each miner creates 1 metal per second. A supervisor will create 0.1 miners per second.  Buy a couple more miners to speed up production and then save up enough metal and buy a supervisor.'
+        'Now we should improve our economy.  Click on the Resources tab.  Currently each miner creates 1 metal per second. Later you will unlock supervisors who will create Miners for free. A supervisor will create 0.1 miners per second. But for now they are unavailable.  Build at least 3 Miners to increase production.'
       )
     );
+    this.storyElements.push(new Story("Now let's improve the three towers. Let's uprgade them all at least once. You can use Metal to increase the level of the tower. Later you can use Dust to give a 10% boost to Tower Power."));
     this.storyElements.push(
       new Story(
-        "Now let's buy the rest of the available Gun Towers.  You should also have enough money to begin spending metal to upgrade the towers.  Let's uprgade them all at least once."
-      )
-    );
-    this.storyElements.push(
-      new Story(
-        'You have collected your first dust. Special enemies begin appearing at wave 5 and drop dust when killed. You can upgrade your metal producers and towers with dust. You will also want to collect 100 dust in order to be able to prestige.  Prestiging restarts the game, but with a new resource, pebbles, which you can spend on new upgrades. The question you have to answer is how much dust to spend to speed up dust collection.  You can eventually reach 100 dust without spending any, but it may be faster to spend at least a little. A button will appear near the top when you are able to prestige.'
+        'You have collected your first dust. Special enemies begin appearing at wave 5. Bosses begin appearing at level 10 and every level after.  Bosses drop dust. You can upgrade your metal producers and towers with dust. You will also want to collect 100 dust in order to be able to prestige.  Prestiging restarts the game, but with a new resource, pebbles, which you can spend on new upgrades. The question you have to answer is how much dust to spend to speed up dust collection.  You can eventually reach 100 dust without spending any, but it may be faster to spend at least a little. A button will appear near the top when you are able to prestige.'
       )
     );
     this.storyElements.push(
@@ -1282,7 +572,7 @@ class SaveGameData {
     );
     this.storyElements.push(
       new Story(
-        'ou have unlocked Challenges.  A challenge is a game run tha has a penalty, and if more enemies makes it through the maze than you have mulligans then while the run ontinues the challenge progression ends.  Challenges give you new towers or tower abilities or production abilities.'
+        'You have unlocked Challenges.  A challenge is a game run that has a penalty, and if more enemies makes it through the maze than you have mulligans then the challenge ends although the run ontinues.  Challenges give you new towers or tower abilities or production abilities.'
       )
     );
     this.storyElements.push(

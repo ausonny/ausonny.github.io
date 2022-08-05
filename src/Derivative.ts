@@ -26,19 +26,7 @@ class Derivative extends Purchasable {
     productionMultiplier: number,
     upgradeable: boolean
   ) {
-    super(
-      cost,
-      costMultiplier,
-      resource,
-      1,
-      2,
-      upgradeResource,
-      inflationFloor,
-      0,
-      buyButton,
-      upgradeable,
-      upgradeButton
-    );
+    super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, upgradeable, upgradeButton);
     this.name = name;
     this.index = index;
     // this.lastProduction = new JBDecimal(0);
@@ -114,18 +102,7 @@ class Producer extends Purchasable {
 
   productionMultiplier: number;
 
-  constructor(
-    name: string,
-    index: number,
-    cost: number,
-    costMultiplier: number,
-    resource: Resource,
-    upgradeResource: Resource,
-    buyButton: HTMLElement,
-    upgradeButton: HTMLElement,
-    basicUpgrade: Upgrade,
-    inflationFloor: number
-  ) {
+  constructor(name: string, index: number, cost: number, costMultiplier: number, resource: Resource, upgradeResource: Resource, buyButton: HTMLElement, upgradeButton: HTMLElement, basicUpgrade: Upgrade, inflationFloor: number) {
     super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, true, upgradeButton);
     this.name = name;
     this.index = index;
@@ -198,19 +175,7 @@ class Derivative2 extends Purchasable {
     productionMultiplier: number,
     upgradeable: boolean
   ) {
-    super(
-      cost,
-      costMultiplier,
-      resource,
-      1,
-      2,
-      upgradeResource,
-      inflationFloor,
-      0,
-      buyButton,
-      upgradeable,
-      upgradeButton
-    );
+    super(cost, costMultiplier, resource, 1, 2, upgradeResource, inflationFloor, 0, buyButton, upgradeable, upgradeButton);
     this.name = name;
     this.index = index;
     // this.lastProduction = new JBDecimal(0);
