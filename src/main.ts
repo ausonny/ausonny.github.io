@@ -6,9 +6,15 @@ const notationDisplayOptions = ['Scientific Notation', 'Standard Formatting', 'E
 
 let dirtyEquipment = true;
 
-let dirtyTowers = true;
-
 let dirtyUpgrades = true;
+
+let upgradeRefreshTickCount = 0;
+
+// let AutoBuyPebblesTickCount = 0;
+
+let UIElementActive = '';
+
+let activeBuilding = null;
 
 let gameSpeed = 1;
 
@@ -16,31 +22,24 @@ let initted = false;
 
 let gameData: SaveGameData;
 const display = new Display();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let internalInflationArray: number[];
 
-// eslint-disable-next-line prefer-const
-internalInflationArray = [];
+let totalHousing = new JBDecimal(10);
+// if (gameData.pebbleUpgrades[12].bought > 0) {   // unnecessary at this point
+//   totalHousing = new JBDecimal(100);
+// }
+let netWood = new JBDecimal(0);
+let netStone = new JBDecimal(0);
+let netArrows = new JBDecimal(0);
+let netRedResearch = new JBDecimal(0);
 
+let CANVAS_SIZE = 1100;
 // const isFixedString = (s: string) => !isNaN(+s) && isFinite(+s) && !/e/i.test(s);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function changeSpeed1() {
-  gameSpeed = 1;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function changeSpeed2() {
-  gameSpeed = 2;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function changeSpeed5() {
-  gameSpeed = 5;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function changeSpeedMax() {
-  gameSpeed = 10;
+function changeSpeed(value: number) {
+  gameSpeed = value;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,41 +53,48 @@ function challengeAuto() {
   gameData.world.nextAutoChallenge = 0;
 }
 
-function pebblesFromPrestige(amt: JBDecimal = new JBDecimal(0)) {
+function powderFromPrestige(amt: JBDecimal = new JBDecimal(0)) {
   if (amt.equals(new JBDecimal(0))) {
-    return gameData.resources.dust.amount.divide(100 - gameData.rockUpgrades[0].bought).floor();
+    return gameData.resources.essence.amount.divide(100 - gameData.pebbleUpgrades[0].bought - gameData.powderUpgrades[4].bought).floor(); // - gameData.boulderUpgrades[12].bought */).floor();
   }
-  return amt.divide(100 - gameData.rockUpgrades[0].bought);
+  return amt.divide(100 - gameData.pebbleUpgrades[0].bought /*  - gameData.upgrades[22].bought - gameData.boulderUpgrades[12].bought */).floor();
 }
 
-function rocksFromPrestige() {
-  return gameData.resources.pebbles.amount
-    .add(pebblesFromPrestige())
-    .divide(1000 - gameData.boulderUpgrades[1].bought * 10)
+function pebbleFromPrestige() {
+  return gameData.resources.powder.amount
+    .add(powderFromPrestige())
+    .divide(1000) /*  - gameData.boulderUpgrades[1].bought - gameData.rockUpgrades[20].bought */
     .floor();
 }
 
-function bouldersFromPrestige() {
-  return gameData.resources.rocks.amount.add(rocksFromPrestige()).divide(10000).floor();
+function rockFromPrestige() {
+  return gameData.resources.pebble.amount.add(pebbleFromPrestige()).divide(10000).floor();
 }
 
-function getCurrentPebbleRate() {
-  return pebblesFromPrestige().multiply(3600000).divide(gameData.stats.prestige1ticks);
+function getCurrentPowderRate() {
+  return powderFromPrestige().multiply(3600000).divide(gameData.stats.prestige1ticks);
 }
 
-function getCurrentRockRate() {
-  return rocksFromPrestige().multiply(3600000).divide(gameData.stats.prestige2ticks);
+function getCurrentPebblesRate() {
+  return pebbleFromPrestige().multiply(3600000).divide(gameData.stats.prestige2ticks);
 }
 
-function getCurrentBoulderRate() {
-  return bouldersFromPrestige().multiply(3600000).divide(gameData.stats.prestige3ticks);
+function getCurrentRocksRate() {
+  return rockFromPrestige().multiply(3600000).divide(gameData.stats.prestige3ticks);
 }
 
-function AutoBuyPebbles() {
-  const dustToUse = gameData.resources.dust.amount.multiply(gameData.world.currentTickLength / 100000);
-  gameData.resources.dust.subtract(dustToUse);
-  gameData.resources.pebbles.add(pebblesFromPrestige(dustToUse));
-}
+// function AutoBuyPowder() {
+//   AutoBuyPebblesTickCount += gameData.world.currentTickLength;
+//   if (AutoBuyPebblesTickCount > 1000) {
+//     const essenceToUse = gameData.resources.essence.amount.divide(100);
+//     const powdergained = powderFromPrestige(essenceToUse);
+//     if (powdergained.greaterThanOrEqualTo(1)) {
+//       gameData.resources.essence.subtract(essenceToUse);
+//       gameData.resources.powder.add(powderFromPrestige(essenceToUse));
+//     }
+//     AutoBuyPebblesTickCount -= 1000;
+//   }
+// }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function blueprintAuto() {
@@ -102,24 +108,21 @@ function blueprintLoad() {
   }
   const currentBluePrint = gameData.tierBlueprints[gameData.world.currentTier];
 
-  gameData.towers.forEach((t, index) => {
-    if (typeof currentBluePrint[index] === 'undefined') {
-      t.type = '';
-    } else {
-      t.type = currentBluePrint[index].towerType;
-      t.setInfoByType();
+  gameData.buildings.forEach((b, index) => {
+    b.delete(false);
+    if (typeof currentBluePrint.blueprints[index] !== 'undefined') {
+      b.type = currentBluePrint.blueprints[index].towerType;
+      b.setInfoByType();
     }
-    t.bought = 0;
-    t.upgradeLevel = 0;
   });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function blueprintSave() {
   const newTBP = new TierBluePrint();
-  gameData.towers.forEach((t) => {
+  gameData.buildings.forEach((b) => {
     const newbp = new Blueprint();
-    newbp.towerType = t.type;
+    newbp.towerType = b.type;
     newTBP.blueprints.push(newbp);
   });
   while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
@@ -143,7 +146,7 @@ function MoveEquipment(index: number) {
 }
 
 function maxMulligansCalc() {
-  let maxMulligans = gameData.upgrades[17].bought;
+  let maxMulligans = 0 + gameData.powderUpgrades[11].bought;
   if (gameData.equipment.length > 0) {
     gameData.equipment[0].abilities.forEach((a) => {
       if (a.name === 'Mulligans') {
@@ -152,15 +155,6 @@ function maxMulligansCalc() {
     });
   }
   return maxMulligans;
-}
-
-function getNumberOfEnemies(wave: number) {
-  let div = wave - (gameData.world.currentTier - 1);
-  if (div < 1) {
-    div = 1;
-  }
-
-  return Math.floor(gameData.world.currentWave / div);
 }
 
 function getWavesNeededForTier() {
@@ -181,34 +175,35 @@ function removeAllChildNodes(parent) {
   }
 }
 
-function createTowerSites() {
+function getTierSize() {
+  return 50 + Math.ceil(gameData.world.currentTier / 5) * 10;
+}
+
+function createBuildingSites() {
   let leftToRight = true;
   let currenty = 15;
   let currentx = 5;
-  const tierSize = 40 + (Math.floor(gameData.world.currentTier / 5) + 1) * 10;
+  const tierSize = getTierSize();
   let index = 0;
 
-  gameData.towers = [];
-
-  removeAllChildNodes(document.getElementById('TowerUnBoughtInfo'));
-  removeAllChildNodes(document.getElementById('TowerBoughtInfo'));
+  gameData.buildings = [];
 
   while (currenty <= tierSize) {
     if (leftToRight) {
       currentx = 5;
       while (currentx <= tierSize - 10) {
-        const currentTower = new Tower(new Vector(currentx, currenty), index);
-        gameData.towers.push(currentTower);
-        currentTower.active = true;
+        const currentBuilding = new Building(new Vector(currentx, currenty), index);
+        gameData.buildings.push(currentBuilding);
+        currentBuilding.active = true;
         index += 1;
         currentx += 10;
       }
     } else {
       currentx = tierSize - 5;
       while (currentx > 10) {
-        const currentTower = new Tower(new Vector(currentx, currenty), index);
-        gameData.towers.push(currentTower);
-        currentTower.active = true;
+        const currentBuilding = new Building(new Vector(currentx, currenty), index);
+        gameData.buildings.push(currentBuilding);
+        currentBuilding.active = true;
         index += 1;
         currentx -= 10;
       }
@@ -218,30 +213,14 @@ function createTowerSites() {
   }
 }
 
-function getSpecialsCount() {
-  return (
-    gameData.world.bossEnemiesToSpawn +
-    gameData.world.fastEnemiesToSpawn +
-    gameData.world.tankEnemiesToSpawn +
-    gameData.world.medicEnemiesToSpawn +
-    gameData.world.bradleyEnemiesToSpawn +
-    gameData.world.paladinEnemiesToSpawn +
-    gameData.world.knightEnemiesToSpawn +
-    gameData.world.flyerEnemiesToSpawn +
-    gameData.world.dumboEnemiesToSpawn +
-    gameData.world.clericEnemiesToSpawn +
-    gameData.world.hummingbirdEnemiesToSpawn
-  );
-}
-
 function init(prestigelevel = 0) {
   if (prestigelevel >= 1) {
     display.prestige1DisplayReset();
-    gameData.towers.forEach((t) => {
-      t.delete();
+    gameData.buildings.forEach((t) => {
+      t.delete(false);
     });
-    if (pebblesFromPrestige().greaterThan(0)) {
-      gameData.stats.last10Prestige1amounts.unshift(pebblesFromPrestige());
+    if (powderFromPrestige().greaterThanOrEqualTo(1)) {
+      gameData.stats.last10Prestige1amounts.unshift(powderFromPrestige());
       gameData.stats.last10Prestige1amounts.splice(10);
       gameData.stats.last10Prestige1times.unshift(gameData.stats.prestige1ticks);
       gameData.stats.last10Prestige1times.splice(10);
@@ -249,73 +228,55 @@ function init(prestigelevel = 0) {
       gameData.stats.last10Prestige1waves.splice(10);
       gameData.stats.last10Prestige1tier.unshift(gameData.world.currentTier);
       gameData.stats.last10Prestige1tier.splice(10);
+      gameData.stats.prestige1 += 1;
     }
+
+    gameData.world.deathLevel = 0;
 
     gameData.stats.prestige1ticks = 0;
-    gameData.stats.prestige1 += 1;
     gameData.stats.bestPrestige1Rate = new JBDecimal(0.00000000001);
-    gameData.resources.pebbles.add(pebblesFromPrestige());
-    gameData.resources.metal.amount = new JBDecimal(10);
-    gameData.resources.dust.amount = new JBDecimal(0);
-    gameData.resources.particles.amount = new JBDecimal(0);
-    gameData.world.deathlevel = 0;
+    gameData.resources.powder.add(powderFromPrestige());
+    gameData.resources.wood.amount = new JBDecimal(100);
+    if (gameData.pebbleUpgrades[7].bought > 0) {
+      gameData.resources.wood.amount = new JBDecimal(10000);
+    }
+    gameData.resources.people.amount = new JBDecimal(10);
+    if (gameData.pebbleUpgrades[12].bought > 0) {
+      gameData.resources.people.amount = new JBDecimal(100);
+    }
+    gameData.resources.essence.amount = new JBDecimal(0);
+    gameData.resources.arrow.amount = new JBDecimal(0);
+    gameData.resources.stone.amount = new JBDecimal(0);
+    gameData.resources.redResearch.amount = new JBDecimal(0);
     gameData.world.currentWave = 0;
     gameData.world.highestWaveCompleted = 0;
+    gameData.world.equipmentEarned = false;
+
+    gameData.researches.forEach((r) => {
+      r.bought = 0;
+    });
+
     // eslint-disable-next-line no-use-before-define
     resetSpawns(true);
-
-    gameData.derivatives.forEach((d) => {
-      d.bought = 0;
-      d.owned = new JBDecimal(0);
-      d.upgradeLevel = 0;
-    });
-
-    if (gameData.rockUpgrades[7].bought > 0) {
-      gameData.resources.metal.add(new JBDecimal(1000));
-    }
-
-    gameData.speedDerivatives.forEach((d) => {
-      d.owned = new JBDecimal(d.bought);
-    });
-
-    gameData.producer.bought = 0;
-    gameData.producer.owned = new JBDecimal(0);
-    gameData.producer.upgradeLevel = 0;
-
-    if (gameData.tierblueprintsauto) {
-      while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
-        gameData.tierBlueprints.push(new TierBluePrint());
-      }
-      const currentBluePrint = gameData.tierBlueprints[gameData.world.currentTier];
-
-      gameData.towers.forEach((t, index) => {
-        if (typeof currentBluePrint.blueprints[index] === 'undefined') {
-          t.type = '';
-        } else if (availableTowersByType(currentBluePrint.blueprints[index].towerType) > 0) {
-          t.type = currentBluePrint.blueprints[index].towerType;
-          t.setInfoByType();
-        }
-      });
-    }
   }
 
   if (prestigelevel >= 2) {
-    if (rocksFromPrestige().greaterThan(0)) {
-      gameData.stats.last10Prestige2amounts.unshift(rocksFromPrestige());
+    if (pebbleFromPrestige().greaterThanOrEqualTo(1)) {
+      gameData.stats.last10Prestige2amounts.unshift(pebbleFromPrestige());
       gameData.stats.last10Prestige2amounts.splice(10);
       gameData.stats.last10Prestige2times.unshift(gameData.stats.prestige2ticks);
       gameData.stats.last10Prestige2times.splice(10);
+      gameData.stats.prestige2 += 1;
     }
 
     // eslint-disable-next-line no-global-assign
     display.prestige2DisplayReset();
 
     gameData.stats.bestPrestige2Rate = new JBDecimal(0.0000000001);
-    gameData.stats.prestige2 += 1;
     gameData.stats.prestige2ticks = 0;
     gameData.stats.prestige1 = 0;
-    gameData.resources.rocks.add(rocksFromPrestige());
-    gameData.resources.pebbles.amount = new JBDecimal(0);
+    gameData.resources.pebble.add(pebbleFromPrestige());
+    gameData.resources.powder.amount = new JBDecimal(0);
 
     gameData.challenges.forEach((c) => {
       c.completed = 0;
@@ -323,425 +284,63 @@ function init(prestigelevel = 0) {
     gameData.world.autoChallenge = false;
     gameData.world.nextAutoChallenge = 0;
 
-    gameData.upgrades.forEach((u) => {
+    gameData.powderUpgrades.forEach((u) => {
       u.bought = 0;
-      u.owned = new JBDecimal(0);
     });
-
-    // gameData.derivatives.forEach((d) => {
-    //   d.bought = 0;
-    //   d.owned = new JBDecimal(0);
-    //   d.upgradeLevel = 0;
-    //   });
   }
 
   if (prestigelevel >= 3) {
-    if (bouldersFromPrestige().greaterThan(0)) {
-      gameData.stats.last10Prestige3amounts.unshift(bouldersFromPrestige());
+    if (rockFromPrestige().greaterThan(1)) {
+      gameData.stats.last10Prestige3amounts.unshift(rockFromPrestige());
       gameData.stats.last10Prestige3amounts.splice(10);
       gameData.stats.last10Prestige3times.unshift(gameData.stats.prestige3ticks);
       gameData.stats.last10Prestige3times.splice(10);
+      gameData.stats.prestige3 += 1;
     }
 
     gameData.stats.bestPrestige3Rate = new JBDecimal(0.0000000001);
-    gameData.stats.prestige3 += 1;
     gameData.stats.prestige3ticks = 0;
     gameData.stats.prestige2 = 0;
-    gameData.resources.boulders.add(bouldersFromPrestige());
-    gameData.resources.rocks.amount = new JBDecimal(0);
-    gameData.resources.timeparticles.amount = new JBDecimal(0);
+    gameData.resources.rock.add(rockFromPrestige());
+    gameData.resources.pebble.amount = new JBDecimal(0);
 
-    gameData.rockUpgrades.forEach((u) => {
+    gameData.pebbleUpgrades.forEach((u) => {
       u.bought = 0;
-      u.owned = new JBDecimal(0);
-    });
-
-    gameData.derivatives.forEach((d) => {
-      d.bought = 0;
-      d.owned = new JBDecimal(0);
-      d.upgradeLevel = 0;
-    });
-
-    gameData.speedDerivatives.forEach((d) => {
-      d.bought = 0;
-      d.owned = new JBDecimal(0);
-      d.upgradeLevel = 0;
     });
   }
 
   if (prestigelevel === 0) {
     gameData = new SaveGameData('new');
-    let total = 0;
-    for (let index = 1; index <= 10000; index += 1) {
-      total += Math.floor(Math.sqrt(index));
-      internalInflationArray.push(total);
-    }
-    total = 0;
-    for (let index = 0; index <= 150; index += 1) {
-      total += index;
-      achievementbonusarray.push(total);
-    }
+    createAchievementBonusArray(200, true);
+    createInternalInflationArray(10000, true);
+    createBuildingSites();
 
-    // gameData.resources.metal.subtract(new JBDecimal(10));
-
-    // gameData.derivatives[0].bought += 1;
-    // gameData.derivatives[0].owned = gameData.derivatives[0].owned.add(1);
-
-    createTowerSites();
-
-    const savegame = JSON.parse(localStorage.getItem('save'));
-    if (savegame !== null) {
-      gameData.name = savegame.name;
-
-      if (savegame.version >= 1) {
-        if (typeof savegame.storyElements !== 'undefined') {
-          for (let index = 0; index < savegame.storyElements.length; index += 1) {
-            const element = savegame.storyElements[index];
-            gameData.storyElements[index].printed = element.printed;
-          }
-        }
-
-        if (typeof savegame.stats.prestige2 !== 'undefined') {
-          gameData.stats.bestPrestige2Rate.mantissa = savegame.stats.bestPrestige2Rate.mantissa;
-          gameData.stats.bestPrestige2Rate.exponent = savegame.stats.bestPrestige2Rate.exponent;
-          for (let index = 0; index < savegame.stats.last10Prestige2amounts.length; index += 1) {
-            const element = savegame.stats.last10Prestige2amounts[index];
-            const item = new JBDecimal(1);
-            item.mantissa = element.mantissa;
-            item.exponent = element.exponent;
-            gameData.stats.last10Prestige2amounts.push(item);
-          }
-          gameData.stats.last10Prestige2times = savegame.stats.last10Prestige2times;
-          gameData.stats.prestige2ticks = savegame.stats.prestige2ticks;
-          gameData.stats.prestige2 = savegame.stats.prestige2;
-        }
-
-        if (typeof savegame.stats.prestige3 !== 'undefined') {
-          gameData.stats.bestPrestige3Rate.mantissa = savegame.stats.bestPrestige3Rate.mantissa;
-          gameData.stats.bestPrestige3Rate.exponent = savegame.stats.bestPrestige3Rate.exponent;
-          for (let index = 0; index < savegame.stats.last10Prestige3amounts.length; index += 1) {
-            const element = savegame.stats.last10Prestige3amounts[index];
-            const item = new JBDecimal(1);
-            item.mantissa = element.mantissa;
-            item.exponent = element.exponent;
-            gameData.stats.last10Prestige3amounts.push(item);
-          }
-          gameData.stats.last10Prestige3times = savegame.stats.last10Prestige3times;
-          gameData.stats.prestige3 = savegame.stats.prestige3;
-          gameData.stats.prestige3ticks = savegame.stats.prestige3ticks;
-        }
-
-        gameData.stats.prestige1 = savegame.stats.prestige1;
-        gameData.stats.prestige1ticks = savegame.stats.prestige1ticks;
-
-        gameData.stats.bestPrestige1Rate.mantissa = savegame.stats.bestPrestige1Rate.mantissa;
-        gameData.stats.bestPrestige1Rate.exponent = savegame.stats.bestPrestige1Rate.exponent;
-        gameData.stats.highestEverWave = savegame.stats.highestEverWave;
-        if (typeof savegame.stats.last10Prestige1tier !== 'undefined') {
-          for (let index = 0; index < savegame.stats.last10Prestige1amounts.length; index += 1) {
-            const element = savegame.stats.last10Prestige1amounts[index];
-            const item = new JBDecimal(1);
-            item.mantissa = element.mantissa;
-            item.exponent = element.exponent;
-            gameData.stats.last10Prestige1amounts.push(item);
-          }
-          gameData.stats.last10Prestige1times = savegame.stats.last10Prestige1times;
-          gameData.stats.last10Prestige1tier = savegame.stats.last10Prestige1tier;
-          gameData.stats.last10Prestige1waves = savegame.stats.last10Prestige1waves;
-        }
-
-        gameData.options.standardNotation = savegame.options.standardNotation;
-        gameData.options.logNotBase = savegame.options.logNotBase;
-
-        gameData.world.timeElapsed = savegame.world.timeElapsed;
-        gameData.world.deathlevel = savegame.world.deathlevel;
-        gameData.world.paused = savegame.world.paused;
-        gameData.world.currentWave = savegame.world.currentWave;
-        gameData.world.enemiesToSpawn = savegame.world.enemiesToSpawn;
-        gameData.world.fastEnemiesToSpawn = savegame.world.fastEnemiesToSpawn;
-        gameData.world.highestWaveCompleted = savegame.world.highestWaveCompleted;
-        if (typeof savegame.world.knightEnemiesToSpawn !== 'undefined') {
-          gameData.world.knightEnemiesToSpawn = savegame.world.knightEnemiesToSpawn;
-        }
-        gameData.world.tankEnemiesToSpawn = savegame.world.tankEnemiesToSpawn;
-        if (typeof savegame.world.medicEnemiesToSpawn !== 'undefined') {
-          gameData.world.medicEnemiesToSpawn = savegame.world.medicEnemiesToSpawn;
-        }
-        if (typeof savegame.world.clericEnemiesToSpawn !== 'undefined') {
-          gameData.world.clericEnemiesToSpawn = savegame.world.clericEnemiesToSpawn;
-        }
-        if (typeof savegame.world.bradleyEnemiesToSpawn !== 'undefined') {
-          gameData.world.bradleyEnemiesToSpawn = savegame.world.bradleyEnemiesToSpawn;
-        }
-        if (typeof savegame.world.paladinEnemiesToSpawn !== 'undefined') {
-          gameData.world.paladinEnemiesToSpawn = savegame.world.paladinEnemiesToSpawn;
-        }
-        gameData.world.hummingbirdEnemiesToSpawn = savegame.world.hummingbirdEnemiesToSpawn;
-        gameData.world.dumboEnemiesToSpawn = savegame.world.dumboEnemiesToSpawn;
-        gameData.world.flyerEnemiesToSpawn = savegame.world.flyerEnemiesToSpawn;
-        gameData.world.tierUnlocked = savegame.world.tierUnlocked;
-        gameData.world.currentTier = savegame.world.currentTier;
-        gameData.world.timeElapsed = savegame.world.timeElapsed;
-        gameData.world.ticksToNextSpawn = savegame.world.ticksToNextSpawn;
-        if (typeof savegame.world.autoChallenge !== 'undefined') {
-          gameData.world.autoChallenge = savegame.world.autoChallenge;
-          gameData.world.nextAutoChallenge = savegame.world.nextAutoChallenge;
-        }
-
-        while (gameData.tierBlueprints.length < gameData.world.tierUnlocked + 1) {
-          const newGuy = new TierBluePrint();
-          gameData.tierBlueprints.push(newGuy);
-        }
-
-        if (typeof savegame.tierBlueprints !== 'undefined') {
-          savegame.tierBlueprints.forEach((tbp, tbpIndex) => {
-            gameData.tierBlueprints[tbpIndex] = tbp;
-          });
-        }
-
-        for (let index = 0; index < savegame.enemies.length; index += 1) {
-          const element = savegame.enemies[index];
-          const newEnemy = new Enemy(false);
-          newEnemy.pos.x = element.pos.x;
-          newEnemy.pos.y = element.pos.y;
-          newEnemy.baseMaxHitPoints.mantissa = element.baseMaxHitPoints.mantissa;
-          newEnemy.baseMaxHitPoints.exponent = element.baseMaxHitPoints.exponent;
-          newEnemy.damagetaken.mantissa = element.damagetaken.mantissa;
-          newEnemy.damagetaken.exponent = element.damagetaken.exponent;
-          newEnemy.movementPerSec = element.movementPerSec;
-          newEnemy.isBullet = false;
-          newEnemy.slowed = element.slowed;
-          newEnemy.targetList = [];
-          element.targetList.forEach((t: { x: number; y: number }) => {
-            newEnemy.targetList.push(new Vector(t.x, t.y));
-          });
-          // element.targetList.forEach(t => newEnemy.targetList.push(new movingObject(t.pos.x, t.pos.y, t.movementPerSec, [])))
-          newEnemy.targetListIndex = element.targetListIndex;
-          newEnemy.type = element.type;
-
-          element.bullets.forEach((b) => newEnemy.bullets.push(new Bullet(new Vector(b.pos.x, b.pos.y), element, b.damage, b.defenseDamage, b.crit)));
-
-          gameData.enemies.push(newEnemy);
-        }
-
-        createTowerSites();
-
-        // gameData.towers = [];
-        for (let index = 0; index < gameData.towers.length; index += 1) {
-          const element = savegame.towers[index];
-          const newTower = gameData.towers[index];
-          newTower.type = element.type;
-          newTower.setInfoByType();
-          newTower.bought = element.bought;
-          newTower.upgradeLevel = element.upgradeLevel;
-          newTower.ticksToNextBullet = element.ticksToNextBullet;
-          newTower.autoOn = element.autoOn;
-          if (typeof element.tactics !== 'undefined') {
-            newTower.tactics.fastest = element.tactics.fastest;
-            newTower.tactics.highestHealth = element.tactics.highestHealth;
-            newTower.tactics.lowestHealth = element.tactics.lowestHealth;
-            newTower.tactics.healer = element.tactics.healer;
-          }
-        }
-
-        if (typeof savegame.tierblueprintsauto !== 'undefined') {
-          gameData.tierblueprintsauto = savegame.tierblueprintsauto;
-        }
-
-        gameData.resources.dust.amount.mantissa = savegame.resources.dust.amount.mantissa;
-        gameData.resources.dust.amount.exponent = savegame.resources.dust.amount.exponent;
-        gameData.resources.metal.amount.mantissa = savegame.resources.metal.amount.mantissa;
-        gameData.resources.metal.amount.exponent = savegame.resources.metal.amount.exponent;
-        gameData.resources.pebbles.amount.mantissa = savegame.resources.pebbles.amount.mantissa;
-        gameData.resources.pebbles.amount.exponent = savegame.resources.pebbles.amount.exponent;
-        gameData.resources.rocks.amount.mantissa = savegame.resources.rocks.amount.mantissa;
-        gameData.resources.rocks.amount.exponent = savegame.resources.rocks.amount.exponent;
-        gameData.resources.boulders.amount.mantissa = savegame.resources.boulders.amount.mantissa;
-        gameData.resources.boulders.amount.exponent = savegame.resources.boulders.amount.exponent;
-        gameData.resources.particles.amount.mantissa = savegame.resources.particles.amount.mantissa;
-        gameData.resources.particles.amount.exponent = savegame.resources.particles.amount.exponent;
-        gameData.resources.timeparticles.amount.mantissa = savegame.resources.timeparticles.amount.mantissa;
-        gameData.resources.timeparticles.amount.exponent = savegame.resources.timeparticles.amount.exponent;
-        if (typeof savegame.resources.shards !== 'undefined') {
-          gameData.resources.shards.amount.mantissa = savegame.resources.shards.amount.mantissa;
-          gameData.resources.shards.amount.exponent = savegame.resources.shards.amount.exponent;
-        }
-
-        for (let index = 0; index < savegame.upgrades.length; index += 1) {
-          const element = savegame.upgrades[index];
-          gameData.upgrades[index].bought = element.bought;
-          gameData.upgrades[index].owned.exponent = element.owned.exponent;
-          gameData.upgrades[index].owned.mantissa = element.owned.mantissa;
-        }
-
-        if (typeof savegame.rockUpgrades !== 'undefined') {
-          for (let index = 0; index < savegame.rockUpgrades.length; index += 1) {
-            const element = savegame.rockUpgrades[index];
-            gameData.rockUpgrades[index].bought = element.bought;
-            gameData.rockUpgrades[index].owned.exponent = element.owned.exponent;
-            gameData.rockUpgrades[index].owned.mantissa = element.owned.mantissa;
-          }
-        }
-
-        if (typeof savegame.boulderUpgrades !== 'undefined') {
-          for (let index = 0; index < savegame.boulderUpgrades.length; index += 1) {
-            const element = savegame.boulderUpgrades[index];
-            gameData.boulderUpgrades[index].bought = element.bought;
-            gameData.boulderUpgrades[index].owned.exponent = element.owned.exponent;
-            gameData.boulderUpgrades[index].owned.mantissa = element.owned.mantissa;
-          }
-        }
-
-        for (let index = 0; index < savegame.derivatives.length; index += 1) {
-          const element = gameData.derivatives[index];
-          element.bought = savegame.derivatives[index].bought;
-          element.owned.mantissa = savegame.derivatives[index].owned.mantissa;
-          element.owned.exponent = savegame.derivatives[index].owned.exponent;
-          element.upgradeLevel = savegame.derivatives[index].upgradeLevel;
-          element.autoOn = savegame.derivatives[index].autoOn;
-        }
-
-        for (let index = 0; index < savegame.speedDerivatives.length; index += 1) {
-          const element = gameData.speedDerivatives[index];
-          element.bought = savegame.speedDerivatives[index].bought;
-          element.owned.mantissa = savegame.speedDerivatives[index].owned.mantissa;
-          element.owned.exponent = savegame.speedDerivatives[index].owned.exponent;
-          element.upgradeLevel = savegame.speedDerivatives[index].upgradeLevel;
-        }
-
-        if (typeof savegame.timeDerivatives !== 'undefined') {
-          for (let index = 0; index < savegame.timeDerivatives.length; index += 1) {
-            const element = gameData.timeDerivatives[index];
-            element.bought = savegame.timeDerivatives[index].bought;
-            element.owned.mantissa = savegame.timeDerivatives[index].owned.mantissa;
-            element.owned.exponent = savegame.timeDerivatives[index].owned.exponent;
-            element.upgradeLevel = savegame.timeDerivatives[index].upgradeLevel;
-          }
-        }
-
-        gameData.producer.bought = savegame.producer.bought;
-        gameData.producer.owned.mantissa = savegame.producer.owned.mantissa;
-        gameData.producer.owned.exponent = savegame.producer.owned.exponent;
-        gameData.producer.upgradeLevel = savegame.producer.upgradeLevel;
-        gameData.producer.autoOn = savegame.producer.autoOn;
-
-        if (typeof savegame.equipment !== 'undefined') {
-          savegame.equipment.forEach((e) => {
-            const newEquipment = new Equipment(e.name);
-            e.abilities.forEach((a) => {
-              const newAbility = new EquipmentAbility(a.name);
-              newAbility.levels = a.levels;
-              newEquipment.abilities.push(newAbility);
-            });
-            gameData.equipment.push(newEquipment);
-          });
-        }
-
-        for (let index = 0; index < savegame.challenges.length; index += 1) {
-          const element = gameData.challenges[index];
-          element.active = savegame.challenges[index].active;
-          element.completed = savegame.challenges[index].completed;
-        }
-
-        for (let index = 0; index < savegame.Achievements.length; index += 1) {
-          const element = savegame.Achievements[index];
-          gameData.Achievements[index].completed = element.completed;
-        }
-
-        while (gameData.tierfeats.length < gameData.world.tierUnlocked) {
-          gameData.tierfeats.push(createFeatsForTier(gameData.tierfeats.length + 1));
-        }
-
-        if (typeof savegame.tierfeats !== 'undefined') {
-          savegame.tierfeats.forEach((tf, tierindex) => {
-            tf.feats.forEach((f, featindex) => {
-              gameData.tierfeats[tierindex].feats[featindex].completed = savegame.tierfeats[tierindex].feats[featindex].completed;
-            });
-          });
-        }
-      }
-    }
+    loadSaveGame();
   }
+
   display.drone = new Enemy(true);
   if (gameData.stats.prestige1 > 0 || gameData.stats.prestige2 > 0 || gameData.stats.prestige3 > 0) {
     display.addToDisplay('Here we go again', DisplayCategory.Story);
   } else {
     display.addToDisplay('Our story begins', DisplayCategory.Story);
   }
+
+  if (gameData.tierblueprintsauto && prestigelevel > 0) {
+    while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
+      gameData.tierBlueprints.push(new TierBluePrint());
+    }
+
+    blueprintLoad();
+  }
+
   CheckAchievementCompletions();
   initted = true;
 }
 
-function resetSpawns(killexistingenemies = true) {
-  gameData.world.currentWave += 1;
-  gameData.challenges.forEach((ch) => {
-    if (ch.active) {
-      ch.checkForCompletion();
-    }
-  });
-
-  CheckAchievementCompletions(); // check before resetting to new tier
-
-  if (gameData.world.currentWave > getWavesNeededForTier()) {
-    // earned new equipment
-    const newEquipment = new Equipment(`Tier ${gameData.world.currentTier.toString()}`);
-    newEquipment.NewEquipment(gameData.world.currentTier);
-    gameData.equipment.push(newEquipment);
-
-    gameData.world.nextSaveGameTime = new Date();
-
-    quitChallenges();
-    if (gameData.world.currentTier === gameData.world.tierUnlocked) {
-      gameData.world.tierUnlocked += 1;
-      while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
-        gameData.tierBlueprints.push(new TierBluePrint());
-      }
-    }
-    init(1);
-  }
-
-  display.drone = new Enemy(true);
-  gameData.world.enemiesToSpawn = 9 + gameData.world.currentWave - gameData.rockUpgrades[8].bought;
-
-  gameData.world.tankEnemiesToSpawn = getNumberOfEnemies(5);
-  gameData.world.fastEnemiesToSpawn = getNumberOfEnemies(10);
-  gameData.world.flyerEnemiesToSpawn = getNumberOfEnemies(15);
-  gameData.world.clericEnemiesToSpawn = getNumberOfEnemies(20);
-  gameData.world.bradleyEnemiesToSpawn = getNumberOfEnemies(25);
-  gameData.world.dumboEnemiesToSpawn = getNumberOfEnemies(30);
-  gameData.world.hummingbirdEnemiesToSpawn = getNumberOfEnemies(35);
-  gameData.world.knightEnemiesToSpawn = getNumberOfEnemies(40);
-  if (gameData.world.currentTier > 1) {
-    gameData.world.paladinEnemiesToSpawn = getNumberOfEnemies(45);
-  }
-  if (gameData.world.currentTier > 2) {
-    gameData.world.medicEnemiesToSpawn = getNumberOfEnemies(50);
-  }
-  if (gameData.world.currentWave >= 10) {
-    gameData.world.bossEnemiesToSpawn = 1;
-  } else {
-    gameData.world.bossEnemiesToSpawn = 0;
-  }
-  if (killexistingenemies) {
-    gameData.enemies.forEach((e) => {
-      e.bullets = [];
-    });
-    gameData.enemies = [];
-    gameData.world.ticksToNextSpawn = 1000;
-  } else {
-    display.addToDisplay(`Wave ${gameData.world.currentWave - 1} completed!`, DisplayCategory.Story);
-    gameData.world.ticksToNextSpawn = 1000;
-  }
-
-  if (gameData.world.enemiesToSpawn < getSpecialsCount()) {
-    gameData.world.enemiesToSpawn = getSpecialsCount();
-  }
-}
-
 function processStuff(ticks: number) {
-  if (gameData.boulderUpgrades[5].bought > 0) {
-    AutoBuyPebbles();
-  }
+  // if (gameData.boulderUpgrades[5].bought > 0) {
+  //   AutoBuyPebbles();
+  // }
 
   while (gameData.tierfeats.length < gameData.world.tierUnlocked) {
     gameData.tierfeats.push(createFeatsForTier(gameData.tierfeats.length + 1));
@@ -754,24 +353,23 @@ function processStuff(ticks: number) {
   gameData.challenges[0].available = true;
   gameData.challenges[1].available = true;
   gameData.challenges[2].available = true;
-  gameData.challenges[3].available = true;
 
   const achievementbonus = getAchievementBonus();
 
   if (achievementbonus > 5) {
-    gameData.challenges[4].available = true;
+    gameData.challenges[3].available = true;
   }
 
   if (achievementbonus > 10) {
-    gameData.challenges[5].available = true;
+    gameData.challenges[4].available = true;
   }
 
   if (achievementbonus > 15) {
-    gameData.challenges[6].available = true;
+    gameData.challenges[5].available = true;
   }
 
-  if (achievementbonus > 100) {
-    gameData.challenges[7].available = true;
+  if (achievementbonus > 25) {
+    gameData.challenges[6].available = true;
   }
 
   if (gameData.world.autoChallenge) {
@@ -803,111 +401,68 @@ function processStuff(ticks: number) {
   gameData.stats.prestige3ticks += ticks;
   gameData.world.ticksToNextSpawn -= ticks;
 
-  gameData.producer.costMultiplier = 10 - gameData.rockUpgrades[5].bought;
+  const currentPowderRate = getCurrentPowderRate();
 
-  const currentPebbleRate = getCurrentPebbleRate();
-
-  if (currentPebbleRate.greaterThan(gameData.stats.bestPrestige1Rate)) {
-    gameData.stats.bestPrestige1Rate = new JBDecimal(currentPebbleRate);
+  if (currentPowderRate.greaterThan(gameData.stats.bestPrestige1Rate)) {
+    gameData.stats.bestPrestige1Rate = new JBDecimal(currentPowderRate);
   }
 
-  const currentRockRate = getCurrentRockRate();
-  if (currentRockRate.greaterThan(gameData.stats.bestPrestige2Rate)) {
-    gameData.stats.bestPrestige2Rate = new JBDecimal(currentRockRate);
+  const currentRockRate = getCurrentRocksRate();
+  if (currentRockRate.greaterThan(gameData.stats.bestPrestige3Rate)) {
+    gameData.stats.bestPrestige3Rate = new JBDecimal(currentRockRate);
   }
 
-  const currentBoulderRate = getCurrentBoulderRate();
-  if (currentBoulderRate.greaterThan(gameData.stats.bestPrestige3Rate)) {
-    gameData.stats.bestPrestige3Rate = new JBDecimal(currentBoulderRate);
+  const currentPebblesRate = getCurrentPebblesRate();
+  if (currentPebblesRate.greaterThan(gameData.stats.bestPrestige2Rate)) {
+    gameData.stats.bestPrestige2Rate = new JBDecimal(currentPebblesRate);
   }
 
-  gameData.resources.metal.add(gameData.derivatives[0].production());
-  // gameData.resources.metal.add(gameData.derivatives[1].production());
-  // gameData.resources.metal.add(gameData.derivatives[2].production());
-  // gameData.resources.metal.add(gameData.derivatives[3].production());
-  // gameData.resources.metal.add(gameData.derivatives[4].production());
-  // gameData.resources.metal.add(gameData.derivatives[5].production());
-  // gameData.resources.metal.add(gameData.derivatives[6].production());
-  // gameData.resources.metal.add(gameData.derivatives[7].production());
-
-  gameData.derivatives[0].owned = gameData.derivatives[0].owned.add(gameData.derivatives[1].production());
-  gameData.derivatives[1].owned = gameData.derivatives[1].owned.add(gameData.derivatives[2].production());
-  gameData.derivatives[2].owned = gameData.derivatives[2].owned.add(gameData.derivatives[3].production());
-  gameData.derivatives[3].owned = gameData.derivatives[3].owned.add(gameData.derivatives[4].production());
-  gameData.derivatives[4].owned = gameData.derivatives[4].owned.add(gameData.derivatives[5].production());
-  gameData.derivatives[5].owned = gameData.derivatives[5].owned.add(gameData.derivatives[6].production());
-  gameData.derivatives[6].owned = gameData.derivatives[6].owned.add(gameData.derivatives[7].production());
-
-  gameData.resources.particles.add(gameData.speedDerivatives[0].production());
-  gameData.speedDerivatives[0].owned = gameData.speedDerivatives[0].owned.add(gameData.speedDerivatives[1].production());
-  gameData.speedDerivatives[1].owned = gameData.speedDerivatives[1].owned.add(gameData.speedDerivatives[2].production());
-  gameData.speedDerivatives[2].owned = gameData.speedDerivatives[2].owned.add(gameData.speedDerivatives[3].production());
-  gameData.speedDerivatives[3].owned = gameData.speedDerivatives[3].owned.add(gameData.speedDerivatives[4].production());
-  gameData.speedDerivatives[4].owned = gameData.speedDerivatives[4].owned.add(gameData.speedDerivatives[5].production());
-
-  gameData.resources.timeparticles.add(gameData.timeDerivatives[0].production());
-  gameData.timeDerivatives[0].owned = gameData.timeDerivatives[0].owned.add(gameData.timeDerivatives[1].production());
-  gameData.timeDerivatives[1].owned = gameData.timeDerivatives[1].owned.add(gameData.timeDerivatives[2].production());
-  gameData.timeDerivatives[2].owned = gameData.timeDerivatives[2].owned.add(gameData.timeDerivatives[3].production());
-  gameData.timeDerivatives[3].owned = gameData.timeDerivatives[3].owned.add(gameData.timeDerivatives[4].production());
-  gameData.timeDerivatives[4].owned = gameData.timeDerivatives[4].owned.add(gameData.timeDerivatives[5].production());
-
-  gameData.upgrades.forEach((u) => {
+  gameData.powderUpgrades.forEach((u) => {
     u.addedlimit = 0;
   });
 
-  gameData.derivatives.forEach((u) => {
-    if (u.index <= 0) {
-      u.active = true;
-    } else if (u.index <= gameData.upgrades[8].bought) {
-      u.active = true;
-    } else {
-      u.active = false;
-    }
+  gameData.powderUpgrades[0].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
+  gameData.powderUpgrades[1].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
+  gameData.powderUpgrades[2].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
+  gameData.powderUpgrades[3].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
+  gameData.powderUpgrades[12].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
+  gameData.powderUpgrades[13].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
+  gameData.powderUpgrades[16].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
+
+  gameData.researches[1].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted / 5), 1);
+  // gameData.researches[2].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted), 1);
+  gameData.researches[3].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted / 5), 1);
+  gameData.researches[4].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted), 1);
+  gameData.researches[5].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted), 1);
+  gameData.researches[6].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted / 5), 1);
+  gameData.researches[7].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted), 1);
+  gameData.researches[8].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted / 5), 1);
+
+  gameData.researches.forEach((u) => {
+    u.addedlimit = 0;
   });
 
-  if (gameData.challenges[1].active || gameData.challenges[1].completed < 1) {
-    gameData.producer.active = false;
-  } else {
-    gameData.producer.active = true;
-  }
-
-  if (lastachievementcount > 20) {
-    gameData.producer.autoBuy();
-    gameData.derivatives.forEach((u) => {
-      u.autoBuy();
+  if (getAchievementBonus() > 20) {
+    gameData.buildings.forEach((b) => {
+      b.autoBuy();
     });
   }
 
-  if (lastachievementcount > 25) {
-    gameData.towers.forEach((t) => {
-      t.autoBuy();
-    });
-  }
+  // if (gameData.pebbleUpgrades[6].bought > 0) {
+  //   gameData.powderUpgrades.forEach((u) => {
+  //     if (u.addedLimitElgible) {
+  //       u.addedlimit += 10;
+  //     }
+  //   });
+  // }
 
-  if (gameData.rockUpgrades[6].bought > 0) {
-    gameData.upgrades.forEach((u, index) => {
-      if (index <= 1) {
-        u.addedlimit += 10;
-      }
-      if (index > 8) {
-        if (index !== 17 && index !== 18 && index !== 19) {
-          u.addedlimit += 10;
-        }
-      }
-    });
-  }
-
-  if (gameData.boulderUpgrades[2].bought > 0) {
-    gameData.upgrades.forEach((u, index) => {
-      if (index <= 1) {
-        u.addedlimit += 10;
-      }
-      if (index > 8) {
-        u.addedlimit += 10;
-      }
-    });
-  }
+  // if (gameData.rockUpgrades[2].bought > 0) {
+  //   gameData.powderUpgrades.forEach((u) => {
+  //     if (u.addedLimitElgible) {
+  //       u.addedlimit += 10;
+  //     }
+  //   });
+  // }
 
   for (let index = gameData.enemies.length - 1; index >= 0; index--) {
     const e = gameData.enemies[index];
@@ -915,7 +470,7 @@ function processStuff(ticks: number) {
       // returns true if enemy died
       gameData.enemies[index].bullets = [];
       gameData.enemies.splice(index, 1);
-    } else if (e.pos.y >= gameData.world.currentTier * 10 + 40) {
+    } else if (e.pos.y >= Math.ceil(getTierSize())) {
       // returns true if enemy has made it off board
       gameData.world.mulligansused += 1;
 
@@ -927,30 +482,75 @@ function processStuff(ticks: number) {
             ch.fail();
           }
         });
-        gameData.world.deathlevel += 1;
+        gameData.world.deathLevel += 1;
         gameData.world.mulligansused = 0;
-        gameData.world.currentWave -= gameData.world.deathlevel;
+        gameData.world.currentWave -= gameData.world.deathLevel;
         if (gameData.world.currentWave < 1) {
           gameData.world.currentWave = 1;
         }
-        resetSpawns(true);
         display.addToDisplay('You have been overcome.  The pressure lessens.', DisplayCategory.Story);
+        resetSpawns(true);
         break;
       } else {
         e.pos = new Vector(0, 5);
+        e.bullets = [];
         e.targetListIndex = 0;
       }
     }
   }
 
-  gameData.towers.forEach((t) => {
-    t.act();
+  totalHousing = new JBDecimal(10);
+  if (gameData.pebbleUpgrades[12].bought > 0) {
+    totalHousing = new JBDecimal(100);
+  }
+  netStone = new JBDecimal(0);
+  netWood = new JBDecimal(0);
+  netArrows = new JBDecimal(0);
+  netRedResearch = new JBDecimal(0);
+  gameData.buildings.forEach((b) => {
+    b.act();
+    totalHousing = totalHousing.add(b.housingAvailable());
+    netStone = netStone.add(b.netStonePerSec);
+    netWood = netWood.add(b.netWoodPerSec);
+    netArrows = netArrows.add(b.netArrowPerSec);
+    netRedResearch = netRedResearch.add(b.netRedResearchPerSec);
   });
 
-  if (gameData.world.ticksToNextSpawn <= 0 && gameData.world.enemiesToSpawn > 0) {
+  const housingAvailable = totalHousing.subtract(gameData.resources.people.amount);
+  if (housingAvailable.greaterThan(0)) {
+    const peoplegrowth = housingAvailable
+      .add(peopleAvailable().add(gameData.resources.people.amount))
+      .multiply(1.1 ** gameData.powderUpgrades[10].bought)
+      .multiply(gameData.world.currentTickLength / 2000000);
+    gameData.resources.people.add(peoplegrowth);
+  }
+
+  if (gameData.resources.people.amount.greaterThan(totalHousing)) {
+    gameData.resources.people.amount = new JBDecimal(totalHousing);
+  }
+
+  // if (gameData.resources.wood.amount.greaterThan(totalWoodStorage)) {
+  //   gameData.resources.wood.amount = new JBDecimal(totalWoodStorage);
+  // }
+
+  // if (gameData.resources.stone.amount.greaterThan(totalStoneStorage)) {
+  //   gameData.resources.stone.amount = new JBDecimal(totalStoneStorage);
+  // }
+
+  while (gameData.world.ticksToNextSpawn <= 0 && gameData.world.enemiesToSpawn > 0) {
     const newEnemy = new Enemy(false);
     gameData.enemies.push(newEnemy);
-    gameData.world.ticksToNextSpawn += 1000 - gameData.world.currentWave * 5;
+    let ticksToAdd = 1000 * 0.98 ** (gameData.world.currentWave - 1);
+    // if (gameData.rockUpgrades[22].bought > 0) {
+    //   const ticksToAddSecondary = 1000 / ((gameData.stats.highestEverWave + 1) / gameData.world.currentWave);
+    //   if (ticksToAddSecondary < ticksToAdd) {
+    //     ticksToAdd = ticksToAddSecondary;
+    //   }
+    // }
+    if (ticksToAdd < 1) {
+      ticksToAdd = 1;
+    }
+    gameData.world.ticksToNextSpawn += ticksToAdd;
     gameData.world.enemiesToSpawn -= 1;
   }
 
@@ -960,6 +560,14 @@ function processStuff(ticks: number) {
     }
     if (gameData.world.currentWave > gameData.world.highestWaveCompleted) {
       gameData.world.highestWaveCompleted = gameData.world.currentWave;
+      if (gameData.world.highestWaveCompleted >= getWavesNeededForTier() && !gameData.world.equipmentEarned) {
+        // earned new equipment
+        const newEquipment = new Equipment(`Tier ${gameData.world.currentTier.toString()}`);
+        newEquipment.NewEquipment(gameData.world.currentTier);
+        gameData.equipment.push(newEquipment);
+        gameData.world.equipmentEarned = true;
+        display.addToDisplay('New Gem found', DisplayCategory.Story);
+      }
     }
     resetSpawns(false);
   }
@@ -969,22 +577,6 @@ function processStuff(ticks: number) {
       ch.checkForCompletion();
     }
   });
-}
-
-function getParticleBonus() {
-  let particlebonus = new JBDecimal(gameData.resources.particles.amount);
-  if (particlebonus.lessThan(1)) {
-    particlebonus = new JBDecimal(1);
-  }
-  return particlebonus;
-}
-
-function getTimeParticleBonus() {
-  let particlebonus = new JBDecimal(gameData.resources.timeparticles.amount);
-  if (particlebonus.lessThan(1)) {
-    particlebonus = new JBDecimal(1);
-  }
-  return particlebonus;
 }
 
 function getObjectFitSize(contains: boolean /* true = contain, false = cover */, containerWidth: number, containerHeight: number, width: number, height: number) {
@@ -1012,280 +604,56 @@ function getObjectFitSize(contains: boolean /* true = contain, false = cover */,
 
 function updateGUI() {
   ChooseTutorial();
+  const achBonus = getAchievementBonus();
 
-  if (document.getElementById('towertab').classList.contains('active')) {
-    document.getElementById('TowerBluePrint').classList.add('d-none');
-    if (gameData.world.tierUnlocked > 1) {
-      document.getElementById('TowerBluePrint').classList.remove('d-none');
-      if (gameData.tierblueprintsauto) {
-        document.getElementById('blueprintLoadAuto').innerHTML = 'Turn Off';
-        document.getElementById('blueprintLoadAuto').classList.add('bg-success');
-        document.getElementById('blueprintLoadAuto').classList.remove('bg-danger');
-      } else {
-        document.getElementById('blueprintLoadAuto').innerHTML = 'Turn On';
-        document.getElementById('blueprintLoadAuto').classList.remove('bg-success');
-        document.getElementById('blueprintLoadAuto').classList.add('bg-danger');
-      }
-    }
-
-    if (dirtyTowers) {
-      const unboughts = document.getElementById('TowerUnBoughtInfo');
-      removeAllChildNodes(unboughts);
-      removeAllChildNodes(document.getElementById('TowerBoughtInfo'));
-      gameData.towers.forEach((t) => {
-        t.CreateDisplay();
-      });
-      if (totalAvailableTowers() < 1) {
-        unboughts.classList.add('d-none');
-        document.getElementById('TowerUnboughtHeader').classList.add('d-none');
-      } else {
-        unboughts.classList.remove('d-none');
-        document.getElementById('TowerUnboughtHeader').classList.remove('d-none');
-      }
-      dirtyTowers = false;
-    }
+  if (gameData.challenges[3].active || gameData.challenges[3].completed < 1) {
+    document.getElementById('btnBuyResearch6').classList.add('d-none');
+  } else {
+    document.getElementById('btnBuyResearch6').classList.remove('d-none');
   }
 
-  if (document.getElementById('resourcestab').classList.contains('active')) {
-    document.getElementById('particlesamount').innerHTML = gameData.resources.particles.amount.ToString();
-    document.getElementById('particlesb').innerHTML = getParticleBonus().ToString();
-    document.getElementById('timeparticles').innerHTML = gameData.resources.timeparticles.amount.ToString();
-    document.getElementById('timeparticlesbonus').innerHTML = getTimeParticleBonus().ToString();
-
-    document.getElementById('particles').classList.add('d-none');
-    document.getElementById('accelerationderivative').classList.add('d-none');
-    document.getElementById('jerkderivative').classList.add('d-none');
-    document.getElementById('snapderivative').classList.add('d-none');
-    document.getElementById('cracklederivative').classList.add('d-none');
-    document.getElementById('popderivative').classList.add('d-none');
-
-    if (gameData.stats.prestige2 > 0) {
-      document.getElementById('particles').classList.remove('d-none');
-      if (gameData.speedDerivatives[0].owned.greaterThan(0)) {
-        document.getElementById('accelerationderivative').classList.remove('d-none');
-      }
-      if (gameData.speedDerivatives[1].owned.greaterThan(0)) {
-        document.getElementById('jerkderivative').classList.remove('d-none');
-      }
-      if (gameData.speedDerivatives[2].owned.greaterThan(0)) {
-        document.getElementById('snapderivative').classList.remove('d-none');
-      }
-      if (gameData.speedDerivatives[3].owned.greaterThan(0)) {
-        document.getElementById('cracklederivative').classList.remove('d-none');
-      }
-      if (gameData.speedDerivatives[4].owned.greaterThan(0)) {
-        document.getElementById('popderivative').classList.remove('d-none');
-      }
-    }
-
-    if (lastachievementcount > 25) {
-      document.getElementById('btnAutoBuyProduction').classList.remove('d-none');
-      document.getElementById('btnAutoBuyMiner').classList.remove('d-none');
-      document.getElementById('btnAutoBuySupervisor').classList.remove('d-none');
-      document.getElementById('btnAutoBuyForeman').classList.remove('d-none');
-      document.getElementById('btnAutoBuyManager').classList.remove('d-none');
-      document.getElementById('btnAutoBuyMiddleManagement').classList.remove('d-none');
-      document.getElementById('btnAutoBuyUpperManagement').classList.remove('d-none');
-      document.getElementById('btnAutoBuyVicePresident').classList.remove('d-none');
-      document.getElementById('btnAutoBuyPresident').classList.remove('d-none');
-
-      document.getElementById('btnAutoBuyProduction').classList.add('bg-danger');
-      document.getElementById('btnAutoBuyProduction').classList.remove('bg-success');
-      if (gameData.producer.autoOn) {
-        document.getElementById('btnAutoBuyProduction').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuyProduction').classList.add('bg-success');
-      }
-
-      document.getElementById('btnAutoBuyMiner').classList.add('bg-danger');
-      document.getElementById('btnAutoBuyMiner').classList.remove('bg-success');
-      if (gameData.derivatives[0].autoOn) {
-        document.getElementById('btnAutoBuyMiner').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuyMiner').classList.add('bg-success');
-      }
-
-      document.getElementById('btnAutoBuySupervisor').classList.add('bg-danger');
-      document.getElementById('btnAutoBuySupervisor').classList.remove('bg-success');
-      if (gameData.derivatives[1].autoOn) {
-        document.getElementById('btnAutoBuySupervisor').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuySupervisor').classList.add('bg-success');
-      }
-
-      document.getElementById('btnAutoBuyForeman').classList.add('bg-danger');
-      document.getElementById('btnAutoBuyForeman').classList.remove('bg-success');
-      if (gameData.derivatives[2].autoOn) {
-        document.getElementById('btnAutoBuyForeman').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuyForeman').classList.add('bg-success');
-      }
-
-      document.getElementById('btnAutoBuyManager').classList.add('bg-danger');
-      document.getElementById('btnAutoBuyManager').classList.remove('bg-success');
-      if (gameData.derivatives[3].autoOn) {
-        document.getElementById('btnAutoBuyManager').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuyManager').classList.add('bg-success');
-      }
-
-      document.getElementById('btnAutoBuyMiddleManagement').classList.add('bg-danger');
-      document.getElementById('btnAutoBuyMiddleManagement').classList.remove('bg-success');
-      if (gameData.derivatives[4].autoOn) {
-        document.getElementById('btnAutoBuyMiddleManagement').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuyMiddleManagement').classList.add('bg-success');
-      }
-
-      document.getElementById('btnAutoBuyUpperManagement').classList.add('bg-danger');
-      document.getElementById('btnAutoBuyUpperManagement').classList.remove('bg-success');
-      if (gameData.derivatives[5].autoOn) {
-        document.getElementById('btnAutoBuyUpperManagement').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuyUpperManagement').classList.add('bg-success');
-      }
-
-      document.getElementById('btnAutoBuyVicePresident').classList.add('bg-danger');
-      document.getElementById('btnAutoBuyVicePresident').classList.remove('bg-success');
-      if (gameData.derivatives[6].autoOn) {
-        document.getElementById('btnAutoBuyVicePresident').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuyVicePresident').classList.add('bg-success');
-      }
-
-      document.getElementById('btnAutoBuyPresident').classList.add('bg-danger');
-      document.getElementById('btnAutoBuyPresident').classList.remove('bg-success');
-      if (gameData.derivatives[7].autoOn) {
-        document.getElementById('btnAutoBuyPresident').classList.remove('bg-danger');
-        document.getElementById('btnAutoBuyPresident').classList.add('bg-success');
-      }
-    } else {
-      document.getElementById('btnAutoBuyProduction').classList.add('d-none');
-      document.getElementById('btnAutoBuyMiner').classList.add('d-none');
-      document.getElementById('btnAutoBuySupervisor').classList.add('d-none');
-      document.getElementById('btnAutoBuyForeman').classList.add('d-none');
-      document.getElementById('btnAutoBuyManager').classList.add('d-none');
-      document.getElementById('btnAutoBuyMiddleManagement').classList.add('d-none');
-      document.getElementById('btnAutoBuyUpperManagement').classList.add('d-none');
-      document.getElementById('btnAutoBuyVicePresident').classList.add('d-none');
-      document.getElementById('btnAutoBuyPresident').classList.add('d-none');
-    }
-
-    document.getElementById('time').classList.add('d-none');
-    document.getElementById('time2derivative').classList.add('d-none');
-    document.getElementById('time3derivative').classList.add('d-none');
-    document.getElementById('time4derivative').classList.add('d-none');
-    document.getElementById('time5derivative').classList.add('d-none');
-    document.getElementById('time6derivative').classList.add('d-none');
-
-    if (gameData.stats.prestige3 > 0) {
-      document.getElementById('time').classList.remove('d-none');
-      if (gameData.timeDerivatives[0].owned.greaterThan(0)) {
-        document.getElementById('time2derivative').classList.remove('d-none');
-      }
-      if (gameData.timeDerivatives[1].owned.greaterThan(0)) {
-        document.getElementById('time3derivative').classList.remove('d-none');
-      }
-      if (gameData.timeDerivatives[2].owned.greaterThan(0)) {
-        document.getElementById('time4derivative').classList.remove('d-none');
-      }
-      if (gameData.timeDerivatives[3].owned.greaterThan(0)) {
-        document.getElementById('time5derivative').classList.remove('d-none');
-      }
-      if (gameData.timeDerivatives[4].owned.greaterThan(0)) {
-        document.getElementById('time6derivative').classList.remove('d-none');
-      }
-    }
-
-    document.getElementById('producitonproduction').innerHTML = gameData.producer.productionPerSecDisplay().ToString();
-    document.getElementById('productionbought').innerHTML = gameData.producer.bought.toString();
-    document.getElementById('productionowned').innerHTML = gameData.producer.owned.ToString();
-    document.getElementById('minerbought').innerHTML = gameData.derivatives[0].bought.toString();
-    document.getElementById('minerowned').innerHTML = gameData.derivatives[0].owned.ToString();
-    document.getElementById('minerproduction').innerHTML = gameData.derivatives[0].productionPerSecDisplay().ToString();
-    document.getElementById('supervisorbought').innerHTML = gameData.derivatives[1].bought.toString();
-    document.getElementById('supervisorowned').innerHTML = gameData.derivatives[1].owned.ToString();
-    document.getElementById('supervisorproduction').innerHTML = gameData.derivatives[1].productionPerSecDisplay().ToString();
-    document.getElementById('foremanbought').innerHTML = gameData.derivatives[2].bought.toString();
-    document.getElementById('foremanowned').innerHTML = gameData.derivatives[2].owned.ToString();
-    document.getElementById('foremanproduction').innerHTML = gameData.derivatives[2].productionPerSecDisplay().ToString();
-    document.getElementById('managerbought').innerHTML = gameData.derivatives[3].bought.toString();
-    document.getElementById('managerowned').innerHTML = gameData.derivatives[3].owned.ToString();
-    document.getElementById('managerproduction').innerHTML = gameData.derivatives[3].productionPerSecDisplay().ToString();
-    document.getElementById('middlemanagementbought').innerHTML = gameData.derivatives[4].bought.toString();
-    document.getElementById('middlemanagementowned').innerHTML = gameData.derivatives[4].owned.ToString();
-    document.getElementById('middlemanagementproduction').innerHTML = gameData.derivatives[4].productionPerSecDisplay().ToString();
-    document.getElementById('uppermanagementbought').innerHTML = gameData.derivatives[5].bought.toString();
-    document.getElementById('uppermanagementowned').innerHTML = gameData.derivatives[5].owned.ToString();
-    document.getElementById('uppermanagementproduction').innerHTML = gameData.derivatives[5].productionPerSecDisplay().ToString();
-    document.getElementById('vicepresidentbought').innerHTML = gameData.derivatives[6].bought.toString();
-    document.getElementById('vicepresidentowned').innerHTML = gameData.derivatives[6].owned.ToString();
-    document.getElementById('vicepresidentproduction').innerHTML = gameData.derivatives[6].productionPerSecDisplay().ToString();
-    document.getElementById('presidentbought').innerHTML = gameData.derivatives[7].bought.toString();
-    document.getElementById('presidentowned').innerHTML = gameData.derivatives[7].owned.ToString();
-    document.getElementById('presidentproduction').innerHTML = gameData.derivatives[7].productionPerSecDisplay().ToString();
-
-    document.getElementById('speedbought').innerHTML = gameData.speedDerivatives[0].bought.toString();
-    document.getElementById('speedowned').innerHTML = gameData.speedDerivatives[0].owned.ToString();
-    document.getElementById('speedproduction').innerHTML = gameData.speedDerivatives[0].productionPerSecDisplay().ToString();
-    document.getElementById('accelerationbought').innerHTML = gameData.speedDerivatives[1].bought.toString();
-    document.getElementById('accelerationowned').innerHTML = gameData.speedDerivatives[1].owned.ToString();
-    document.getElementById('accelerationproduction').innerHTML = gameData.speedDerivatives[1].productionPerSecDisplay().ToString();
-    document.getElementById('jerkbought').innerHTML = gameData.speedDerivatives[2].bought.toString();
-    document.getElementById('jerkowned').innerHTML = gameData.speedDerivatives[2].owned.ToString();
-    document.getElementById('jerkproduction').innerHTML = gameData.speedDerivatives[2].productionPerSecDisplay().ToString();
-    document.getElementById('snapbought').innerHTML = gameData.speedDerivatives[3].bought.toString();
-    document.getElementById('snapowned').innerHTML = gameData.speedDerivatives[3].owned.ToString();
-    document.getElementById('snapproduction').innerHTML = gameData.speedDerivatives[3].productionPerSecDisplay().ToString();
-    document.getElementById('cracklebought').innerHTML = gameData.speedDerivatives[4].bought.toString();
-    document.getElementById('crackleowned').innerHTML = gameData.speedDerivatives[4].owned.ToString();
-    document.getElementById('crackleproduction').innerHTML = gameData.speedDerivatives[4].productionPerSecDisplay().ToString();
-    document.getElementById('popbought').innerHTML = gameData.speedDerivatives[5].bought.toString();
-    document.getElementById('popowned').innerHTML = gameData.speedDerivatives[5].owned.ToString();
-    document.getElementById('popproduction').innerHTML = gameData.speedDerivatives[5].productionPerSecDisplay().ToString();
-
-    document.getElementById('time1bought').innerHTML = gameData.timeDerivatives[0].bought.toString();
-    document.getElementById('time1owned').innerHTML = gameData.timeDerivatives[0].owned.ToString();
-    document.getElementById('time1production').innerHTML = gameData.timeDerivatives[0].productionPerSecDisplay().ToString();
-    document.getElementById('time2bought').innerHTML = gameData.timeDerivatives[1].bought.toString();
-    document.getElementById('time2owned').innerHTML = gameData.timeDerivatives[1].owned.ToString();
-    document.getElementById('time2production').innerHTML = gameData.timeDerivatives[1].productionPerSecDisplay().ToString();
-    document.getElementById('time3bought').innerHTML = gameData.timeDerivatives[2].bought.toString();
-    document.getElementById('time3owned').innerHTML = gameData.timeDerivatives[2].owned.ToString();
-    document.getElementById('time3production').innerHTML = gameData.timeDerivatives[2].productionPerSecDisplay().ToString();
-    document.getElementById('time4bought').innerHTML = gameData.timeDerivatives[3].bought.toString();
-    document.getElementById('time4owned').innerHTML = gameData.timeDerivatives[3].owned.ToString();
-    document.getElementById('time4production').innerHTML = gameData.timeDerivatives[3].productionPerSecDisplay().ToString();
-    document.getElementById('time5bought').innerHTML = gameData.timeDerivatives[4].bought.toString();
-    document.getElementById('time5owned').innerHTML = gameData.timeDerivatives[4].owned.ToString();
-    document.getElementById('time5production').innerHTML = gameData.timeDerivatives[4].productionPerSecDisplay().ToString();
-    document.getElementById('time6bought').innerHTML = gameData.timeDerivatives[5].bought.toString();
-    document.getElementById('time6owned').innerHTML = gameData.timeDerivatives[5].owned.ToString();
-    document.getElementById('time6production').innerHTML = gameData.timeDerivatives[5].productionPerSecDisplay().ToString();
-
-    gameData.derivatives.forEach((d) => {
-      d.updateDisplay();
-    });
-
-    gameData.speedDerivatives.forEach((d) => {
-      d.updateDisplay();
-    });
-
-    gameData.timeDerivatives.forEach((d) => {
-      d.updateDisplay();
-    });
-
-    gameData.producer.updateDisplay();
+  if (upgradeRefreshTickCount > 1000) {
+    dirtyUpgrades = true;
   }
 
-  if (document.getElementById('upgradestab').classList.contains('active') && dirtyUpgrades) {
-    gameData.upgrades.forEach((u) => {
+  if (document.getElementById('upgradeModal').classList.contains('show') && dirtyUpgrades) {
+    document.getElementById('upgradePowder').innerHTML = gameData.resources.powder.amount.toString();
+
+    document.getElementById('pebbleupgrades').classList.add('d-none');
+    if (gameData.stats.prestige2 > 0 || pebbleFromPrestige().greaterThan(0)) {
+      document.getElementById('pebbleupgrades').classList.remove('d-none');
+      document.getElementById('upgradePebbles').innerHTML = gameData.resources.pebble.amount.toString();
+    }
+
+    document.getElementById('rockupgrades').classList.add('d-none');
+    if (gameData.stats.prestige3 > 0 || rockFromPrestige().greaterThan(0)) {
+      document.getElementById('rockupgrades').classList.remove('d-none');
+      document.getElementById('upgradeRocks').innerHTML = gameData.resources.rock.amount.toString();
+    }
+
+    gameData.powderUpgrades.forEach((u) => {
+      u.updateDisplay();
+    });
+
+    gameData.pebbleUpgrades.forEach((u) => {
       u.updateDisplay();
     });
 
     gameData.rockUpgrades.forEach((u) => {
       u.updateDisplay();
     });
-
-    gameData.boulderUpgrades.forEach((u) => {
-      u.updateDisplay();
-    });
     dirtyUpgrades = false;
+    upgradeRefreshTickCount = 0;
   }
 
-  if (document.getElementById('challengestab').classList.contains('active')) {
+  if (document.getElementById('researchModal').classList.contains('show')) {
+    document.getElementById('researchRedResearch').innerHTML = `${gameData.resources.redResearch.amount.toString()} (${netRedResearch.toString()})`;
+    gameData.researches.forEach((r) => {
+      r.updateDisplay();
+    });
+  }
+
+  if (document.getElementById('challengeModal').classList.contains('show')) {
     if (gameData.world.autoChallenge) {
       document.getElementById('btnChallengeAuto').classList.remove('bg-danger');
       document.getElementById('btnChallengeAuto').classList.add('bg-success');
@@ -1296,32 +664,32 @@ function updateGUI() {
       document.getElementById('btnChallengeAuto').innerHTML = 'Turn Auto Challenge On';
     }
 
-    if (getAchievementBonus() > 28) {
+    if (achBonus > 28) {
       document.getElementById('btnChallengeAuto').classList.remove('d-none');
     } else {
       document.getElementById('btnChallengeAuto').classList.add('d-none');
       gameData.world.autoChallenge = false;
     }
 
-    if (gameData.challenges[4].available) {
+    if (gameData.challenges[3].available) {
       document.getElementById('poisonchallenge').classList.remove('d-none');
     } else {
       document.getElementById('poisonchallenge').classList.add('d-none');
     }
 
-    if (gameData.challenges[5].available) {
+    if (gameData.challenges[4].available) {
       document.getElementById('slowchallenge').classList.remove('d-none');
     } else {
       document.getElementById('slowchallenge').classList.add('d-none');
     }
 
-    if (gameData.challenges[6].available) {
+    if (gameData.challenges[5].available) {
       document.getElementById('critchallenge').classList.remove('d-none');
     } else {
       document.getElementById('critchallenge').classList.add('d-none');
     }
 
-    if (gameData.challenges[7].available) {
+    if (gameData.challenges[6].available) {
       document.getElementById('sbchallenge').classList.remove('d-none');
     } else {
       document.getElementById('sbchallenge').classList.add('d-none');
@@ -1332,12 +700,12 @@ function updateGUI() {
     });
   }
 
-  if (document.getElementById('achievementtab').classList.contains('active')) {
+  if (document.getElementById('achievementModal').classList.contains('show')) {
     document.getElementById('totalachievementbonus').innerHTML = new JBDecimal(getAchievementBonus()).ToString();
     const achBonusText = `${new JBDecimal(getAchievementsOnlyBonus()).ToString()}x`;
     gameData.tierfeats.forEach((tf, index) => {
       if (getTierBonus(index) > 1) {
-        document.getElementById(`Tier${(index + 1).toString()}Bonus`).innerHTML = `${getTierBonus(index).toString()}x`;
+        document.getElementById(`Tier${(index + 1).toString()}Bonus`).innerHTML = `${new JBDecimal(getTierBonus(index)).toString()}x`;
       }
     });
     document.getElementById('achievementbonus').innerHTML = achBonusText;
@@ -1353,7 +721,18 @@ function updateGUI() {
     });
   }
 
-  if (document.getElementById('equipmenttab').classList.contains('active')) {
+  if (gameData.world.tierUnlocked > 1) {
+    document.getElementById('equipmentbtn').classList.remove('d-none');
+  } else {
+    document.getElementById('equipmentbtn').classList.add('d-none');
+  }
+
+  document.getElementById('challengesbtn').classList.remove('d-none');
+  if (gameData.stats.highestEverWave < 20) {
+    document.getElementById('challengesbtn').classList.add('d-none');
+  }
+
+  if (document.getElementById('equipmentModal').classList.contains('show')) {
     const equipmentdisplay = `Shards: ${gameData.resources.shards.amount.toString()}`;
 
     document.getElementById('shardinfo').innerHTML = equipmentdisplay;
@@ -1449,21 +828,12 @@ function updateGUI() {
           }
         }
 
-        const glossaryRow = document.createElement('div');
-        glossaryRow.classList.add('row', 'p-0', 'm-0');
-        const glossarytext = document.createElement('div');
-        glossarytext.classList.add('col-md-12', 'p-0', 'm-0', 'text-small', 'text-left', 'bg-dark');
-        glossarytext.innerHTML =
-          'Click the A button to activate.  click the S button to move into a save slot.(in the future there will be a limit on number of saved gems)<br />The X button will destroy the gem and gain you shards to use to improve other gems.<br /> Metal Production - multiplier of x to all levels of metal production<br />Gun Attack - multiplier of 1 + (x/10) to Gun Towers<br />Mulligans - gain x muligans<br />Crit Multiplier - gain a bonus of x / 10 added to Crit Multiplier<br />Crit Chance - gain x to Crit Chance<br />Poison Effect - multiplier of 1 + (x/10) to Poison Towers';
-        glossaryRow.appendChild(glossarytext);
-        EquipInfoDiv.appendChild(glossaryRow);
-
         dirtyEquipment = false;
       }
     }
   }
 
-  if (document.getElementById('statisticstab').classList.contains('active')) {
+  if (document.getElementById('statisticModal').classList.contains('show')) {
     document.getElementById('prestige1count').innerHTML = gameData.stats.prestige1.toString();
     document.getElementById('prestige1time').innerHTML = display.getPrettyTimeFromMilliSeconds(gameData.stats.prestige1ticks);
     document.getElementById('prestige2count').innerHTML = gameData.stats.prestige2.toString();
@@ -1480,7 +850,7 @@ function updateGUI() {
       const rate = display.PrettyRatePerTime(amt, ticks);
       const newline = `${index.toString()} reached tier ${tier.toString()} wave ${waves.toString()} took ${display.getPrettyTimeFromMilliSeconds(ticks)} and gave ${amt.ToString()} for an average of: ${rate}`;
 
-      prestige1history += `${newline}</br />`;
+      prestige1history += `${newline}<br />`;
     });
     document.getElementById('prestige1history').innerHTML = prestige1history;
 
@@ -1489,7 +859,7 @@ function updateGUI() {
       const ticks = gameData.stats.last10Prestige2times[index];
       const rate = display.PrettyRatePerTime(amt, ticks);
       const newline = `${index.toString()} took ${display.getPrettyTimeFromMilliSeconds(ticks)} and gave ${amt.ToString()} for an average of ${rate}`;
-      prestige2history += `${newline}</br />`;
+      prestige2history += `${newline}<br />`;
     });
     document.getElementById('prestige2history').innerHTML = prestige2history;
 
@@ -1498,252 +868,346 @@ function updateGUI() {
       const ticks = gameData.stats.last10Prestige3times[index];
       const rate = display.PrettyRatePerTime(amt, ticks);
       const newline = `${index.toString()} took ${display.getPrettyTimeFromMilliSeconds(ticks)} and gave ${amt.ToString()} for an average of ${rate}`;
-      prestige3history += `${newline}</br />`;
+      prestige3history += `${newline}<br />`;
     });
     document.getElementById('prestige3history').innerHTML = prestige3history;
   }
 
-  document.getElementById('productionderivative').classList.remove('d-none');
-  if (!gameData.producer.active) {
-    document.getElementById('productionderivative').classList.add('d-none');
-  }
-
-  document.getElementById('supervisorderivative').classList.add('d-none');
-  document.getElementById('btnBuyUpgrade10').classList.add('d-none');
-  if (gameData.derivatives[1].active) {
-    document.getElementById('btnBuyUpgrade10').classList.remove('d-none');
-    if (gameData.derivatives[0].owned.greaterThan(0)) {
-      document.getElementById('supervisorderivative').classList.remove('d-none');
+  let activechallenges = false;
+  let txt = 'Challenges Active:';
+  gameData.challenges.forEach((ch) => {
+    if (ch.active) {
+      activechallenges = true;
+      txt += `<br />${ch.name}: wave needed: ${ch.waveRequiredforCompletion()}`;
     }
-  }
+  });
 
-  document.getElementById('foremanderivative').classList.add('d-none');
-  document.getElementById('btnBuyUpgrade11').classList.add('d-none');
-  if (gameData.derivatives[2].active) {
-    document.getElementById('btnBuyUpgrade11').classList.remove('d-none');
-    if (gameData.derivatives[1].owned.greaterThan(0)) {
-      document.getElementById('foremanderivative').classList.remove('d-none');
-    }
-  }
-
-  document.getElementById('managerderivative').classList.add('d-none');
-  document.getElementById('btnBuyUpgrade12').classList.add('d-none');
-  if (gameData.derivatives[3].active) {
-    document.getElementById('btnBuyUpgrade12').classList.remove('d-none');
-    if (gameData.derivatives[2].owned.greaterThan(0)) {
-      document.getElementById('managerderivative').classList.remove('d-none');
-    }
-  }
-
-  document.getElementById('middlemanagementderivative').classList.add('d-none');
-  document.getElementById('btnBuyUpgrade13').classList.add('d-none');
-  if (gameData.derivatives[4].active) {
-    document.getElementById('btnBuyUpgrade13').classList.remove('d-none');
-    if (gameData.derivatives[3].owned.greaterThan(0)) {
-      document.getElementById('middlemanagementderivative').classList.remove('d-none');
-    }
-  }
-
-  document.getElementById('uppermanagementderivative').classList.add('d-none');
-  document.getElementById('btnBuyUpgrade14').classList.add('d-none');
-  if (gameData.derivatives[5].active) {
-    document.getElementById('btnBuyUpgrade14').classList.remove('d-none');
-    if (gameData.derivatives[4].owned.greaterThan(0)) {
-      document.getElementById('uppermanagementderivative').classList.remove('d-none');
-    }
-  }
-
-  document.getElementById('vicepresidentderivative').classList.add('d-none');
-  document.getElementById('btnBuyUpgrade15').classList.add('d-none');
-  if (gameData.derivatives[6].active) {
-    document.getElementById('btnBuyUpgrade15').classList.remove('d-none');
-    if (gameData.derivatives[5].owned.greaterThan(0)) {
-      document.getElementById('vicepresidentderivative').classList.remove('d-none');
-    }
-  }
-
-  document.getElementById('presidentderivative').classList.add('d-none');
-  document.getElementById('btnBuyUpgrade16').classList.add('d-none');
-  if (gameData.derivatives[7].active) {
-    document.getElementById('btnBuyUpgrade16').classList.remove('d-none');
-    if (gameData.derivatives[6].owned.greaterThan(0)) {
-      document.getElementById('presidentderivative').classList.remove('d-none');
-    }
-  }
-
-  document.getElementById('textToDisplay').innerHTML = display.getDisplayText();
-
-  let resourceStats = `Metal: ${gameData.resources.metal.amount.ToString()}<br />`;
-  if (gameData.stats.highestEverWave >= 5) {
-    resourceStats += `Dust: ${gameData.resources.dust.amount.ToString()}<br />`;
-  }
-  if (gameData.resources.pebbles.amount.greaterThan(0)) {
-    resourceStats += `Pebbles: ${gameData.resources.pebbles.amount.ToString()}<br />`;
-    document.getElementById('upgradePebbles').innerHTML = gameData.resources.pebbles.amount.ToString();
-  }
-  if (gameData.stats.prestige2 >= 1) {
-    resourceStats += `Rocks: ${gameData.resources.rocks.amount.ToString()}<br />`;
-    document.getElementById('upgradeRocks').innerHTML = gameData.resources.rocks.amount.ToString();
-  }
-  if (gameData.stats.prestige3 >= 1) {
-    resourceStats += `Boulders: ${gameData.resources.boulders.amount.ToString()}<br />`;
-    document.getElementById('upgradeBoulders').innerHTML = gameData.resources.boulders.amount.ToString();
-  }
-  document.getElementById('resourcesText').innerHTML = resourceStats;
-
-  document.getElementById('tierinfo').classList.add('d-none');
-  const btndown = document.getElementById('btntierdown') as HTMLButtonElement;
-  btndown.disabled = false;
-  const btnup = document.getElementById('btntierup') as HTMLButtonElement;
-  btnup.disabled = false;
-  document.getElementById('equipmentTabNav').classList.add('d-none');
-  if (gameData.world.tierUnlocked > 1) {
-    document.getElementById('equipmentTabNav').classList.remove('d-none');
-    document.getElementById('currenttier').innerHTML = gameData.world.currentTier.toFixed(0);
-    document.getElementById('tierinfo').classList.remove('d-none');
-    if (gameData.world.currentTier === 1) {
-      btndown.disabled = true;
-    }
-    if (gameData.world.currentTier === gameData.world.tierUnlocked) {
-      btnup.disabled = true;
-    }
-  }
-
-  document.getElementById('particles-tab').classList.add('d-none');
-  document.getElementById('rockupgrades-tab').classList.add('d-none');
-  if (gameData.stats.prestige2 > 0 || rocksFromPrestige().greaterThan(0)) {
-    document.getElementById('particles-tab').classList.remove('d-none');
-    document.getElementById('rockupgrades-tab').classList.remove('d-none');
-  }
-
-  document.getElementById('time-tab').classList.add('d-none');
-  document.getElementById('boulderupgrades-tab').classList.add('d-none');
-  if (gameData.stats.prestige3 > 0 || bouldersFromPrestige().greaterThan(0)) {
-    document.getElementById('time-tab').classList.remove('d-none');
-    document.getElementById('boulderupgrades-tab').classList.remove('d-none');
-  }
-
-  if (pebblesFromPrestige().greaterThan(0)) {
-    document.getElementById('btnPrestige1').classList.remove('hiddenSpaceTaken');
-    document.getElementById('btnPrestige1').innerHTML = `Prestige for ${pebblesFromPrestige().ToString()} pebbles<br>Current: ${getCurrentPebbleRate().ToString()} /hr<br>Best:${gameData.stats.bestPrestige1Rate.ToString()}/hr`;
+  if (activechallenges) {
+    document.getElementById('btnqQuitChallenges').classList.remove('d-none');
   } else {
-    document.getElementById('btnPrestige1').classList.add('hiddenSpaceTaken');
+    txt = '';
+    document.getElementById('btnqQuitChallenges').classList.add('d-none');
   }
 
-  if (rocksFromPrestige().greaterThan(0)) {
-    document.getElementById('btnPrestige2').classList.remove('hiddenSpaceTaken');
-    document.getElementById('btnPrestige2').innerHTML = `Ascend for ${rocksFromPrestige().ToString()} rocks<br>Current: ${getCurrentRockRate().ToString()} /hr<br>Best:${gameData.stats.bestPrestige2Rate.ToString()}/hr`;
-  } else {
-    document.getElementById('btnPrestige2').classList.add('hiddenSpaceTaken');
-  }
-
-  if (bouldersFromPrestige().greaterThan(0)) {
-    document.getElementById('btnPrestige3').classList.remove('hiddenSpaceTaken');
-    document.getElementById('btnPrestige3').innerHTML = `Transform for ${bouldersFromPrestige().ToString()} boulders<br>Current: ${getCurrentBoulderRate().ToString()} /hr<br>Best:${gameData.stats.bestPrestige3Rate.ToString()}/hr`;
-  } else {
-    document.getElementById('btnPrestige3').classList.add('hiddenSpaceTaken');
-  }
-
-  document.getElementById('challengesTabNav').classList.remove('d-none');
-  if (gameData.stats.highestEverWave <= 20) {
-    document.getElementById('challengesTabNav').classList.add('d-none');
-  }
+  document.getElementById('textToDisplay').innerHTML = `${txt}<br />${display.getDisplayText()}`;
 
   const { canvas } = display;
   const { ctx } = display;
-  if (canvas.getContext) {
-    const originalHeight = canvas.height;
-    const originalWidth = canvas.width;
 
-    const dimensions = getObjectFitSize(true, canvas.clientWidth, canvas.clientHeight, canvas.width, canvas.height);
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = dimensions.width * dpr;
-    canvas.height = dimensions.height * dpr;
+  if (!canvas.getContext) {
+    return;
+  }
 
-    const ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
-    ctx.scale((ratio * dpr * canvas.width) / canvas.scrollWidth, (ratio * dpr * canvas.height) / canvas.scrollHeight); // adjust this!
+  CANVAS_SIZE = Math.min(canvas.clientWidth, canvas.clientHeight);
+  document.getElementById('textToDisplay').style.height = `${CANVAS_SIZE.toString()}px`;
+  const originalHeight = canvas.height;
+  const originalWidth = canvas.width;
 
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const dimensions = getObjectFitSize(true, canvas.clientWidth, canvas.clientHeight, canvas.width, canvas.height);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = dimensions.width * dpr;
+  canvas.height = dimensions.height * dpr;
 
-    // add possible build sites
+  const ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
+  ctx.scale((ratio * dpr * canvas.width) / canvas.scrollWidth, (ratio * dpr * canvas.height) / canvas.scrollHeight); // adjust this!
 
-    gameData.towers.forEach((t) => {
-      t.draw();
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // add possible build sites
+
+  gameData.buildings.forEach((t) => {
+    t.drawRange();
+  });
+  gameData.buildings.forEach((t) => {
+    t.draw();
+  });
+
+  ctx.globalAlpha = 1.0;
+
+  gameData.enemies.forEach((e) => {
+    e.draw();
+    e.bullets.forEach((b) => {
+      b.draw();
     });
+  });
 
-    ctx.globalAlpha = 1.0;
+  display.showFloaters();
 
-    gameData.enemies.forEach((e) => {
-      e.draw();
-      e.bullets.forEach((b) => {
-        b.draw();
-      });
-    });
+  display.drawText(`Drone Health: ${display.drone.maxHitPoints().ToString()}`, new Vector(getTierSize(), 1), 'white', `${display.getFontSizeString(15)}px Arial`, 'right', 'top');
+  const mulligans = maxMulligansCalc() - gameData.world.mulligansused;
+  if (mulligans > 0) {
+    display.drawText(`${mulligans.toString()} mulligans`, new Vector(1, 3), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  }
 
-    display.showFloaters();
+  display.drawText(`${gameData.world.currentTickLength}ms`, new Vector(1, 2), 'white', `${display.getFontSizeString(12)}px Arial`, 'left', 'top');
+  ctx.font = '15px Arial';
+  display.drawText(`Wave: ${gameData.world.currentWave} / ${getWavesNeededForTier()}`, new Vector(getTierSize() / 2, 2), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'top');
+  display.drawText(`Unspawned: ${gameData.world.enemiesToSpawn.toString()}(${getSpecialsCount().toString()})`, new Vector(1, 1), 'white', `${display.getFontSizeString(15)}px Arial`, 'left', 'top');
 
-    display.drawText(`Drone Health: ${display.drone.MaxHitPoints().ToString()}`, new Vector(39 + 10 * Math.ceil(gameData.world.currentTier / 5), 1), 'white', '15px Arial', 'right', 'top');
-    const mulligans = maxMulligansCalc() - gameData.world.mulligansused;
-    if (mulligans > 0) {
-      display.drawText(`${mulligans.toString()} mulligans`, new Vector(1, 4), 'white', 'bold 10px Arial', 'left', 'middle');
-    }
+  // display.DrawSolidRectangle(new Vector((getTierSize() / 2) - 10, 0), new Vector((getTierSize() / 2) - 9, 3), 'red', false);
 
-    display.drawText(`${gameData.world.currentTickLength}ms`, new Vector(1, 39 + 10 * Math.ceil(gameData.world.currentTier / 5)), 'white', 'bold 10px Arial', 'left', 'bottom');
-    ctx.font = '15px Arial';
-    display.drawText(`Wave: ${gameData.world.currentWave} / ${getWavesNeededForTier()}`, new Vector((40 + 10 * Math.ceil(gameData.world.currentTier / 5)) / 2, 1), 'white', '15px Arial', 'center', 'top');
-    display.drawText(`Unspawned: ${gameData.world.enemiesToSpawn.toString()}(${getSpecialsCount().toString()})`, new Vector(1, 1), 'white', '15px Arial', 'left', 'top');
+  // <button class="tierbutton text-center btn-danger" type="button" id="btntierdown" onclick="changeTier('Down')">-</button>
+  // Tier: <span id="currenttier">0</span>
+  // <button class="tierbutton text-center btn-success" type="button" id="btntierup" onclick="changeTier('Up')">+</button>
 
-    if (gameData.world.ticksToNextSpawn > 1000) {
-      ctx.fillStyle = 'red';
-      ctx.fillText(`Time to next enemy: ${display.getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn)}`, 10, 30);
+  if (gameData.world.ticksToNextSpawn > 1000) {
+    ctx.fillStyle = 'red';
+    display.drawText(`Time to next enemy: ${display.getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn)}`, new Vector(1, 6), 'red', `${display.getFontSizeString(15)}px bold Arial`, 'left', 'middle');
+  }
+
+  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.9, 0), new Vector(CANVAS_SIZE, CANVAS_SIZE), 'silver');
+  display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE, CANVAS_SIZE), 'silver');
+  display.DrawSolidRectangleNoScale(new Vector(0, 0), new Vector(CANVAS_SIZE, CANVAS_SIZE * 0.1), 'silver');
+  display.DrawSolidRectangleNoScale(new Vector(0, 0), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE), 'black');
+  display.DrawSolidRectangleNoScale(new Vector(0, 0), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.1), 'silver');
+  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.9, 0), new Vector(CANVAS_SIZE, CANVAS_SIZE * 0.1), 'silver');
+  display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE), 'silver');
+  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.9, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE, CANVAS_SIZE), 'silver');
+
+  if (gameData.world.tierUnlocked > 1) {
+    display.drawTextNoScale(`Tier: ${gameData.world.currentTier}`, new Vector(CANVAS_SIZE / 2, CANVAS_SIZE * 0.105), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'top');
+
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, CANVAS_SIZE * 0.0), new Vector(CANVAS_SIZE * 0.9, (CANVAS_SIZE * 1) / 30), 'blue', true);
+    display.drawTextNoScale(`Save Blueprint`, new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.0166666), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, (CANVAS_SIZE * 1) / 30), new Vector(CANVAS_SIZE * 0.9, (CANVAS_SIZE * 2) / 30), 'blue', true);
+    display.drawTextNoScale(`Load Blueprint`, new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.05), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
+    if (gameData.tierblueprintsauto) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, (CANVAS_SIZE * 2) / 30), new Vector(CANVAS_SIZE * 0.9, CANVAS_SIZE * 0.1), 'green', true);
+      display.drawTextNoScale(`Turn Auto Blueprint Load Off`, new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.08333333), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, (CANVAS_SIZE * 2) / 30), new Vector(CANVAS_SIZE * 0.9, CANVAS_SIZE * 0.1), 'red', true);
+      display.drawTextNoScale(`Turn Auto Blueprint Load On`, new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.08333333), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
     }
   }
 
-  document.getElementById('btn1Speed').classList.remove('btn-success');
-  document.getElementById('btn1Speed').classList.add('btn-danger');
-  document.getElementById('btn2Speed').classList.remove('btn-success');
-  document.getElementById('btn2Speed').classList.add('btn-danger');
-  document.getElementById('btn5Speed').classList.remove('btn-success');
-  document.getElementById('btn5Speed').classList.add('btn-danger');
-  document.getElementById('btnMSpeed').classList.remove('btn-success');
-  document.getElementById('btnMSpeed').classList.add('btn-danger');
+  if (gameData.world.tierUnlocked - gameData.world.currentTier > 0) {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.53, CANVAS_SIZE * 0.1), new Vector(CANVAS_SIZE * 0.55, CANVAS_SIZE * 0.12), 'green', true);
+    display.drawTextNoScale(`+`, new Vector(CANVAS_SIZE * 0.54, CANVAS_SIZE * 0.11), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
+  }
 
-  switch (gameSpeed) {
-    case 1:
-      document.getElementById('btn1Speed').classList.add('btn-success');
-      document.getElementById('btn1Speed').classList.remove('btn-danger');
-      break;
-    case 2:
-      document.getElementById('btn2Speed').classList.add('btn-success');
-      document.getElementById('btn2Speed').classList.remove('btn-danger');
-      break;
-    case 5:
-      document.getElementById('btn5Speed').classList.add('btn-success');
-      document.getElementById('btn5Speed').classList.remove('btn-danger');
-      break;
-    case 10:
-    default:
-      document.getElementById('btnMSpeed').classList.add('btn-success');
-      document.getElementById('btnMSpeed').classList.remove('btn-danger');
-      break;
+  if (gameData.world.currentTier - gameData.world.tierUnlocked > 0) {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.1), new Vector(CANVAS_SIZE * 0.47, CANVAS_SIZE * 0.12), 'red', true);
+    display.drawTextNoScale(`-`, new Vector(CANVAS_SIZE * 0.46, CANVAS_SIZE * 0.11), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
+  }
+
+  display.drawTextNoScale(`People:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.11), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`${gameData.resources.people.amount.toString()} / ${totalHousing.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.125), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`Available Workers:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.15), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`${peopleAvailable().toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.165), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`Wood:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.19), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`${gameData.resources.wood.amount.toString()} (${netWood.toString()})`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.205), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`Stone:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.23), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`${gameData.resources.stone.amount.toString()} (${netStone.toString()})`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.245), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`Arrows:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.27), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`${gameData.resources.arrow.amount.toString()} (${netArrows.toString()})`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.285), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`Red Research:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.31), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
+  display.drawTextNoScale(`${gameData.resources.redResearch.amount.toString()} (${netRedResearch.toString()})`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.325), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  if (gameData.resources.essence.amount.greaterThan(0)) {
+    display.drawTextNoScale(`Essence:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.35), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+    display.drawTextNoScale(`${gameData.resources.essence.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.365), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  }
+  if (gameData.resources.powder.amount.greaterThan(0)) {
+    display.drawTextNoScale(`Powder:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.39), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+    display.drawTextNoScale(`${gameData.resources.powder.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.405), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  }
+  if (gameData.resources.pebble.amount.greaterThan(0)) {
+    display.drawTextNoScale(`Pebble:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.43), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+    display.drawTextNoScale(`${gameData.resources.pebble.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.445), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  }
+  if (gameData.resources.rock.amount.greaterThan(0)) {
+    display.drawTextNoScale(`Rock:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.47), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+    display.drawTextNoScale(`${gameData.resources.rock.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.485), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  }
+  if (gameData.resources.shards.amount.greaterThan(0)) {
+    display.drawTextNoScale(`Shards:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.51), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+    display.drawTextNoScale(`${gameData.resources.shards.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.525), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
+  }
+
+  display.drawTextNoScale(`Speed:`, new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.025), 'black', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
+
+  if (gameSpeed === 1) {
+    display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.1), 'green');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.1), 'red');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.1), 'red');
+  }
+
+  if (gameSpeed === 2) {
+    display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.1), 'red');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.1), 'green');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.1), 'red');
+  }
+
+  if (gameSpeed === 5) {
+    display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.1), 'red');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.1), 'red');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.1), 'green');
   }
 
   if (gameData.world.paused) {
-    document.getElementById('btnPause').classList.add('btn-danger');
-    document.getElementById('btnPause').classList.remove('btn-success');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.1), 'green');
   } else {
-    document.getElementById('btnPause').classList.remove('btn-danger');
-    document.getElementById('btnPause').classList.add('btn-success');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.1), 'red');
   }
 
-  const activeChallenges = ActiveChallenges();
+  display.drawTextNoScale(`1`, new Vector(CANVAS_SIZE * 0.0125, CANVAS_SIZE * 0.075), 'white', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
+  display.drawTextNoScale(`2`, new Vector(CANVAS_SIZE * 0.0375, CANVAS_SIZE * 0.075), 'white', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
+  display.drawTextNoScale(`5`, new Vector(CANVAS_SIZE * 0.0625, CANVAS_SIZE * 0.075), 'white', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
+  display.drawTextNoScale(`P`, new Vector(CANVAS_SIZE * 0.0875, CANVAS_SIZE * 0.075), 'white', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
 
-  if (activeChallenges > 0) {
-    document.getElementById('btnChallengeQuit').classList.remove('d-none');
-  } else {
-    document.getElementById('btnChallengeQuit').classList.add('d-none');
+  if (powderFromPrestige().greaterThanOrEqualTo(1)) {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.1), 'green');
+    display.displayTextArrayFromString(
+      `Prestige for ${powderFromPrestige().ToString()} powder<br />Current: ${getCurrentPowderRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige1Rate.ToString()}/hr`,
+      new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.05),
+      'white',
+      'center',
+      'middle'
+    );
   }
+
+  if (pebbleFromPrestige().greaterThanOrEqualTo(1)) {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.1), 'green');
+    display.displayTextArrayFromString(
+      `Ascend for ${pebbleFromPrestige().ToString()} pebbles<br />Current: ${getCurrentPebblesRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige2Rate.ToString()}/hr`,
+      new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.05),
+      'white',
+      'center',
+      'middle'
+    );
+  }
+
+  if (rockFromPrestige().greaterThanOrEqualTo(1)) {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0), new Vector(CANVAS_SIZE * 0.7, CANVAS_SIZE * 0.1), 'green');
+    display.displayTextArrayFromString(
+      `Transform for ${rockFromPrestige().ToString()} rocks<br />Current: ${getCurrentRocksRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige3Rate.ToString()}/hr`,
+      new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE * 0.05),
+      'white',
+      'center',
+      'middle'
+    );
+  }
+
+  // below we draw the right and bottom menus sections
+  if (activeBuilding == null) {
+    return;
+  }
+
+  if (activeBuilding.type !== '') {
+    activeBuilding.drawMenuButtons();
+    return;
+  }
+
+  if (UIElementActive.slice(0, 1) === 'H') {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE), 'blue');
+    display.displayTextArrayFromString(`Go Back`, new Vector(CANVAS_SIZE * 0.15, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(SHACK_COST)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(`Buy Shack<br />Wood: ${SHACK_COST}`, new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(HOUSE_WOOD_COST) && gameData.resources.stone.amount.greaterThanOrEqualTo(HOUSE_STONE_COST)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(`Buy House<br />Wood: ${HOUSE_WOOD_COST}<br />Stone: ${HOUSE_STONE_COST}`, new Vector(CANVAS_SIZE * 0.35, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(MANSION_WOOD_COST) && gameData.resources.stone.amount.greaterThanOrEqualTo(MANSION_STONE_COST)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(`Buy Mansion<br />Wood: ${MANSION_WOOD_COST}<br />Stone: ${MANSION_STONE_COST}`, new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+    return;
+  }
+
+  if (UIElementActive.slice(0, 1) === 'R') {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE), 'blue');
+    display.displayTextArrayFromString(`Go Back`, new Vector(CANVAS_SIZE * 0.15, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(LUMBERJACK_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(`Buy Lumberjack<br />People: 1<br />Wood: ${LUMBERJACK_COST}`, new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(STONEMASON_COST) && peopleAvailable().greaterThanOrEqualTo(3)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(`Buy Stone Mason<br />People: 3<br />Wood: ${STONEMASON_COST}`, new Vector(CANVAS_SIZE * 0.35, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(FLETCHER_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(`Buy Fletcher<br />People: 1<br />Wood: ${FLETCHER_COST}`, new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(RED_RESEARCH_LAB_WOOD_COST) && gameData.resources.stone.amount.greaterThanOrEqualTo(RED_RESEARCH_LAB_STONE_COST) && peopleAvailable().greaterThanOrEqualTo(10)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(
+      `Buy Red<br />Research Lab<br />People: 10<br />Wood: ${RED_RESEARCH_LAB_WOOD_COST}<br />Stone: ${RED_RESEARCH_LAB_STONE_COST}`,
+      new Vector(CANVAS_SIZE * 0.55, CANVAS_SIZE * 0.95),
+      'white',
+      'center',
+      'middle'
+    );
+    return;
+  }
+
+  if (UIElementActive.slice(0, 1) === 'D') {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE), 'blue');
+    display.displayTextArrayFromString(`Go Back`, new Vector(CANVAS_SIZE * 0.15, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(ARROW_TOWER_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(`Buy Arrow Tower<br />People: 1<br />Wood: ${ARROW_TOWER_COST}`, new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+
+    if (gameData.resources.wood.amount.greaterThanOrEqualTo(CATAPULT_WOOD_COST) && gameData.resources.stone.amount.greaterThanOrEqualTo(CATAPULT_STONE_COST) && peopleAvailable().greaterThanOrEqualTo(5)) {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'green');
+    } else {
+      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'red');
+    }
+    display.displayTextArrayFromString(`Buy Catapult Tower<br />People: 5<br />Wood: ${CATAPULT_WOOD_COST}<br />Stone: ${CATAPULT_STONE_COST}`, new Vector(CANVAS_SIZE * 0.35, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+
+    if (!gameData.challenges[3].active && gameData.challenges[3].completed > 0) {
+      if (gameData.resources.essence.amount.greaterThanOrEqualTo(POISON_TOWER_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
+        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'green');
+      } else {
+        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'red');
+      }
+      display.displayTextArrayFromString(`Buy Poison Tower<br />People: 1<br />Essence: ${POISON_TOWER_COST}`, new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+    }
+
+    if (!gameData.challenges[4].active && gameData.challenges[4].completed > 0) {
+      if (gameData.resources.essence.amount.greaterThanOrEqualTo(SLOW_TOWER_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
+        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'green');
+      } else {
+        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'red');
+      }
+      display.displayTextArrayFromString(`Buy Slow Tower<br />People: 1<br />Essence: ${SLOW_TOWER_COST}`, new Vector(CANVAS_SIZE * 0.55, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+    }
+    return;
+  }
+
+  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE), 'blue');
+  display.drawTextNoScale('Housing', new Vector(CANVAS_SIZE * 0.15, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+
+  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'blue');
+  display.drawTextNoScale('Resources', new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+
+  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'blue');
+  display.drawTextNoScale('Defenses', new Vector(CANVAS_SIZE * 0.35, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1767,7 +1231,10 @@ function changeTier(value: string) {
         gameData.world.tierUnlocked = gameData.world.currentTier;
       }
     }
-    createTowerSites();
+    while (gameData.equipment.length > 5) {
+      DeleteEquipment(gameData.equipment.length - 1);
+    }
+    createBuildingSites();
     init(2);
   }
 }
@@ -1811,12 +1278,261 @@ function resetStoryElements() {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function cheat1() {
-  if (gameData.resources.dust.amount.greaterThan(1)) {
-    gameData.resources.dust.amount = gameData.resources.dust.amount.multiply(2);
+  if (gameData.resources.essence.amount.greaterThan(100)) {
+    gameData.resources.essence.amount = gameData.resources.essence.amount.multiply(2);
   } else {
-    gameData.resources.dust.amount = new JBDecimal(100);
+    gameData.resources.essence.amount = new JBDecimal(100);
   }
 }
+
+function getCursorPosition(canvas, event) {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const scaledx = display.TierScalingReverse(x - CANVAS_SIZE * 0.1);
+  const scaledy = display.TierScalingReverse(y - CANVAS_SIZE * 0.1);
+  // display.addToDisplay(`x: ${x} y: ${y} sx: ${scaledx} sy: ${scaledy} cw: ${canvas.clientWidth} ch: ${canvas.clientHeight}`, DisplayCategory.Tutorial);
+
+  const clickVector = new Vector(scaledx, scaledy);
+
+  if (x > CANVAS_SIZE * 0.1 && x < CANVAS_SIZE * 0.3 && y > CANVAS_SIZE * 0 && y < CANVAS_SIZE * 0.1) {
+    if (powderFromPrestige().greaterThanOrEqualTo(1)) {
+      prestige1();
+    }
+    return;
+  }
+
+  if (x > CANVAS_SIZE * 0.3 && x < CANVAS_SIZE * 0.5 && y > CANVAS_SIZE * 0 && y < CANVAS_SIZE * 0.1) {
+    if (pebbleFromPrestige().greaterThanOrEqualTo(1)) {
+      prestige2();
+    }
+    return;
+  }
+
+  if (x > CANVAS_SIZE * 0.5 && x < CANVAS_SIZE * 0.7 && y > CANVAS_SIZE * 0 && y < CANVAS_SIZE * 0.1) {
+    if (rockFromPrestige().greaterThanOrEqualTo(1)) {
+      prestige3();
+    }
+    return;
+  }
+
+  if (x > CANVAS_SIZE * 0.7 && x < CANVAS_SIZE * 0.9 && y > CANVAS_SIZE * 0 && y < (CANVAS_SIZE * 1) / 30) {
+    blueprintSave();
+    return;
+  }
+  if (x > CANVAS_SIZE * 0.5 && x < CANVAS_SIZE * 0.7 && y > (CANVAS_SIZE * 1) / 30 && y < (CANVAS_SIZE * 2) / 30) {
+    blueprintLoad();
+    return;
+  }
+  if (x > CANVAS_SIZE * 0.5 && x < CANVAS_SIZE * 0.7 && y > (CANVAS_SIZE * 2) / 30 && y < CANVAS_SIZE * 0.1) {
+    gameData.tierblueprintsauto = !gameData.tierblueprintsauto;
+    return;
+  }
+
+  if (x > 0 && x < CANVAS_SIZE * 0.025 && y > CANVAS_SIZE * 0.05 && y < CANVAS_SIZE * 0.1) {
+    changeSpeed(1);
+    return;
+  }
+  if (x > CANVAS_SIZE * 0.025 && x < CANVAS_SIZE * 0.05 && y > CANVAS_SIZE * 0.05 && y < CANVAS_SIZE * 0.1) {
+    changeSpeed(2);
+    return;
+  }
+  if (x > CANVAS_SIZE * 0.05 && x < CANVAS_SIZE * 0.075 && y > CANVAS_SIZE * 0.05 && y < CANVAS_SIZE * 0.1) {
+    changeSpeed(5);
+    return;
+  }
+  if (x > CANVAS_SIZE * 0.075 && x < CANVAS_SIZE * 0.1 && y > CANVAS_SIZE * 0.05 && y < CANVAS_SIZE * 0.1) {
+    gameData.world.paused = !gameData.world.paused;
+    return;
+  }
+
+  if (x < CANVAS_SIZE * 0.9 && x > CANVAS_SIZE * 0.1 && y < CANVAS_SIZE * 0.9 && y > CANVAS_SIZE * 0.1) {
+    activeBuilding = null;
+    gameData.buildings.forEach((b) => {
+      if (b.pos.getLengthFromAnotherVector(clickVector) < 5) {
+        activeBuilding = b;
+        UIElementActive = '';
+      }
+    });
+    if (activeBuilding == null) {
+      return;
+    }
+    // is it delete button
+    const deleteBtnVector = new Vector(activeBuilding.pos.x, activeBuilding.pos.y + 4);
+    if (clickVector.getLengthFromAnotherVector(deleteBtnVector) < 1) {
+      activeBuilding.delete();
+      return;
+    }
+    // is it buy button
+    const buyBtnVector = new Vector(activeBuilding.pos.x, activeBuilding.pos.y - 4);
+    if (clickVector.getLengthFromAnotherVector(buyBtnVector) < 1 && activeBuilding.type !== '') {
+      if (activeBuilding.affordBuy()) {
+        activeBuilding.buy();
+      } else {
+        // display.addToDisplay(activeBuilding.getResourcesNeededString(), DisplayCategory.Tutorial);
+      }
+      return;
+    }
+    // is it buy button
+    const autoBtnVector = new Vector(activeBuilding.pos.x + 4, activeBuilding.pos.y);
+    if (clickVector.getLengthFromAnotherVector(autoBtnVector) < 1) {
+      activeBuilding.autoSwitch();
+      return;
+    }
+  }
+
+  if (activeBuilding.type === '') {
+    activeBuilding.bought = 0;
+    if (UIElementActive === '') {
+      if (y > CANVAS_SIZE * 0.9) {
+        // menu
+        if (x < CANVAS_SIZE * 0.2) {
+          UIElementActive = 'H';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.3) {
+          UIElementActive = 'R';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.4) {
+          UIElementActive = 'D';
+          return;
+        }
+        return;
+      }
+    }
+
+    if (y > CANVAS_SIZE * 0.9) {
+      if (UIElementActive.slice(0, 1) === 'H') {
+        if (x < CANVAS_SIZE * 0.2) {
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.3) {
+          activeBuilding.buyShack();
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.4) {
+          activeBuilding.buyHouse();
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.5) {
+          activeBuilding.buyMansion();
+          UIElementActive = '';
+          return;
+        }
+        return;
+      }
+
+      if (UIElementActive.slice(0, 1) === 'R') {
+        if (x < CANVAS_SIZE * 0.2) {
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.3) {
+          activeBuilding.buyLumberJack();
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.4) {
+          activeBuilding.buyStoneMason();
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.5) {
+          activeBuilding.buyFletcher();
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.6) {
+          activeBuilding.buyRedResearchLab();
+          UIElementActive = '';
+          return;
+        }
+        return;
+      }
+
+      if (UIElementActive.slice(0, 1) === 'D') {
+        if (x < CANVAS_SIZE * 0.2) {
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.3) {
+          activeBuilding.buyArrowTower();
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.4) {
+          activeBuilding.buyCatapult();
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.5) {
+          activeBuilding.buyPoisonTower();
+          UIElementActive = '';
+          return;
+        }
+        if (x < CANVAS_SIZE * 0.6) {
+          activeBuilding.buySlowTower();
+          UIElementActive = '';
+          return;
+        }
+        return;
+      }
+    }
+  }
+
+  if (y > CANVAS_SIZE * 0.9) {
+    // menu
+    // its the building menu
+    if (x < CANVAS_SIZE * 0.2) {
+      // its the buy button
+      activeBuilding.buy();
+      return;
+    }
+    if (x < CANVAS_SIZE * 0.4) {
+      // its the auto switch button
+      if (getAchievementBonus() > 20) {
+        activeBuilding.autoSwitch();
+      }
+      return;
+    }
+    if (x < CANVAS_SIZE * 0.5) {
+      // its the fastest button
+      activeBuilding.tactics.changeTactic(0);
+      return;
+    }
+    if (x < CANVAS_SIZE * 0.6) {
+      // its the fastest button
+      activeBuilding.tactics.changeTactic(1);
+      return;
+    }
+    if (x < CANVAS_SIZE * 0.7) {
+      // its the fastest button
+      activeBuilding.tactics.changeTactic(2);
+      return;
+    }
+    if (x < CANVAS_SIZE * 0.8) {
+      // its the fastest button
+      if (gameData.pebbleUpgrades[11].bought > 0) {
+        activeBuilding.tactics.changeTactic(3);
+      }
+      return;
+    }
+    if (x < CANVAS_SIZE * 0.9) {
+      // its the delete button
+      activeBuilding.delete();
+      // return;
+    }
+  }
+}
+
+const canvas = document.querySelector('canvas');
+canvas.addEventListener('mousedown', function (e) {
+  getCursorPosition(canvas, e);
+});
 
 window.setInterval(function () {
   try {
@@ -1830,6 +1546,8 @@ window.setInterval(function () {
     const currentTime = new Date();
 
     let ticksForCurrentTick = currentTime.getTime() - gameData.world.lastProcessTick.getTime();
+
+    upgradeRefreshTickCount += ticksForCurrentTick;
 
     ticksForCurrentTick *= gameSpeed;
 

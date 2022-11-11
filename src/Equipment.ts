@@ -5,7 +5,10 @@ class EquipmentAbility {
 
   constructor(name: string) {
     this.name = name;
-    this.levels = 0;
+    if (typeof this.name === 'undefined') {
+      this.name = 'Problem';
+    }
+    this.levels = Math.ceil(Math.random() * 1.5 ** (gameData.world.currentTier - 1) * 10);
   }
 
   buyCost() {
@@ -101,24 +104,30 @@ class Equipment {
     const possiblities = this.CreatePossibleAbilities();
     while (this.abilities.length < maxAbilities) {
       const i = Math.floor(Math.random() * possiblities.length);
-      const newAbility = new EquipmentAbility(possiblities[i]);
-      newAbility.levels = Math.ceil(Math.random() * tier * 10);
-      this.abilities.push(newAbility);
-      possiblities.splice(i);
+      this.abilities.push(new EquipmentAbility(possiblities[i]));
+      if (this.abilities[this.abilities.length - 1].name === 'Problem') {
+        this.abilities.splice(this.abilities.length - 1);
+      } else {
+        possiblities.splice(i, 1);
+      }
     }
   }
 
   // eslint-disable-next-line class-methods-use-this
   CreatePossibleAbilities() {
     const possibles = [];
-    possibles.push('Gun Attack');
-    possibles.push('Missile Attack');
-    possibles.push('Cannon Attack');
+    possibles.push('ArrowTower');
+    possibles.push('CatapultTower');
+    possibles.push('PoisonAttack');
     possibles.push('Critical Chance');
     possibles.push('Crit Multiplier');
-    possibles.push('Metal Production');
+    possibles.push('LumberJack');
+    possibles.push('StoneMason');
+    possibles.push('Housing');
+    possibles.push('Fletcher');
     possibles.push('Mulligans');
-    possibles.push('Poison Effect');
+    possibles.push('RedResearch');
+    possibles.push('PoisonTower');
     if (gameData.world.currentTier > 1) {
       possibles.push('Shield Break');
     }

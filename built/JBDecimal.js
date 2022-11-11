@@ -15,6 +15,17 @@ class JBDecimal {
         }
         this.normalize();
     }
+    sqrt() {
+        const ret = new JBDecimal(this);
+        if (ret.exponent % 2 === 1) {
+            ret.mantissa *= 10;
+            ret.exponent -= 1;
+        }
+        ret.exponent /= 2;
+        ret.mantissa = Math.sqrt(ret.mantissa);
+        ret.normalize();
+        return ret;
+    }
     pow(value) {
         const ret = new JBDecimal(1);
         if (value === 0) {
@@ -112,6 +123,7 @@ class JBDecimal {
         }
         input.mantissa *= Math.pow(10, expdiff);
         ret.mantissa -= input.mantissa;
+        ret.mantissa = parseFloat(ret.mantissa.toFixed(10));
         ret.normalize();
         return ret;
     }
@@ -300,13 +312,13 @@ class JBDecimal {
             this.exponent = 0;
             return;
         }
-        while (Math.abs(this.mantissa) >= 10) {
-            this.exponent += 1;
-            this.mantissa /= 10;
-        }
         while (Math.abs(this.mantissa) < 1) {
             this.exponent -= 1;
             this.mantissa *= 10;
+        }
+        while (Math.abs(this.mantissa) >= 10) {
+            this.exponent += 1;
+            this.mantissa /= 10;
         }
         this.mantissa = parseFloat(this.mantissa.toFixed(10));
     }

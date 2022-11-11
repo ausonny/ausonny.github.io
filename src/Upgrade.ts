@@ -4,15 +4,18 @@ class Upgrade extends Purchasable {
 
   description: string;
 
-  constructor(name: string, description: string, baseCost: number, costMultiplier: number, resource: Resource, buyButton: HTMLElement, limit: number) {
-    super(baseCost, costMultiplier, resource, 0, 1, new Resource('dummy'), 0, limit, buyButton, false, buyButton);
-    this.name = name;
-    this.description = description;
+  constructor() {
+    super();
+    this.name = '';
   }
 
   updateDisplay() {
     super.updateDisplay();
-    this.buyButton.innerHTML += this.description;
-    this.buyButton.innerHTML += `<br />${this.bought.toString()}/${(this.limit + this.addedlimit).toString()}`;
+    this.buyButton.innerHTML = `${this.description}<br/>${this.buyButton.innerHTML}<br/>`;
+    if (this.limit > 0) {
+      this.buyButton.innerHTML += `${this.bought.toString()}/${(this.limit + this.addedlimit).toString()}`;
+    } else {
+      this.buyButton.innerHTML += `${this.bought.toString()}`;
+    }
   }
 }

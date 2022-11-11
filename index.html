@@ -7,7 +7,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="interface.css" />
-    <title>Continuous v0.1.1.0</title>
+    <title>Continuous v0.3</title>
     <meta name="description" content="Continuous v 0.3" />
     <meta name="author" content="ausonny" />
   </head>
@@ -19,800 +19,334 @@
         If you are not using any addons that might interfere with javascript, try using the latest versions of Chrome or Firefox.
       </div>
     </noscript>
-    <div class="container">
-      <div class="row p-0 mt-1 border border-secondary text-light">
-        <div class="col-xs-12 p-0 m-0 text-small">
-          <div id="prestige1button" class="row p-0 m-0 bg-dark text-light">
-            <button class="button prestigebutton text-center fw-bold text-light bg-success" type="button" id="btnPrestige1" onclick="prestige1()">Prestige</button>
-            <button class="button prestigebutton text-center fw-bold text-light bg-success" type="button" id="btnPrestige2" onclick="prestige2()">Prestige</button>
-            <button class="button prestigebutton text-center fw-bold text-light bg-success" type="button" id="btnPrestige3" onclick="prestige3()">Prestige</button>
-          </div>
-        </div>
-      </div>
-      <div class="row p-0 mt-0 border border-dark bg-dark text-light text-center">
-        <div class="col-md-3 p-0 m-0 text-start">
-          Speed:
-          <button class="tierbutton text-center p-0 m-0" type="button" id="btn1Speed" onclick="changeSpeed1()">1x</button> 
-          <button class="tierbutton text-center p-0 m-0" type="button" id="btn2Speed" onclick="changeSpeed2()">2x</button> 
-          <button class="tierbutton text-center p-0 m-0" type="button" id="btn5Speed" onclick="changeSpeed5()">5x</button> 
-          <button class="tierbutton text-center p-0 m-0" type="button" id="btnMSpeed" onclick="changeSpeedMax()">10x</button> 
-          <button class="tierbutton" type="button" id="btnPause" onclick="switchPause()">P</button> 
-        </div>
-        <div class="col-md-6 p-0 m-0 text-center">
-          <div id="WaveInfo">
-            <div id="tierinfo" class="row p-0 m-0 tierinfo text-center">
-              <div class="col-md-12">
-                <button class="tierbutton text-center btn-danger" type="button" id="btntierdown" onclick="changeTier('Down')">-</button>
-                Tier: <span id="currenttier">0</span>
-                <button class="tierbutton text-center btn-success" type="button" id="btntierup" onclick="changeTier('Up')">+</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3 p-0 m-0 text-end">
-          <button class="btn btn-sm btn-primary hidden" id="btnChallengeQuit" type="button" onclick="quitChallenges()">Quit all active challenges</button>
-        </div>
-      </div>
-      <div class="row p-0 mt-0 border border-secondary text-light">
-        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-7 col-xl-6 col-xxl-5 p-0 m-0 border border-light">
-          <div class="row p-0 m-0 bg-dark text-light text-xsmall">
-            <div class="col-xs-12 text-center">
-              <canvas id="gameBoard" class="canvas text-center" height="520px" width="520px" style="object-fit: contain">
+    <div class="container-fluid">
+      <div class="row p-0 m-0 text-light">
+        <div class="col-9 text-center p-0 m-0">
+          <div class="row p-0 m-0 border border-dark bg-dark text-light text-center">
+            <div class="col-12 p-0 m-0 text-start">
+              <canvas id="gameBoard" class="canvas text-center border border-light p-0 m-0" height="1075px" width="1075px" style="object-fit: contain">
                 <p>You may have more fun with a more modern browser. Chrome, Firefox, or Safari for instance</p>
               </canvas>
             </div>
           </div>
         </div>
-        <div class="col-xs-6 col-sm-6 col-md-5 col-lg-2 col-xl-2 col-xxl-2 border border-light bg-dark p-0 m-0">
-          <div id="ResourceStats" class="bg-dark text-light border border-light">
-            <div class="row p-0 m-0 text-light">
-              <div class="col-xs-12"><span id="resourcesText"></span></div>
+        <div class="col-3 text-center p-0 m-0">
+          <div class="row p-0 m-0 border border-secondary text-light">
+            <div class="col-12 p-0 m-0">
+              <button class="button text-center bg-primary text-light" type="button" id="btnqQuitChallenges" onclick="quitChallenges()">Quit all Challenges</button>
+              <div class="border border-light p-0 m-0 text-medium overflow-auto text-light" style="height: 400px; background-color: black;" id="textToDisplay">
+              </div>
             </div>
           </div>
-          <div id="TowerStats" class="bg-secondary text-light border border-light">
-            <div class="row p-0 m-0">
-              <div class="col-xs-12"><span id="towerStatsText"></span></div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xs-6 col-sm-6 col-md-7 col-lg-3 col-xl-4 col-xxl-5">
-          <div class="border border-light p-0 m-0 text-small overflow-auto text-light" style="height: 520px; background-color: black;" id="textToDisplay"></div>
         </div>
       </div>
-      <div class="row p-0 mt-0 bg-dark text-light">
-        <div class="col-md-12 p-0 m-0">
-          <ul class="nav nav-tabs nav-fill nav-justified fw-bold" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-              <a class="nav-link active" id="tower-tab" data-bs-toggle="tab" data-bs-target="#towertab" role="tab" aria-controls="tower" aria-selected="true">Tower</a>
-            </li>
-            <li class="nav-item" role="presentation">
-              <a class="nav-link" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resourcestab" role="tab" aria-controls="resources" aria-selected="true">Resources</a>
-            </li>
-            <li class="nav-item" role="presentation">
-              <a class="nav-link" id="upgrades-tab" data-bs-toggle="tab" data-bs-target="#upgradestab" role="tab" aria-controls="upgrades" aria-selected="false">Upgrades</a>
-            </li>
-            <li class="nav-item" role="presentation" id="challengesTabNav">
-              <a class="nav-link" id="challenges-tab" data-bs-toggle="tab" data-bs-target="#challengestab" role="tab" aria-controls="challenges" aria-selected="false">Challenges</a>
-            </li>
-            <li class="nav-item" role="presentation" id="equipmentTabNav">
-              <a class="nav-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipmenttab" role="tab" aria-controls="equipment" aria-selected="false">Gems</a>
-            </li>
-            <li class="nav-item" role="presentation">
-              <a class="nav-link" id="achievement-tab" data-bs-toggle="tab" data-bs-target="#achievementtab" role="tab" aria-controls="achievement" aria-selected="false">Achievements</a>
-            </li>
-            <li class="nav-item" role="presentation">
-              <a class="nav-link" id="statistics-tab" data-bs-toggle="tab" data-bs-target="#statisticstab" role="tab" aria-controls="statistics" aria-selected="false">Statistics</a>
-            </li>
-            <li class="nav-item" role="presentation">
-              <a class="nav-link" id="options-tab" data-bs-toggle="tab" data-bs-target="#optionstab" role="tab" aria-controls="options" aria-selected="false">Options</a>
-            </li>
-            <li class="nav-item" role="presentation">
-              <a class="nav-link" id="glossary-tab" data-bs-toggle="tab" data-bs-target="#glossarytab" role="tab" aria-controls="glossary" aria-selected="false">Glossary</a>
-            </li>
-          </ul>
-          <div class="tab-content" id="myTabContent">
-            <div class="tab-pane show active fade px-0 py-0 overflow-auto" style="height: 420px" id="towertab" role="tabpanel" aria-labelledby="tower-tab">
-              <div id="TowerBluePrint">
-                <div class="row p-0 m-0 text-light border border-primary">
-                  <div class="col-md-2 p-0 m-0 text-center">                  
-                  </div>
-                  <div class="col-md-2 p-0 m-0">
-                    <button class="button text-center bg-primary" type="button" id="blueprintSave" onclick="blueprintSave()">Save Blueprint</button>
-                  </div>
-                  <div class="col-md-2 p-0 m-0">
-                    <button class="button text-center bg-primary" type="button" id="blueprintLoad" onclick="blueprintLoad()">Load Blueprint</button>
-                  </div>
-                  <div class="col-md-2 p-0 m-0">
-                    <button class="button text-center" type="button" id="blueprintLoadAuto" onclick="blueprintAuto()">Auto</button>
-                  </div>
+      <!-- Modal -->
+      <div class="modal fade" id="researchModal" tabindex="-1" aria-labelledby="researchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header bg-secondary">
+              <h5 class="modal-title text-light" id="exampleModalLabel">Research</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light">
+              <div class="row p-0 m-0">
+                <div class="col-xs-12 text-large">Red Research: <span id="researchRedResearch"></span></div>
+              </div>
+              <div class="row p-0 m-0">
+                <div class="col-md-12 text-center text-xsmall">
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch0" onclick="gameData.researches[0].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch2" onclick="gameData.researches[2].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch1" onclick="gameData.researches[1].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch8" onclick="gameData.researches[8].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch3" onclick="gameData.researches[3].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch4" onclick="gameData.researches[4].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch5" onclick="gameData.researches[5].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch6" onclick="gameData.researches[6].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch7" onclick="gameData.researches[7].buy()">Upgrade</button>
                 </div>
-                <div class="row p-0 m-0 text-light border border-primary">
-                  <div class="col-md-12 p-0 m-0 text-center">
-                    A blueprint of the current tower layout can be stored. You have one blueprint per tier.  A level 2 tier can not be used on tier 1. If blueprints are turned on the tower types will be set automatically with zero levels bought on prestige or any map reset.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="upgradeModal" tabindex="-1" aria-labelledby="upgradeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-secondary">
+              <h5 class="modal-title text-light" id="exampleModalLabel">Upgrades</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light text-xsmall">
+              <div class="row p-0 m-0 bg-dark text-light">
+                <div class="col-xs-12 text-large">Powder: <span id="upgradePowder"></span>
+                </div>
+              </div>
+              <div class="row p-0 m-0 bg-dark text-light overflow-auto">
+                <div class="col-md-12">
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade7" onclick="gameData.powderUpgrades[7].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade9" onclick="gameData.powderUpgrades[9].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade1" onclick="gameData.powderUpgrades[1].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade4" onclick="gameData.powderUpgrades[4].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade0" onclick="gameData.powderUpgrades[0].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade8" onclick="gameData.powderUpgrades[8].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade16" onclick="gameData.powderUpgrades[16].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade17" onclick="gameData.powderUpgrades[17].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade2" onclick="gameData.powderUpgrades[2].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade14" onclick="gameData.powderUpgrades[14].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade12" onclick="gameData.powderUpgrades[12].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade15" onclick="gameData.powderUpgrades[15].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade6" onclick="gameData.powderUpgrades[6].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade19" onclick="gameData.powderUpgrades[19].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade13" onclick="gameData.powderUpgrades[13].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade18" onclick="gameData.powderUpgrades[18].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade3" onclick="gameData.powderUpgrades[3].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade5" onclick="gameData.powderUpgrades[5].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade10" onclick="gameData.powderUpgrades[10].buy()">Upgrade</button>
+                  <button class="button upgradebutton" type="button" id="btnBuyUpgrade11" onclick="gameData.powderUpgrades[11].buy()">Upgrade</button>
+                </div>
+              </div>
+              <div id="pebbleupgrades">
+                <div class="row p-0 m-0">
+                  <div class="col-xs-12 text-large">Pebbles: <span id="upgradePebbles"></span></div>
+                </div>
+                <div class="row p-0 m-0 bg-dark text-light">
+                  <div class="col-md-12 text-start overflow-auto">
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade0" onclick="gameData.pebbleUpgrades[0].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade4" onclick="gameData.pebbleUpgrades[4].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade1" onclick="gameData.pebbleUpgrades[1].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade14" onclick="gameData.pebbleUpgrades[14].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade2" onclick="gameData.pebbleUpgrades[2].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade15" onclick="gameData.pebbleUpgrades[15].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade3" onclick="gameData.pebbleUpgrades[3].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade8" onclick="gameData.pebbleUpgrades[8].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade5" onclick="gameData.pebbleUpgrades[5].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade6" onclick="gameData.pebbleUpgrades[6].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade7" onclick="gameData.pebbleUpgrades[7].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade9" onclick="gameData.pebbleUpgrades[9].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade10" onclick="gameData.pebbleUpgrades[10].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade11" onclick="gameData.pebbleUpgrades[11].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade12" onclick="gameData.pebbleUpgrades[12].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade13" onclick="gameData.pebbleUpgrades[13].buy()">Upgrade</button>
+                  </div>
+                </div>  
+              </div>
+              <div id="rockupgrades">
+                <div class="row p-0 m-0">
+                  <div class="col-xs-12 text-large">Rocks: <span id="upgradeRocks"></span></div>
+                </div>
+                <div class="row p-0 m-0 bg-dark text-light">
+                  <div class="col-md-12 text-start overflow-auto">
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade0" onclick="gameData.rockUpgrades[0].buy()">Upgrade</button>
                   </div>
                 </div>
               </div>
-              <div class="row p-0 m-0 text-light" id="TowerUnboughtHeader">
-                <div class="col-md-2 p-0 m-0 text-center">
-                  Tower Slot
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="challengeModal" tabindex="-1" aria-labelledby="challengeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-secondary">
+              <h5 class="modal-title text-light" id="exampleModalLabel">Challenges</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light">
+              <div class="row p-0 m-0 bg-dark text-light text-small text-center">
+                <div class="col-md-12 p-0 m-0 text-center">
+                  <button class="button text-center" type="button" id="btnChallengeAuto" onclick="challengeAuto()">AutoChallenge</button>
                 </div>
-                <div class="col-md-2 p-0 m-0 text-center">
-                  Buy Gun
-                </div>
-                <div class="col-md-2 p-0 m-0 text-center">
-                  Buy Missile
-                </div>
-                <div class="col-md-2 p-0 m-0 text-center">
-                  Buy Cannon
-                </div>
-                <div class="col-md-1 p-0 m-0 text-center">
-                  Buy Poison
+              </div>
+              <div class="row p-0 m-0 bg-dark text-light text-medium text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Name</div>
+                <div class="col-md-3 p-0 m-0 text-center">Penalty</div>
+                <div class="col-md-3 p-0 m-0 text-center">Bonus</div>
+                <div class="col-md-1 p-0 m-0 text-center">Completed</div>
+                <div class="col-md-2 p-0 m-0 text-center">Wave Needed</div>
+                <div class="col-md-2 p-0 m-0 text-center">Actions</div>
+              </div>
+              <div class="row p-0 m-0 bg-secondary text-light text-small text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Inflation</div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge0Description"></span>
                 </div>
                 <div class="col-md-3 p-0 m-0 text-center">
-                  Buy Slow
+                  <span id="challenge0Bonus"></span>
                 </div>
-              </div>
-              <div class="row p-0 m-0">
-                <div class="col-md-12 p-0 m-0">
-                  <div id="TowerUnBoughtInfo"></div>
+                <div class="col-md-1 p-0 m-0 text-center">
+                  <span id="challenge0Completed"></span>
                 </div>
-              </div>
-              <div class="row p-0 m-0 text-light" id="TowerBoughtHeader">
                 <div class="col-md-2 p-0 m-0 text-center">
-                  Tower Info
+                  <span id="challenge0DustNeeded"></span>
                 </div>
-                <div class="col-md-10 p-0 m-0 text-start">
-                  Metal Upgrade&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dust Upgrade&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tactic&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delete
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge0Start" type="button" onclick="gameData.challenges[0].setActive()">Start</button>
+                </div>
+              </div>
+              <div class="row p-0 m-0 bg-dark text-light text-small text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Shooting Speed</div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge1Description"></span>
+                </div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge1Bonus"></span>
+                </div>
+                <div class="col-md-1 p-0 m-0 text-center">
+                  <span id="challenge1Completed"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <span id="challenge1DustNeeded"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge1Start" type="button" onclick="gameData.challenges[1].setActive()">Start</button>
+                </div>
+              </div>
+              <div class="row p-0 m-0 bg-secondary text-light text-small text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Range</div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge2Description"></span>
+                </div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge2Bonus"></span>
+                </div>
+                <div class="col-md-1 p-0 m-0 text-center">
+                  <span id="challenge2Completed"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <span id="challenge2DustNeeded"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge2Start" type="button" onclick="gameData.challenges[2].setActive()">Start</button>
+                </div>
+              </div>
+              <div id="efficiencychallenge" class="row p-0 m-0 bg-dark text-light text-small text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Efficiency</div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge7Description"></span>
+                </div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge7Bonus"></span>
+                </div>
+                <div class="col-md-1 p-0 m-0 text-center">
+                  <span id="challenge7Completed"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <span id="challenge7DustNeeded"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge7Start" type="button" onclick="gameData.challenges[7].setActive()">Start</button>
+                </div>
+              </div>
+              <div id = "poisonchallenge" class="row p-0 m-0 bg-secondary text-light text-small text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Poison</div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge3Description"></span>
+                </div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge3Bonus"></span>
+                </div>
+                <div class="col-md-1 p-0 m-0 text-center">
+                  <span id="challenge3Completed"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <span id="challenge3DustNeeded"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge3Start" type="button" onclick="gameData.challenges[3].setActive()">Start</button>
+                </div>
+              </div>
+              <div id="slowchallenge" class="row p-0 m-0 bg-dark text-light text-small text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Slow</div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge4Description"></span>
+                </div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge4Bonus"></span>
+                </div>
+                <div class="col-md-1 p-0 m-0 text-center">
+                  <span id="challenge4Completed"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <span id="challenge4DustNeeded"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge4Start" type="button" onclick="gameData.challenges[4].setActive()">Start</button>
+                </div>
+              </div>
+              <div id="critchallenge" class="row p-0 m-0 bg-secondary text-light text-small text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Critical Hits</div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge5Description"></span>
+                </div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge5Bonus"></span>
+                </div>
+                <div class="col-md-1 p-0 m-0 text-center">
+                  <span id="challenge5Completed"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <span id="challenge5DustNeeded"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge5Start" type="button" onclick="gameData.challenges[5].setActive()">Start</button>
+                </div>
+              </div>
+              <div id="sbchallenge" class="row p-0 m-0 bg-dark text-light text-small text-center">
+                <div class="col-md-1 p-0 m-0 text-center">Shield Break</div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge6Description"></span>
+                </div>
+                <div class="col-md-3 p-0 m-0 text-center">
+                  <span id="challenge6Bonus"></span>
+                </div>
+                <div class="col-md-1 p-0 m-0 text-center">
+                  <span id="challenge6Completed"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <span id="challenge6DustNeeded"></span>
+                </div>
+                <div class="col-md-2 p-0 m-0 text-center">
+                  <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge6Start" type="button" onclick="gameData.challenges[6].setActive()">Start</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-secondary">
+              <h5 class="modal-title text-light" id="exampleModalLabel">Equipment</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light">
+              <div class="row p-0 m-0">
+                <div class="col-md-12 p-0 m-0 text-light text-large text-start">
+                  <span id="shardinfo"></span>
                 </div>
               </div>
               <div class="row p-0 m-0">
                 <div class="col-md-12 p-0 m-0">
-                  <div id="TowerBoughtInfo"></div>
+                  <div id="EquipmentInfo"></div>
                 </div>
               </div>
+              Click the A button to activate.  click the S button to move into a save slot.<br />The X button will destroy the gem and gain you shards to use to improve other gems.<br /> Metal Production - multiplier of x to all levels of metal production<br />Weapon Attack - multiplier of 1 + (x/10) to that tower type<br />Mulligans - gain x muligans<br />Crit Multiplier - gain a bonus of sqrt(x) / 10 added to Crit Multiplier<br />Crit Chance - gain x to Crit Chance<br />Poison Effect - multiplier of 1 + (x/10) to Poison Towers
             </div>
-            <div class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px" id="resourcestab" role="tabpanel" aria-labelledby="resources-tab">
-              <div class="row p-0 text-light">
-                <div class="col-md-12 p-0 m-0">
-                  <ul class="nav nav-tabs nav-fill nav-justified" id="myTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                      <a class="nav-link active fw-bold" id="metal-tab" data-bs-toggle="tab" data-bs-target="#metaltab" role="tab" aria-controls="metal" aria-selected="true">Metal</a>
-                    </li>
-                    <li class="nav-item fw-bold" role="presentation">
-                      <a class="nav-link" id="particles-tab" data-bs-toggle="tab" data-bs-target="#particles" role="tab" aria-controls="particles" aria-selected="false">Particles</a>
-                    </li>
-                    <li class="nav-item fw-bold" role="presentation">
-                      <a class="nav-link" id="time-tab" data-bs-toggle="tab" data-bs-target="#time" role="tab" aria-controls="timeparticles" aria-selected="false">Time</a>
-                    </li>
-                  </ul>
-                  <div class="tab-content" id="myTabContentresources">
-                    <div class="tab-pane fade show active p-0 m-1" id="metaltab" role="tabpanel" aria-labelledby="metal-tab">
-                      <div id="labelsderivative">
-                        <div class="row p-0 m-0 bg-dark text-light fw-bold">
-                          <div class="col-md-1 text-start">Name</div>
-                          <div class="col-md-2 text-start"></div>
-                          <div class="col-md-3 text-start"></div>
-                          <div class="col-md-3 text-center">Buy</div>
-                          <div class="col-md-3 text-center">Upgrade</div>
-                        </div>
-                      </div>
-                      <div id="productionderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Production Bonus</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="productionbought">0</span><br />
-                            Owned:<span id="productionowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Production Multiplier: <span id="producitonproduction">0</span>x<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyProduction" onclick="gameData.producer.buy(new JBDecimal(1))">Miner</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuyProduction" onclick="gameData.producer.autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyProductionDustUpgrade" onclick="gameData.producer.buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div id="minerderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Miners</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="minerbought">0</span><br />
-                            Owned:<span id="minerowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">+ <span id="minerproduction">0</span> Metal /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyMiner" onclick="gameData.derivatives[0].buy(new JBDecimal(1))">Miner</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuyMiner" onclick="gameData.derivatives[0].autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyMinerDustUpgrade" onclick="gameData.derivatives[0].buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div id="supervisorderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Supervisor</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="supervisorbought">0</span><br />
-                            Owned:<span id="supervisorowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">+ <span id="supervisorproduction">0</span> Miners /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuySupervisor" onclick="gameData.derivatives[1].buy((new JBDecimal(1)))">Supervisor</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuySupervisor" onclick="gameData.derivatives[1].autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuySupervisorDustUpgrade" onclick="gameData.derivatives[1].buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div id="foremanderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Foreman</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="foremanbought">0</span><br />
-                            Owned:<span id="foremanowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">+ <span id="foremanproduction">0</span> Supervisor /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyForeman" onclick="gameData.derivatives[2].buy((new JBDecimal(1)))">Foreman</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuyForeman" onclick="gameData.derivatives[2].autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyForemanDustUpgrade" onclick="gameData.derivatives[2].buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div id="managerderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Manager</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="managerbought">0</span><br />
-                            Owned:<span id="managerowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">+ <span id="managerproduction">0</span> Foremen /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyManager" onclick="gameData.derivatives[3].buy((new JBDecimal(1)))">Foreman</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuyManager" onclick="gameData.derivatives[3].autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyManagerDustUpgrade" onclick="gameData.derivatives[3].buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div id="middlemanagementderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Middle Management</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="middlemanagementbought">0</span><br />
-                            Owned:<span id="middlemanagementowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">+ <span id="middlemanagementproduction">0</span> Managers /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyMiddleManagement" onclick="gameData.derivatives[4].buy((new JBDecimal(1)))">Middle Manager</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuyMiddleManagement" onclick="gameData.derivatives[4].autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyMiddleManagerDustUpgrade" onclick="gameData.derivatives[4].buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div id="uppermanagementderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Upper Management</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="uppermanagementbought">0</span><br />
-                            Owned:<span id="uppermanagementowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">+ <span id="uppermanagementproduction">0</span> Middle Managers /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyUpperManagement" onclick="gameData.derivatives[5].buy((new JBDecimal(1)))">Upper Management</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuyUpperManagement" onclick="gameData.derivatives[5].autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyUpperManagementDustUpgrade" onclick="gameData.derivatives[5].buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div id="vicepresidentderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Vice President</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="vicepresidentbought">0</span><br />
-                            Owned:<span id="vicepresidentowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">+ <span id="vicepresidentproduction">0</span> Upper Managers /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyVicePresident" onclick="gameData.derivatives[6].buy((new JBDecimal(1)))">Foreman</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuyVicePresident" onclick="gameData.derivatives[6].autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyVicePresidentDustUpgrade" onclick="gameData.derivatives[6].buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div id="presidentderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">President</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="presidentbought">0</span><br />
-                            Owned:<span id="presidentowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">+ <span id="presidentproduction">0</span> Vice Presidents /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyPresident" onclick="gameData.derivatives[7].buy((new JBDecimal(1)))">Foreman</button>
-                            <button class="button text-center autobutton" type="button" id="btnAutoBuyPresident" onclick="gameData.derivatives[7].autoSwitch()">A</button>
-                          </div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyPresidentDustUpgrade" onclick="gameData.derivatives[7].buyUpgrade(new JBDecimal(1))">Upgrade</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="tab-pane fade" id="particles" role="tabpanel" aria-labelledby="particles-tab">
-                      <div class="row p-0 m-0 bg-dark text-light text-xsmall">
-                        <div class="col-md-12 text-center text-large"><span id="particlesamount">0</span> particles give a <span id="particlesb">0</span>x bonus to metal production</div>
-                      </div>
-                      <div id="labels2derivative">
-                        <div class="row p-0 m-0 bg-dark text-light text-large fw-bold">
-                          <div class="col-md-1 text-start">Name</div>
-                          <div class="col-md-2 text-start"></div>
-                          <div class="col-md-3 text-start"></div>
-                          <div class="col-md-3 text-center">Buy</div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="speedderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Speed</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="speedbought">0</span><br />
-                            Owned:<span id="speedowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="speedproduction">0</span> Particles /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuySpeed" onclick="gameData.speedDerivatives[0].buy(new JBDecimal(1))">Speed</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="accelerationderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Acceleration</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="accelerationbought">0</span><br />
-                            Owned:<span id="accelerationowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="accelerationproduction">0</span> Speed /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyAcceleration" onclick="gameData.speedDerivatives[1].buy((new JBDecimal(1)))">Acceleration</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="jerkderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Jerk</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="jerkbought">0</span><br />
-                            Owned:<span id="jerkowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="jerkproduction">0</span> Acceleration /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyJerk" onclick="gameData.speedDerivatives[2].buy((new JBDecimal(1)))">Jerk</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="snapderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Snap</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="snapbought">0</span><br />
-                            Owned:<span id="snapowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="snapproduction">0</span> Jerk /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuySnap" onclick="gameData.speedDerivatives[3].buy((new JBDecimal(1)))">Snap</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="cracklederivative">
-                        <div class="row p-0 m-0 border border-light bg-darky text-light text-xsmall">
-                          <div class="col-md-1 text-start">Crackle</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="cracklebought">0</span><br />
-                            Owned:<span id="crackleowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="crackleproduction">0</span> Snap /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyCrackle" onclick="gameData.speedDerivatives[4].buy((new JBDecimal(1)))">Crackle</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="popderivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Pop</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="popbought">0</span><br />
-                            Owned:<span id="popowned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="popproduction">0</span> Crackle /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyPop" onclick="gameData.speedDerivatives[5].buy((new JBDecimal(1)))">Pop</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="tab-pane fade" id="time" role="tabpanel" aria-labelledby="time-tab">
-                      <div class="row p-0 m-0 bg-dark text-light text-xsmall">
-                        <div class="col-md-12 text-center text-large"><span id="timeparticles">0</span> particles give a <span id="timeparticlesbonus">0</span>x bonus to time</div>
-                      </div>
-                      <div id="labels2derivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-large fw-bold">
-                          <div class="col-md-1 text-start">Name</div>
-                          <div class="col-md-2 text-start"></div>
-                          <div class="col-md-3 text-start"></div>
-                          <div class="col-md-3 text-center">Buy</div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="time1derivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Time 1</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="time1bought">0</span><br />
-                            Owned:<span id="time1owned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="time1production">0</span> Time Particles /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyTime1" onclick="gameData.timeDerivatives[0].buy(new JBDecimal(1))">Speed</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="time2derivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Time 2</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="time2bought">0</span><br />
-                            Owned:<span id="time2owned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="time2production">0</span> Time 1 /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyTime2" onclick="gameData.timeDerivatives[1].buy((new JBDecimal(1)))">Acceleration</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="time3derivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Time 3</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="time3bought">0</span><br />
-                            Owned:<span id="time3owned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="time3production">0</span> Time 2 /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyTime3" onclick="gameData.timeDerivatives[2].buy((new JBDecimal(1)))">Jerk</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="time4derivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Time 4</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="time4bought">0</span><br />
-                            Owned:<span id="time4owned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="time4production">0</span> Time 3 /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyTime4" onclick="gameData.timeDerivatives[3].buy((new JBDecimal(1)))">Snap</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="time5derivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Time 5</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="time5bought">0</span><br />
-                            Owned:<span id="time5owned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="time5production">0</span> Time 4 /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyTime5" onclick="gameData.timeDerivatives[4].buy((new JBDecimal(1)))">Crackle</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                      <div id="time6derivative">
-                        <div class="row p-0 m-0 border border-light bg-dark text-light text-xsmall">
-                          <div class="col-md-1 text-start">Time 6</div>
-                          <div class="col-md-2 text-start">
-                            Bought:<span id="time6bought">0</span><br />
-                            Owned:<span id="time6owned">0</span><br />
-                          </div>
-                          <div class="col-md-3 text-start">Producing: <span id="time6production">0</span> Time 5 /s<br /></div>
-                          <div class="col-md-3 text-center">
-                            <button class="button text-center" type="button" id="btnBuyTime6" onclick="gameData.timeDerivatives[5].buy((new JBDecimal(1)))">Pop</button>
-                          </div>
-                          <div class="col-md-3 text-center"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="modal fade" id="achievementModal" tabindex="-1" aria-labelledby="achievementModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-secondary">
+              <h5 class="modal-title text-light" id="exampleModalLabel">Achievements</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="tab-pane fade px-0 py-0" id="upgradestab" role="tabpanel" aria-labelledby="upgrades-tab">
-              <div class="row p-0 m-0 text-light">
-                <div class="col-md-12 p-0 m-0">
-                  <ul class="nav nav-tabs nav-fill nav-justified" id="myTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                      <a class="nav-link active" id="pebbleupgrades-tab" data-bs-toggle="tab"  data-bs-target="#pebbleupgrades" role="tab" aria-controls="pebbleupgrades" aria-selected="true">Pebble Upgrades</a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                      <a class="nav-link" id="rockupgrades-tab" data-bs-toggle="tab"  data-bs-target="#rockupgrades" role="tab" aria-controls="rockupgrades" aria-selected="false">Rock Upgrades</a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                      <a class="nav-link" id="boulderupgrades-tab" data-bs-toggle="tab"  data-bs-target="#boulderupgrades" role="tab" aria-controls="boulderupgrades" aria-selected="false">Boulder Upgrades</a>
-                    </li>
-                  </ul>
-                  <div class="tab-content" id="myTabContentupgrades">
-                    <div class="tab-pane fade show active overflow-auto" style="height: 420px" id="pebbleupgrades" role="tabpanel" aria-labelledby="pebbleupgrades-tab">
-                      <div class="bg-dark text-light border border-light">
-                        <div class="row p-0 m-0">
-                          <div class="col-xs-12 text-center text-large">Pebbles: <span id="upgradePebbles"></span></div>
-                        </div>
-                      </div>
-                      <div class="row p-0 m-0 bg-dark text-light text-xsmall">
-                        <div class="col-md-12 text-start">
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade0" onclick="gameData.upgrades[0].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade20" onclick="gameData.upgrades[20].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade21" onclick="gameData.upgrades[21].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade1" onclick="gameData.upgrades[1].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade2" onclick="gameData.upgrades[2].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade3" onclick="gameData.upgrades[3].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade4" onclick="gameData.upgrades[4].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade17" onclick="gameData.upgrades[17].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade5" onclick="gameData.upgrades[5].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade6" onclick="gameData.upgrades[6].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade18" onclick="gameData.upgrades[18].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade19" onclick="gameData.upgrades[19].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade7" onclick="gameData.upgrades[7].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade8" onclick="gameData.upgrades[8].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade9" onclick="gameData.upgrades[9].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade10" onclick="gameData.upgrades[10].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade11" onclick="gameData.upgrades[11].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade12" onclick="gameData.upgrades[12].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade13" onclick="gameData.upgrades[13].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade14" onclick="gameData.upgrades[14].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade15" onclick="gameData.upgrades[15].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyUpgrade16" onclick="gameData.upgrades[16].buy()">Upgrade</button>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="tab-pane fade overflow-auto" style="height: 420px" id="rockupgrades" role="tabpanel" aria-labelledby="rockupgrades-tab">
-                      <div class="row p-0 m-0">
-                        <div class="col-xs-12 text-center text-large">Rocks: <span id="upgradeRocks"></span></div>
-                      </div>
-                      <div class="row p-0 m-0 bg-dark text-light text-xsmall">
-                        <div class="col-md-12 text-start">
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade0" onclick="gameData.rockUpgrades[0].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade1" onclick="gameData.rockUpgrades[1].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade15" onclick="gameData.rockUpgrades[15].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade16" onclick="gameData.rockUpgrades[16].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade2" onclick="gameData.rockUpgrades[2].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade3" onclick="gameData.rockUpgrades[3].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade4" onclick="gameData.rockUpgrades[4].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade5" onclick="gameData.rockUpgrades[5].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade6" onclick="gameData.rockUpgrades[6].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade7" onclick="gameData.rockUpgrades[7].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade8" onclick="gameData.rockUpgrades[8].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade9" onclick="gameData.rockUpgrades[9].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade10" onclick="gameData.rockUpgrades[10].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade11" onclick="gameData.rockUpgrades[11].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade12" onclick="gameData.rockUpgrades[12].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade13" onclick="gameData.rockUpgrades[13].buy()">Upgrade</button>
-                          <button class="button upgradebutton text-center" type="button" id="btnBuyRockUpgrade14" onclick="gameData.rockUpgrades[14].buy()">Upgrade</button>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="tab-pane fade overflow-auto" style="height: 420px" id="boulderupgrades" role="tabpanel" aria-labelledby="boulderupgrades-tab">
-                      <div class="row p-0 m-0">
-                        <div class="col-xs-12 text-center text-large">Boulders: <span id="upgradeBoulders"></span></div>
-                      </div>
-                      <div class="row p-0 m-0 bg-dark text-light text-xsmall">
-                        <div class="col-md-12 text-start">
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade0" onclick="gameData.boulderUpgrades[0].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade1" onclick="gameData.boulderUpgrades[1].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade2" onclick="gameData.boulderUpgrades[2].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade3" onclick="gameData.boulderUpgrades[3].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade4" onclick="gameData.boulderUpgrades[4].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade5" onclick="gameData.boulderUpgrades[5].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade6" onclick="gameData.boulderUpgrades[6].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade7" onclick="gameData.boulderUpgrades[7].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade8" onclick="gameData.boulderUpgrades[8].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade9" onclick="gameData.boulderUpgrades[9].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade10" onclick="gameData.boulderUpgrades[10].buy()">Upgrade</button>
-                          <button class="button upgradebutton" type="button" id="btnBuyBoulderUpgrade11" onclick="gameData.boulderUpgrades[11].buy()">Upgrade</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px" id="challengestab" role="tabpanel" aria-labelledby="challenges-tab">
-              <div class="row p-0 m-0 bg-dark text-light text-small">
-                <div class="col-md-12 p-0 m-0 text-center">
-                  <div class="row p-0 m-0 bg-dark text-light text-small text-center">
-                    <div class="col-md-12 p-0 m-0 text-center">
-                      <button class="button text-center" type="button" id="btnChallengeAuto" onclick="challengeAuto()">AutoChallenge</button>
-                    </div>
-                  </div>
-                  <div class="row p-0 m-0 bg-dark text-light text-medium text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Name</div>
-                    <div class="col-md-3 p-0 m-0 text-center">Penalty</div>
-                    <div class="col-md-3 p-0 m-0 text-center">Bonus</div>
-                    <div class="col-md-1 p-0 m-0 text-center">Completed</div>
-                    <div class="col-md-2 p-0 m-0 text-center">Wave Needed</div>
-                    <div class="col-md-2 p-0 m-0 text-center">Actions</div>
-                  </div>
-                  <div class="row p-0 m-0 bg-secondary text-light text-small text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Inflation</div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge0Description"></span>
-                    </div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge0Bonus"></span>
-                    </div>
-                    <div class="col-md-1 p-0 m-0 text-center">
-                      <span id="challenge0Completed"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <span id="challenge0DustNeeded"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge0Start" type="button" onclick="gameData.challenges[0].setActive()">Start</button>
-                    </div>
-                  </div>
-                  <div class="row p-0 m-0 bg-dark text-light text-small text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Production</div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge1Description"></span>
-                    </div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge1Bonus"></span>
-                    </div>
-                    <div class="col-md-1 p-0 m-0 text-center">
-                      <span id="challenge1Completed"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <span id="challenge1DustNeeded"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge1Start" type="button" onclick="gameData.challenges[1].setActive()">Start</button>
-                    </div>
-                  </div>
-                  <div class="row p-0 m-0 bg-secondary text-light text-small text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Shooting Speed</div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge2Description"></span>
-                    </div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge2Bonus"></span>
-                    </div>
-                    <div class="col-md-1 p-0 m-0 text-center">
-                      <span id="challenge2Completed"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <span id="challenge2DustNeeded"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge2Start" type="button" onclick="gameData.challenges[2].setActive()">Start</button>
-                    </div>
-                  </div>
-                  <div id="rangechallenge" class="row p-0 m-0 bg-dark text-light text-small text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Range</div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge3Description"></span>
-                    </div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge3Bonus"></span>
-                    </div>
-                    <div class="col-md-1 p-0 m-0 text-center">
-                      <span id="challenge3Completed"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <span id="challenge3DustNeeded"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge3Start" type="button" onclick="gameData.challenges[3].setActive()">Start</button>
-                    </div>
-                  </div>
-                  <div id="poisonchallenge" class="row p-0 m-0 bg-secondary text-light text-small text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Poison</div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge4Description"></span>
-                    </div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge4Bonus"></span>
-                    </div>
-                    <div class="col-md-1 p-0 m-0 text-center">
-                      <span id="challenge4Completed"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <span id="challenge4DustNeeded"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge4Start" type="button" onclick="gameData.challenges[4].setActive()">Start</button>
-                    </div>
-                  </div>
-                  <div id="slowchallenge" class="row p-0 m-0 bg-dark text-light text-small text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Slow</div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge5Description"></span>
-                    </div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge5Bonus"></span>
-                    </div>
-                    <div class="col-md-1 p-0 m-0 text-center">
-                      <span id="challenge5Completed"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <span id="challenge5DustNeeded"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge5Start" type="button" onclick="gameData.challenges[5].setActive()">Start</button>
-                    </div>
-                  </div>
-                  <div id="critchallenge" class="row p-0 m-0 bg-secondary text-light text-small text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Crits</div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge6Description"></span>
-                    </div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge6Bonus"></span>
-                    </div>
-                    <div class="col-md-1 p-0 m-0 text-center">
-                      <span id="challenge6Completed"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <span id="challenge6DustNeeded"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge6Start" type="button" onclick="gameData.challenges[6].setActive()">Start</button>
-                    </div>
-                  </div>
-                  <div id="sbchallenge" class="row p-0 m-0 bg-dark text-light text-small text-center">
-                    <div class="col-md-1 p-0 m-0 text-center">Shield Break</div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge7Description"></span>
-                    </div>
-                    <div class="col-md-3 p-0 m-0 text-center">
-                      <span id="challenge7Bonus"></span>
-                    </div>
-                    <div class="col-md-1 p-0 m-0 text-center">
-                      <span id="challenge7Completed"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <span id="challenge7DustNeeded"></span>
-                    </div>
-                    <div class="col-md-2 p-0 m-0 text-center">
-                      <button class="btn btn-sm btn-primary challengebutton" id="btnChallenge7Start" type="button" onclick="gameData.challenges[7].setActive()">Start</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div id="achievementtab" role="tabpanel" aria-labelledby="achievement-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px">
+            <div class="modal-body bg-dark text-light">
               <div class="row p-0 m-0 text-light text-center">
                 <div class="col-md-12 p-0 m-0 text-xlarge text-center">Total Bonus to Attacks: <span id="totalachievementbonus">0</span>x</div>
               </div>
@@ -832,19 +366,18 @@
               <div id="TierSection">
               </div>
             </div>
-            <div id="equipmenttab" role="tabpanel" aria-labelledby="equipment-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px">
-              <div class="row p-0 m-0">
-                <div class="col-md-12 p-0 m-0 text-light text-large text-start">
-                  <span id="shardinfo"></span>
-                </div>
-              </div>
-              <div class="row p-0 m-0">
-                <div class="col-md-12 p-0 m-0">
-                  <div id="EquipmentInfo"></div>
-                </div>
-              </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="statisticModal" tabindex="-1" aria-labelledby="statisticModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-secondary">
+              <h5 class="modal-title text-light" id="exampleModalLabel">Statistics</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div id="statisticstab" role="tabpanel" aria-labelledby="statistics-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px">
+            <div class="modal-body bg-dark text-light">
               Highest Wave Cleared: <span id="highestwavereached">0</span><br />
               Current Pebble Prestige Time: <span id="prestige1time">0</span><br />
               Pebble Prestiges: <span id="prestige1count">0</span><br />
@@ -856,10 +389,20 @@
               Boulder Prestiges: <span id="prestige3count">0</span><br />
               Previous 10 Boulder Prestiges: <span id="prestige3history">0</span><br />
             </div>
-            <div id="optionstab" role="tabpanel" aria-labelledby="options-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="optionModal" tabindex="-1" aria-labelledby="optionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-secondary">
+              <h5 class="modal-title text-light" id="exampleModalLabel">Options</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light">
               <!-- <button class="btn btn-sm btn-primary" id="btnNotation" type="button" onclick="changeNotation()">Notation</button> -->
               <button class="btn btn-sm btn-primary" type="button" onclick="myFunction()">Reset</button>
-              <button class="btn btn-sm btn-primary" type="button" onclick="saveGameClick()">Save</button>
               <script>
                 function myFunction() {
                   if (confirm("Clicking ok will reset your game.  You will lose all progress!")) {
@@ -868,19 +411,30 @@
                 }
               </script>
               <br />
+              <button class="btn btn-sm btn-primary" type="button" onclick="cheat1()">Dust Cheat</button><br />
               Email: <span class="myemail">(need JavaScript for email link)</span><br />
               latest version:<label class="myemail text-center" id="result">0.3</label>
-              <button class="btn btn-sm btn-primary" type="button" onclick="cheat1()">Dust Cheat</button>
+
             </div>
-            <div id="glossarytab" role="tabpanel" aria-labelledby="glossary-tab" class="tab-pane fade px-0 py-0 overflow-auto" style="height: 420px">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="glossaryModal" tabindex="-1" aria-labelledby="glossaryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-secondary">
+              <h5 class="modal-title text-light" id="exampleModalLabel">Glossary</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light">
               <div class="row p-0 m-0">
                 <div class="col-md-12 p-1 m-1 text-light text-small text-start">
-                  Inflation: <br /> Anything bought with metal is affected by inflation.  Once you have bought more than the inflation level (which usually starts at 20) then the price begins to increase at a faster rate. The inflation challenge raises the quantity at which inflation begins.<br /><br />
+                  Inflation: <br /> Anything bought with wood ir stone is affected by inflation.  Once you have bought more than the inflation level (which usually starts at 20) then the price begins to increase at a faster rate. The inflation challenge raises the quantity at which inflation begins.<br /><br />
                   Speed:  <br />
                     1x - Run at normal speed<br />
                     2x - Run at double speed<br />
                     5x - Run at 5 times speed<br />
-                    10x - Run at 10 times speed<br />
                     (Speed is always maxed at 50ms per game update.)<br />
                     P  - Pause<br /><br />
 
@@ -890,11 +444,56 @@
                     L - Target enemy with least health remaining<br />
                     H - Target enemy healers first then defaults to F tactic <br /><br />
 
+                  Critical Hits:<br />
+                    If the chance is greater than 100% then you are guranteed at least one critical multiplier.  For example if the chance is 110% and the multiplier is 5 then you are guaranteed a multiplier of 5 and have a 10% chance of a multiplier of 25.
+
+                  Blueprints:
+                  A blueprint of the current tower layout can be stored. You have one blueprint per tier. A level 2 tier can not be used on tier 1. If blueprints are turned on the tower types will be set automatically with zero levels bought after prestige or any map reset.
+                  <!-- Button trigger modal -->
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="row p-0 m-0 fixedrowbottom bg-primary">
+        <table id="bottomRowTable">
+          <tr style="width: 100%">
+            <td class="btn btn-success p-1 m-1" onclick="saveGameClick()" style="width: 10%">
+              Save
+            </td>
+            <td class="btn text-light p-1 m-1" style="background-color:#000000; width: 10%;" data-bs-toggle="modal" data-bs-target="#researchModal">
+              <div>Research</div>
+            </td>
+            <td class="btn text-light p-1 m-1" style="background-color:#181818; width: 10%;" data-bs-toggle="modal" data-bs-target="#upgradeModal">
+              <div>Upgrades</div>
+            </td>
+            <td id="challengesbtn" class="btn text-light p-1 m-1" style="background-color:#303030; width: 10%;" data-bs-toggle="modal" data-bs-target="#challengeModal">
+              <div>Challenges</div>
+            </td>
+            <td id="equipmentbtn" class="btn text-light p-1 m-1" style="background-color:#484848; width: 10%;" data-bs-toggle="modal" data-bs-target="#equipmentModal">
+              <div>Equipment</div>
+            </td>
+            <td class="btn text-light p-1 m-1" style="background-color:#606060; width: 10%;"  data-bs-toggle="modal" data-bs-target="#achievementModal">
+              <div>Achievements</div>
+            </td>
+            <td class="btn text-light p-1 m-1" style="background-color:#707070; width: 10%;" data-bs-toggle="modal" data-bs-target="#statisticModal">
+              <div>Statistics</div>
+            </td>
+            <td class="btn text-light p-1 m-1" style="background-color:#888888; width: 10%;" data-bs-toggle="modal" data-bs-target="#optionModal">
+              <div>Options</div>
+            </td>
+            <td class="btn p-1 m-1" style="background-color:#A0A0A0;color: black; width: 10%;" data-bs-toggle="modal" data-bs-target="#glossaryModal">
+              <div>Glossary</div>
+            </td>
+          </tr>
+        </table>
+         <!-- <div class="col-12 p-0 m-0 text-light text-small text-center">
+          <button class="btn btn-sm btn-primary bottombutton" id="btntest" type="button" onclick="gameData.challenges[6].setActive()">Research</button>
+          <button class="btn btn-sm btn-primary bottombutton" id="btntest" type="button" onclick="gameData.challenges[6].setActive()">Start</button>
+        </div> -->
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>

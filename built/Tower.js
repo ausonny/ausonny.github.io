@@ -1,38 +1,42 @@
 /* eslint-disable max-classes-per-file */
+const LUMBERJACK_COST = 10;
+const LUMBERJACK_MULTIPLIER = 1.2;
+const ARROW_TOWER_COST = 1000;
+const ARROW_TOWER_MULTIPLIER = 1.1;
+const SHACK_COST = 100;
+const SHACK_MULTIPLIER = 1.2;
+const HOUSE_WOOD_COST = 75;
+const HOUSE_WOOD_MULTIPLIER = 1.2;
+const HOUSE_STONE_COST = 50;
+const HOUSE_STONE_MULTIPLIER = 1.2;
+const CATAPULT_WOOD_COST = 250;
+const CATAPULT_WOOD_MULTIPLIER = 1.2;
+const CATAPULT_STONE_COST = 1000;
+const CATAPULT_STONE_MULTIPLIER = 1.2;
+const MANSION_WOOD_COST = 50;
+const MANSION_WOOD_MULTIPLIER = 1.2;
+const MANSION_STONE_COST = 100;
+const MANSION_STONE_MULTIPLIER = 1.2;
+const FLETCHER_COST = 150;
+const FLETCHER_MULTIPLIER = 1.4;
+// const STORAGE_COST = 10;
+// const STORAGE_MULTIPLIER = 1.05;
+const STONEMASON_COST = 200;
+const STONEMASON_MULTIPLIER = 1.2;
+const RED_RESEARCH_LAB_WOOD_COST = 1000;
+const RED_RESEARCH_LAB_WOOD_MULTIPLIER = 1.2;
+const RED_RESEARCH_LAB_STONE_COST = 1000;
+const RED_RESEARCH_LAB_STONE_MULTIPLIER = 1.2;
+const POISON_TOWER_COST = 1;
+const POISON_TOWER_MULTIPLIER = 2;
+const SLOW_TOWER_COST = 1;
+const SLOW_TOWER_MULTIPLIER = 10;
 function getSpecialsArray() {
     const choicesArr = [];
-    for (let index = 0; index < gameData.world.fastEnemiesToSpawn; index++) {
-        choicesArr.push('F');
-    }
-    for (let index = 0; index < gameData.world.tankEnemiesToSpawn; index++) {
-        choicesArr.push('T');
-    }
-    for (let index = 0; index < gameData.world.medicEnemiesToSpawn; index++) {
-        choicesArr.push('M');
-    }
-    for (let index = 0; index < gameData.world.bradleyEnemiesToSpawn; index++) {
-        choicesArr.push('b');
-    }
-    for (let index = 0; index < gameData.world.paladinEnemiesToSpawn; index++) {
-        choicesArr.push('P');
-    }
-    for (let index = 0; index < gameData.world.knightEnemiesToSpawn; index++) {
-        choicesArr.push('K');
-    }
-    for (let index = 0; index < gameData.world.bossEnemiesToSpawn; index++) {
-        choicesArr.push('B');
-    }
-    for (let index = 0; index < gameData.world.flyerEnemiesToSpawn; index++) {
-        choicesArr.push('f');
-    }
-    for (let index = 0; index < gameData.world.dumboEnemiesToSpawn; index++) {
-        choicesArr.push('D');
-    }
-    for (let index = 0; index < gameData.world.hummingbirdEnemiesToSpawn; index++) {
-        choicesArr.push('H');
-    }
-    for (let index = 0; index < gameData.world.clericEnemiesToSpawn; index++) {
-        choicesArr.push('C');
+    for (let type = 0; type <= 32; type++) {
+        for (let index = 0; index < gameData.world.spawnsRemaining[type]; index++) {
+            choicesArr.push(type);
+        }
     }
     return choicesArr;
 }
@@ -72,16 +76,16 @@ class movingObject {
         this.isBullet = isbullet;
         this.targetList = targetlist;
         this.targetListIndex = 0;
-        this.slowed = 0;
+        this.slowed = 1;
     }
     timeToTarget() {
         return this.pos.getLengthFromAnotherVector(this.targetList[this.targetListIndex]) / this.movementPerSec;
     }
     move() {
         let tickmovement = (this.movementPerSec * gameData.world.currentTickLength) / 1000;
-        if (this.slowed > 0) {
-            tickmovement = new JBDecimal(tickmovement).divide(1 + this.slowed).ToNumber();
-            this.slowed = 0;
+        if (this.slowed < 1) {
+            tickmovement *= this.slowed;
+            this.slowed = 1;
         }
         while (tickmovement > 0) {
             if (this.targetListIndex > this.targetList.length) {
@@ -109,34 +113,16 @@ class movingObject {
         }
     }
 }
-class Bullet extends movingObject {
-    constructor(pos, target, damage, defenseDamage, crit) {
-        const tList = [];
-        tList.push(target);
-        super(pos, 100, true, tList);
-        this.damage = new JBDecimal(0);
-        this.damage.mantissa = damage.mantissa;
-        this.damage.exponent = damage.exponent;
-        this.defenseDamage = defenseDamage;
-        this.crit = crit;
-    }
-    draw() {
-        let color = 'white';
-        if (this.crit) {
-            color = 'red';
-        }
-        display.DrawEnemyCircle(display.drone.CurrentHitPoints().divide(10), this.pos, color);
-    }
-}
 function skillDeterioration() {
-    return Math.pow((0.999 - (gameData.world.currentTier - 1) / 1000), gameData.world.currentWave);
+    const divider = 1000;
+    return Math.pow((0.999 - (gameData.world.currentTier - 1) / divider), gameData.world.currentWave);
 }
 function critChance() {
-    if (gameData.challenges[6].active || gameData.challenges[6].completed < 1) {
+    if (gameData.challenges[5].active || gameData.challenges[5].completed < 1) {
         return 0;
     }
-    const bonusPerCompletion = 10 + gameData.boulderUpgrades[6].bought * 5;
-    let ret = bonusPerCompletion * gameData.challenges[6].completed;
+    const bonusPerCompletion = 10; // + gameData.boulderUpgrades[6].bought * 5;
+    let ret = bonusPerCompletion * gameData.challenges[5].completed;
     if (gameData.equipment.length > 0) {
         gameData.equipment[0].abilities.forEach((a) => {
             if (a.name === 'Critical Chance') {
@@ -148,58 +134,48 @@ function critChance() {
     return ret;
 }
 function critMultiplier() {
-    if (gameData.challenges[6].active || gameData.challenges[6].completed < 1) {
+    if (gameData.challenges[5].active || gameData.challenges[5].completed < 1) {
         return 1;
     }
     let ret = 5;
-    ret += gameData.boulderUpgrades[7].bought;
+    // ret += gameData.boulderUpgrades[7].bought;
     if (gameData.equipment.length > 0) {
         gameData.equipment[0].abilities.forEach((a) => {
             if (a.name === 'Crit Multiplier') {
-                ret += a.levels / 10;
+                ret += Math.sqrt(a.levels) / 10;
             }
         });
     }
     return ret;
 }
-function numberOfTowerType(type) {
-    let ret = 0;
-    gameData.towers.forEach((t) => {
-        if (t.type === type) {
-            ret += 1;
-        }
-    });
-    return ret;
-}
-function maxTowersByType(type) {
-    const ret = 1;
-    switch (type) {
-        case 'Gun':
-        case 'Missile':
-        case 'Cannon':
-            return 1;
-        case 'Slow':
-            if (gameData.challenges[5].active || gameData.challenges[5].completed < 1) {
-                return 0;
-            }
-            break;
-        case 'Poison':
-            if (gameData.challenges[4].active || gameData.challenges[4].completed < 1) {
-                return 0;
-            }
-            break;
-        default:
-            break;
+class Bullet extends movingObject {
+    constructor(pos, target, attackValue) {
+        const tList = [];
+        tList.push(target);
+        super(pos, 100, true, tList);
+        this.damage = new JBDecimal(attackValue);
     }
-    return ret;
-}
-function availableTowersByType(type) {
-    return maxTowersByType(type) - numberOfTowerType(type);
-}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function totalAvailableTowers() {
-    const ret = availableTowersByType('Gun') + availableTowersByType('Missile') + availableTowersByType('Cannon') + availableTowersByType('Slow') + availableTowersByType('Poison');
-    return ret;
+    setDamage() {
+        let critchance = critChance();
+        const multiplier = critMultiplier();
+        critchance %= 100;
+        while (critchance >= 100) {
+            this.crit = true;
+            critchance -= 100;
+        }
+        const rndvalue = Math.random() * 100;
+        if (rndvalue < critchance) {
+            this.damage = this.damage.multiply(multiplier);
+            this.crit = true;
+        }
+    }
+    draw() {
+        let color = 'white';
+        if (this.crit) {
+            color = 'red';
+        }
+        display.DrawEnemyCircle(display.drone.currentHitPoints().divide(5), this.pos, [color]);
+    }
 }
 class Tactic {
     constructor() {
@@ -208,7 +184,7 @@ class Tactic {
         this.highestHealth = false;
         this.lowestHealth = false;
     }
-    ChangeTactic(index) {
+    changeTactic(index) {
         switch (index) {
             case 0: {
                 this.fastest = true;
@@ -243,679 +219,834 @@ class Tactic {
     }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-class Tower {
+class Building extends Purchasable {
     constructor(pos, index) {
+        super();
         this.pos = pos;
         this.index = index;
         this.type = '';
-        this.baseAttack = 1;
+        this.baseArrowAttack = 0;
         this.ticksToNextBullet = 0;
-        this.baseRange = 15;
-        this.baseTicksPerShot = 1000;
+        this.baseRange = 0;
+        this.baseShotsPerSec = 0;
+        this.baseProductionPerSec = 0;
         this.active = false;
-        this.baseCost = 10;
-        this.costMultiplier = 2;
-        this.upgradeCost = 1;
-        this.upgradeCostMultiplier = 2;
-        this.levelsInflationFloor = 20;
-        this.bought = 0;
-        this.upgradeLevel = 0;
-        this.autoOn = false;
-        this.CreateDisplay();
+        this.equipmentPhrase = '';
         this.tactics = new Tactic();
+        this.baseHousing = new JBDecimal(0);
+        // this.baseWoodStorage = 0;
+        // this.baseArrowStorage = 0;
+        // this.baseRedResearchStorage = 0;
+        this.baseSlow = 0;
+        this.tactics.changeTactic(0);
+        this.netStonePerSec = new JBDecimal(0);
+        this.netWoodPerSec = new JBDecimal(0);
+        this.netArrowPerSec = new JBDecimal(0);
+        this.netRedResearchPerSec = new JBDecimal(0);
     }
-    autoBuy() {
-        if (!this.autoOn) {
-            return;
+    // eslint-disable-next-line no-use-before-define
+    chooseEnemyToShoot() {
+        const enemiesInRange = [];
+        gameData.enemies.forEach((e) => {
+            const len = e.pos.getLengthFromAnotherVector(this.pos);
+            if (len <= this.range()) {
+                enemiesInRange.push(e);
+            }
+        });
+        if (enemiesInRange.length <= 0) {
+            this.ticksToNextBullet = 1;
+            return null;
         }
-        if (!this.active) {
-            return;
+        enemiesInRange.sort((a, b) => (a.timeFromExit() > b.timeFromExit() ? 1 : -1));
+        let indexToUse = 0; // we return the fastest to exit by default
+        if (this.tactics.healer) {
+            for (let index = enemiesInRange.length - 1; index >= 0; index--) {
+                const e = enemiesInRange[index];
+                if (e.healer) {
+                    indexToUse = index;
+                }
+            }
         }
-        if (this.type === '') {
-            return;
+        if (this.tactics.highestHealth) {
+            let currenthigh = new JBDecimal(enemiesInRange[0].expectedHitPointsRemaining());
+            for (let index = 0; index < enemiesInRange.length; index++) {
+                const e = enemiesInRange[index];
+                if (e.expectedHitPointsRemaining().greaterThan(currenthigh)) {
+                    indexToUse = index;
+                    currenthigh = e.expectedHitPointsRemaining();
+                }
+            }
         }
-        const moneyavailable = 100;
-        if (gameData.resources.metal.amount.lessThan(this.buyCost().multiply(moneyavailable))) {
-            return;
+        if (this.tactics.lowestHealth) {
+            let currentlow = new JBDecimal(enemiesInRange[0].expectedHitPointsRemaining());
+            for (let index = 0; index < enemiesInRange.length; index++) {
+                const e = enemiesInRange[index];
+                if (e.expectedHitPointsRemaining().lessThan(currentlow)) {
+                    indexToUse = index;
+                    currentlow = e.expectedHitPointsRemaining();
+                }
+            }
         }
-        this.buy();
+        return enemiesInRange[indexToUse];
     }
-    Attack() {
-        this.ticksToNextBullet -= gameData.world.currentTickLength;
-        if (this.ticksToNextBullet <= 0) {
-            const enemiesInRange = [];
-            const attackValue = this.AttackValue();
-            if (gameData.enemies.length > 0) {
-                gameData.enemies.forEach((e) => {
-                    const len = e.pos.getLengthFromAnotherVector(this.pos);
-                    if (len <= this.Range() && e.expectedHitsRemaining(attackValue) > 0) {
-                        enemiesInRange.push(e);
-                    }
-                });
-            }
-            if (enemiesInRange.length > 0) {
-                if (this.tactics.fastest) {
-                    enemiesInRange.sort((a, b) => (a.timeFromExit() > b.timeFromExit() ? 1 : -1));
-                }
-                else if (this.tactics.healer) {
-                    enemiesInRange.sort((a, b) => (a.timeFromExit() > b.timeFromExit() ? 1 : -1));
-                    let healersfound = 0;
-                    enemiesInRange.forEach((e, index) => {
-                        if (e.type === 'Cleric' || e.type === 'Medic') {
-                            healersfound += 1;
-                            enemiesInRange.unshift(enemiesInRange.splice(index, 1)[0]);
-                        }
-                    });
-                    if (healersfound > 0) {
-                        enemiesInRange.unshift(enemiesInRange.splice(healersfound - 1, 1)[0]);
-                    }
-                }
-                else if (this.tactics.highestHealth) {
-                    enemiesInRange.sort((a, b) => (a.expectedHitsRemaining(attackValue) < b.expectedHitsRemaining(attackValue) ? 1 : -1));
-                }
-                else if (this.tactics.lowestHealth) {
-                    enemiesInRange.sort((a, b) => (a.expectedHitsRemaining(attackValue) > b.expectedHitsRemaining(attackValue) ? 1 : -1));
-                }
-                enemiesInRange[0].beTargetedByWeapon(attackValue, this.pos, 0);
-                this.ticksToNextBullet += this.ticksPerShot();
-            }
-            else {
-                this.ticksToNextBullet = 0;
+    attack(attackValue) {
+        this.ticksToNextBullet += this.ticksPerShot();
+        if (gameData.enemies.length <= 0 || gameData.resources.arrow.amount.lessThanOrEqualTo(0)) {
+            this.ticksToNextBullet = 1;
+            return;
+        }
+        const chosenEnemy = this.chooseEnemyToShoot();
+        if (chosenEnemy == null) {
+            return;
+        }
+        gameData.resources.arrow.subtract(new JBDecimal(1));
+        const shieldBreak = this.shieldBreakValue();
+        if (shieldBreak > 0 && chosenEnemy.defense.greaterThan(0)) {
+            chosenEnemy.defense = chosenEnemy.defense.subtract(attackValue.multiply(shieldBreak));
+            if (chosenEnemy.defense.lessThan(0)) {
+                chosenEnemy.defense = new JBDecimal(0);
             }
         }
+        chosenEnemy.beTargetedByWeapon(attackValue, this.pos);
+    }
+    poisonEnemies() {
+        const poisonValue = this.poisonAttackValue();
+        if (gameData.enemies.length > 0) {
+            gameData.enemies.forEach((e) => {
+                const len = e.pos.getLengthFromAnotherVector(this.pos);
+                if (len <= this.range()) {
+                    e.poisonPerSec = e.poisonPerSec.add(poisonValue.multiply(gameData.world.currentTickLength / 1000));
+                }
+            });
+        }
+    }
+    // eslint-disable-next-line class-methods-use-this
+    shieldBreakValue() {
+        if (gameData.challenges[6].active || gameData.challenges[6].completed === 0) {
+            return 0;
+        }
+        let ret = gameData.challenges[6].completed / 10;
+        ret *= skillDeterioration();
+        return ret;
+    }
+    slowToValue() {
+        if (gameData.challenges[4].active || gameData.challenges[4].completed === 0) {
+            return 1;
+        }
+        let ret = Math.pow((1 - this.baseSlow / 20), (this.bought * gameData.challenges[4].completed));
+        ret /= skillDeterioration();
+        return ret;
+    }
+    slowEnemies() {
+        const slowToValue = this.slowToValue();
+        gameData.enemies.forEach((e) => {
+            const len = e.pos.getLengthFromAnotherVector(this.pos);
+            if (len <= this.range()) {
+                if (e.slowed > slowToValue) {
+                    e.slowed = slowToValue;
+                }
+            }
+        });
+    }
+    poisonAttackValue() {
+        if (gameData.challenges[3].active || gameData.challenges[3].completed === 0) {
+            return new JBDecimal(0);
+        }
+        let ret = new JBDecimal(this.basePoisonAttack * this.bought * gameData.challenges[3].completed).multiply(getAchievementBonus());
+        ret = ret.multiply(Math.pow((1 + gameData.pebbleUpgrades[8].bought / 100), this.bought));
+        ret = ret.multiply(Math.pow(1.1, gameData.researches[6].bought));
+        ret = ret.multiply(Math.pow(2, gameData.pebbleUpgrades[3].bought));
+        return ret;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    getEfficiencyRating() {
+        let efficiencyRating = 1;
+        if (gameData.challenges[7].active || gameData.challenges[7].completed === 0) {
+            return efficiencyRating;
+        }
+        efficiencyRating /= Math.pow(1.1, gameData.challenges[7].completed);
+        return efficiencyRating;
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     act() {
+        this.netWoodPerSec = new JBDecimal(0);
+        this.netStonePerSec = new JBDecimal(0);
+        this.netArrowPerSec = new JBDecimal(0);
+        this.netRedResearchPerSec = new JBDecimal(0);
+        if (this.type === '') {
+            return;
+        }
+        if (this.type === 'LumberJack') {
+            // if (gameData.resources.wood.amount.greaterThanOrEqualTo(totalWoodStorage)) {
+            //   return;
+            // }
+            const production = this.woodProductionPerSec();
+            const productionThisTick = new JBDecimal(production).multiply(gameData.world.currentTickLength / 1000);
+            gameData.resources.wood.add(productionThisTick);
+            this.netWoodPerSec = new JBDecimal(production);
+            return;
+        }
+        if (this.type === 'RedResearchLab') {
+            const productionCapability = (this.redResearchProductionPerSec() * gameData.world.currentTickLength) / 1000;
+            const rawMaterials = productionCapability * 1000 * this.getEfficiencyRating();
+            const resourcesPerSec = new JBDecimal((-1 * (rawMaterials * 1000)) / gameData.world.currentTickLength);
+            this.netArrowPerSec = new JBDecimal(resourcesPerSec.divide(10));
+            this.netStonePerSec = new JBDecimal(resourcesPerSec);
+            this.netRedResearchPerSec = new JBDecimal(this.redResearchProductionPerSec());
+            if (gameData.resources.arrow.amount.lessThan(rawMaterials / 10)) {
+                return;
+            }
+            if (gameData.resources.stone.amount.lessThan(rawMaterials)) {
+                return;
+            }
+            gameData.resources.redResearch.add(new JBDecimal(productionCapability));
+            gameData.resources.arrow.subtract(new JBDecimal(rawMaterials / 10));
+            gameData.resources.stone.subtract(new JBDecimal(rawMaterials));
+            return;
+        }
+        if (this.type === 'StoneMason') {
+            // if (gameData.resources.stone.amount.greaterThanOrEqualTo(totalStoneStorage)) {
+            //   return;
+            // }
+            const production = this.stoneProductionPerSec();
+            const productionThisTick = new JBDecimal(production).multiply(gameData.world.currentTickLength / 1000);
+            gameData.resources.stone.add(productionThisTick);
+            this.netStonePerSec = new JBDecimal(production);
+            return;
+        }
+        if (this.type === 'Fletcher') {
+            const productionCapability = (this.arrowProductionPerSec() * gameData.world.currentTickLength) / 1000;
+            const rawMaterials = productionCapability * this.getEfficiencyRating();
+            const resourcesPerSec = new JBDecimal((-100 * rawMaterials) / gameData.world.currentTickLength); // .1 wood per arrow *1000/10 combined to 100
+            this.netWoodPerSec = new JBDecimal(resourcesPerSec);
+            this.netArrowPerSec = new JBDecimal(this.arrowProductionPerSec());
+            if (gameData.resources.wood.amount.lessThan(rawMaterials)) {
+                return;
+            }
+            gameData.resources.arrow.add(new JBDecimal(productionCapability));
+            gameData.resources.wood.subtract(new JBDecimal(rawMaterials));
+            return;
+        }
+        if (gameData.enemies.length <= 0) {
+            return;
+        }
+        if (this.baseArrowAttack > 0) {
+            this.ticksToNextBullet -= gameData.world.currentTickLength;
+            while (this.ticksToNextBullet < 0) {
+                this.attack(this.arrowAttackValue());
+            }
+            this.netArrowPerSec = new JBDecimal(this.shotsPerSecond() * -1);
+        }
+        if (this.baseCatapultAttack > 0) {
+            this.ticksToNextBullet -= gameData.world.currentTickLength;
+            while (this.ticksToNextBullet < 0) {
+                this.attack(this.catapultAttackValue());
+            }
+            this.netStonePerSec = new JBDecimal(this.shotsPerSecond() * -10);
+        }
+        if (this.basePoisonAttack > 0) {
+            this.poisonEnemies();
+        }
+        if (this.baseSlow > 0) {
+            this.slowEnemies();
+        }
+    }
+    DisplayBuildingText(initialtext, textColor, fonstsize = 12) {
+        // eslint-disable-next-line no-case-declarations
+        const lines = `${initialtext}<br /><br />${this.getResourcesNeededString()}`.split('<br />');
+        // eslint-disable-next-line no-case-declarations
+        let offset = 0 - lines.length / 2;
+        lines.forEach((element) => {
+            display.drawText(element, new Vector(this.pos.x, this.pos.y + (offset * fonstsize) / 12), textColor, `${display.getFontSizeString(fonstsize)}px Arial`, 'center', 'top');
+            offset += 1;
+        });
+    }
+    drawRange() {
         switch (this.type) {
-            case 'Gun':
-            case 'Missile':
-            case 'Cannon':
-                this.Attack();
+            case 'ArrowTower':
+                display.DrawCircle(this.pos, 0.1, this.range(), 'tomato');
                 break;
-            case 'Poison':
-                // eslint-disable-next-line no-case-declarations
-                const poisonDamage = this.PoisonAttack();
-                gameData.enemies.forEach((e) => {
-                    const len = e.pos.getLengthFromAnotherVector(this.pos);
-                    if (len <= this.Range()) {
-                        e.poisonPerSec = e.poisonPerSec.add(poisonDamage);
-                    }
-                });
+            case 'Catapult':
+                display.DrawCircle(this.pos, 0.1, this.range(), 'salmon');
                 break;
-            case 'Slow':
-                if (gameData.enemies.length > 0) {
-                    gameData.enemies.forEach((e) => {
-                        const len = e.pos.getLengthFromAnotherVector(this.pos);
-                        if (len <= this.Range()) {
-                            if (e.slowed < this.SlowEffect())
-                                e.slowed = this.SlowEffect();
-                        }
-                    });
-                }
+            case 'PoisonTower':
+                display.DrawCircle(this.pos, 0.1, this.range(), 'green');
+                break;
+            case 'SlowTower':
+                display.DrawCircle(this.pos, 0.1, this.range(), 'blue');
                 break;
             default:
                 break;
-        }
-    }
-    updateTacticButtons() {
-        this.button3Element.classList.remove('d-none', 'hiddenSpaceTaken', 'bg-danger', 'bg-success');
-        this.button4Element.classList.remove('d-none', 'hiddenSpaceTaken', 'bg-danger', 'bg-success');
-        this.button5Element.classList.remove('d-none', 'hiddenSpaceTaken', 'bg-danger', 'bg-success');
-        this.button6Element.classList.remove('d-none', 'hiddenSpaceTaken', 'bg-danger', 'bg-success');
-        this.button3Element.innerHTML = 'F';
-        this.button4Element.innerHTML = 'M';
-        this.button5Element.innerHTML = 'L';
-        this.button6Element.innerHTML = 'H';
-        this.button6Element.classList.add('hiddenSpaceTaken');
-        if (gameData.rockUpgrades[11].bought > 0) {
-            this.button6Element.classList.remove('hiddenSpaceTaken');
-        }
-        else if (this.tactics.healer) {
-            this.tactics.healer = false;
-            this.tactics.fastest = true;
-        }
-        if (this.tactics.fastest) {
-            this.button3Element.classList.add('autobutton', 'bg-success');
-            this.button4Element.classList.add('autobutton', 'bg-danger');
-            this.button5Element.classList.add('autobutton', 'bg-danger');
-            this.button6Element.classList.add('autobutton', 'bg-danger');
-        }
-        if (this.tactics.highestHealth) {
-            this.button3Element.classList.add('autobutton', 'bg-danger');
-            this.button4Element.classList.add('autobutton', 'bg-success');
-            this.button5Element.classList.add('autobutton', 'bg-danger');
-            this.button6Element.classList.add('autobutton', 'bg-danger');
-        }
-        if (this.tactics.lowestHealth) {
-            this.button3Element.classList.add('autobutton', 'bg-danger');
-            this.button4Element.classList.add('autobutton', 'bg-danger');
-            this.button5Element.classList.add('autobutton', 'bg-success');
-            this.button6Element.classList.add('autobutton', 'bg-danger');
-        }
-        if (this.tactics.healer) {
-            this.button3Element.classList.add('autobutton', 'bg-danger');
-            this.button4Element.classList.add('autobutton', 'bg-danger');
-            this.button5Element.classList.add('autobutton', 'bg-danger');
-            this.button6Element.classList.add('autobutton', 'bg-success');
         }
     }
     draw() {
-        if (lastachievementcount > 25) {
-            this.button1AutoElement.classList.remove('d-none');
-        }
-        else {
-            this.button1AutoElement.classList.add('d-none');
-        }
-        this.deleteElement.classList.remove('d-none');
-        document.getElementById(`Tower${this.index.toString()}Info`).innerHTML = `${this.type} ${this.index.toString()}`;
         switch (this.type) {
-            case 'Gun':
-            case 'Missile':
-            case 'Cannon': {
-                let color = 'red';
-                if (this.type === 'Missile') {
-                    color = 'orange';
-                }
-                else if (this.type === 'Cannon') {
-                    color = 'yellow';
-                }
-                if (this.autoOn) {
-                    this.button1AutoElement.classList.remove('bg-danger');
-                    this.button1AutoElement.classList.add('bg-success');
-                }
-                else {
-                    this.button1AutoElement.classList.add('bg-danger');
-                    this.button1AutoElement.classList.remove('bg-success');
-                }
-                display.DrawSolidSquare(display.drone.CurrentHitPoints().multiply(10), this.pos, 'grey');
-                display.DrawEnemyCircle(display.drone.CurrentHitPoints().multiply(5), this.pos, color);
-                if (this.showRangeElement.checked) {
-                    display.DrawCircle(this.pos, 0.02, this.Range(), color);
-                }
-                let towerstats = ` Shots: ${new JBDecimal(this.ShotsPerSecond()).ToString()} /s<br />`;
-                towerstats += `Range: ${new JBDecimal(this.Range()).ToString()}<br />`;
-                if (gameData.challenges[6].completed > 0 && !gameData.challenges[6].active) {
-                    towerstats += `Crit Chance: ${new JBDecimal(critChance()).ToString()}%`;
-                    towerstats += ` Crit Multiplier: ${new JBDecimal(critMultiplier()).ToString()}<br />`;
-                }
-                // if (gameData.challenges[7].completed > 0 && !gameData.challenges[7].active) {
-                //   towerstats += `Shield Break: ${new JBDecimal(gameData.towers[0].DefenseDamage()).multiply(100).ToString()}%<br />`;
-                // }
-                // eslint-disable-next-line prefer-template, prettier/prettier
-                document.getElementById('Tower' + this.index.toString() + 'Info').innerHTML = this.type + ' ' + this.index.toString() + ' Attack: ' + this.AttackValue().toString() + towerstats;
-                this.towerRow.classList.add(color);
-                if (color === 'yellow') {
-                    this.towerRow.classList.remove('text-light');
-                    this.towerRow.classList.add('text-dark');
-                }
-                if (this.affordBuy()) {
-                    this.button1Element.classList.add('btn-success');
-                    this.button1Element.classList.remove('btn-danger');
-                }
-                else {
-                    this.button1Element.classList.remove('btn-success');
-                    this.button1Element.classList.add('btn-danger');
-                }
-                this.button1Element.innerHTML = `Metal: ${this.buyCost().ToString()}`;
-                this.button2Element.classList.remove('d-none');
-                if (this.affordUpgrade()) {
-                    this.button2Element.classList.add('btn-success');
-                    this.button2Element.classList.remove('btn-danger');
-                }
-                else {
-                    this.button2Element.classList.remove('btn-success');
-                    this.button2Element.classList.add('btn-danger');
-                }
-                this.button2Element.innerHTML = `Dust: ${this.buyUpgradeCost().ToString()}`;
-                this.updateTacticButtons();
+            case 'LumberJack':
+                display.DrawSolidSmallDiamond(display.drone.currentHitPoints().multiply(10), this.pos, 'burlywood');
+                this.DisplayBuildingText(`Level: ${this.bought}<br />+${new JBDecimal(this.woodProductionPerSec()).toString()} wood /s`, 'black');
                 break;
-            }
-            case 'Slow': {
-                if (this.autoOn) {
-                    this.button1AutoElement.classList.remove('bg-danger');
-                    this.button1AutoElement.classList.add('bg-success');
-                }
-                else {
-                    this.button1AutoElement.classList.add('bg-danger');
-                    this.button1AutoElement.classList.remove('bg-success');
-                }
-                display.DrawSolidSquare(display.drone.CurrentHitPoints().multiply(10), this.pos, 'grey');
-                display.DrawSolidSquare(display.drone.CurrentHitPoints().multiply(6.9), this.pos, 'blue');
-                display.DrawSolidDiamond(display.drone.CurrentHitPoints().multiply(6.9), this.pos, 'blue');
-                if (this.showRangeElement.checked) {
-                    display.DrawCircle(this.pos, 0.02, this.Range(), 'blue');
-                }
-                document.getElementById(`Tower${this.index.toString()}Info`).innerHTML += `<br />Slow: ${(1 / (1 + this.SlowEffect())).toFixed(3)}`;
-                this.towerRow.classList.add('bg-primary');
-                if (gameData.challenges[5].active || gameData.challenges[5].completed < 1) {
-                    this.button1Element.classList.add('d-none');
-                    this.button1AutoElement.classList.add('d-none');
-                    this.button2Element.classList.add('d-none');
-                }
-                else {
-                    this.button1Element.classList.remove('d-none');
-                    this.button1AutoElement.classList.remove('d-none');
-                    this.button2Element.classList.remove('d-none');
-                }
-                if (this.affordBuy()) {
-                    this.button1Element.classList.add('btn-success');
-                    this.button1Element.classList.remove('btn-danger');
-                }
-                else {
-                    this.button1Element.classList.remove('btn-success');
-                    this.button1Element.classList.add('btn-danger');
-                }
-                this.button1Element.innerHTML = `Metal: ${this.buyCost().ToString()}`;
-                if (this.affordUpgrade()) {
-                    this.button2Element.classList.add('btn-success');
-                    this.button2Element.classList.remove('btn-danger');
-                }
-                else {
-                    this.button2Element.classList.remove('btn-success');
-                    this.button2Element.classList.add('btn-danger');
-                }
-                this.button2Element.innerHTML = `Dust: ${this.buyUpgradeCost().ToString()}`;
-                this.button3Element.classList.add('hiddenSpaceTaken', 'autobutton');
-                this.button4Element.classList.add('hiddenSpaceTaken', 'autobutton');
-                this.button5Element.classList.add('hiddenSpaceTaken', 'autobutton');
-                this.button6Element.classList.add('hiddenSpaceTaken', 'autobutton');
+            case 'StoneMason':
+                display.DrawSolidSmallDiamond(display.drone.currentHitPoints().multiply(10), this.pos, 'gainsboro');
+                this.DisplayBuildingText(`Level: ${this.bought}<br />+${new JBDecimal(this.stoneProductionPerSec()).toString()} stone /s`, 'black');
                 break;
-            }
-            case 'Poison': {
-                if (this.autoOn) {
-                    this.button1AutoElement.classList.remove('bg-danger');
-                    this.button1AutoElement.classList.add('bg-success');
-                }
-                else {
-                    this.button1AutoElement.classList.add('bg-danger');
-                    this.button1AutoElement.classList.remove('bg-success');
-                }
-                display.DrawSolidSquare(display.drone.CurrentHitPoints().multiply(10), this.pos, 'grey');
-                display.DrawSolidDiamond(display.drone.CurrentHitPoints().multiply(6.9), this.pos, 'green');
-                if (this.showRangeElement.checked) {
-                    display.DrawCircle(this.pos, 0.02, this.Range(), 'green');
-                }
-                document.getElementById(`Tower${this.index.toString()}Info`).innerHTML += `<br />Poison: ${this.PoisonAttack().ToString()}`;
-                this.towerRow.classList.add('bg-success');
-                if (gameData.challenges[4].active || gameData.challenges[4].completed < 1) {
-                    this.button1Element.classList.add('d-none');
-                    this.button1AutoElement.classList.add('d-none');
-                    this.button2Element.classList.add('d-none');
-                }
-                else {
-                    this.button1Element.classList.remove('d-none');
-                    this.button1AutoElement.classList.remove('d-none');
-                    this.button2Element.classList.remove('d-none');
-                }
-                if (this.affordBuy()) {
-                    this.button1Element.classList.add('btn-success');
-                    this.button1Element.classList.remove('btn-danger');
-                }
-                else {
-                    this.button1Element.classList.remove('btn-success');
-                    this.button1Element.classList.add('btn-danger');
-                }
-                this.button1Element.innerHTML = `Metal: ${this.buyCost().ToString()}`;
-                if (this.affordUpgrade()) {
-                    this.button2Element.classList.add('btn-success');
-                    this.button2Element.classList.remove('btn-danger');
-                }
-                else {
-                    this.button2Element.classList.remove('btn-success');
-                    this.button2Element.classList.add('btn-danger');
-                }
-                this.button2Element.innerHTML = `Dust: ${this.buyUpgradeCost().ToString()}`;
-                this.button3Element.classList.add('hiddenSpaceTaken', 'autobutton');
-                this.button4Element.classList.add('hiddenSpaceTaken', 'autobutton');
-                this.button5Element.classList.add('hiddenSpaceTaken', 'autobutton');
-                this.button6Element.classList.add('hiddenSpaceTaken', 'autobutton');
+            case 'Fletcher':
+                display.DrawSolidSmallDiamond(display.drone.currentHitPoints().multiply(10), this.pos, 'brown');
+                this.DisplayBuildingText(`Level: ${this.bought}<br />+${new JBDecimal(this.arrowProductionPerSec()).toString()} arrows /s`, 'white');
                 break;
-            }
+            case 'RedResearchLab':
+                display.DrawSolidSmallDiamond(display.drone.currentHitPoints().multiply(10), this.pos, 'red');
+                this.DisplayBuildingText(`Level: ${this.bought}<br />+${new JBDecimal(this.redResearchProductionPerSec()).toString()} red research /s`, 'white');
+                break;
+            case 'Shack':
+                display.DrawSolidSquare(display.drone.currentHitPoints().multiply(10), this.pos, 'white');
+                this.DisplayBuildingText(`Level: ${this.bought}<br />Housing: ${new JBDecimal(this.housingAvailable()).toString()}`, 'black');
+                break;
+            case 'House':
+                display.DrawSolidSquare(display.drone.currentHitPoints().multiply(10), this.pos, 'snow');
+                this.DisplayBuildingText(`Level: ${this.bought}<br />Housing: ${new JBDecimal(this.housingAvailable()).toString()}`, 'black');
+                break;
+            case 'Mansion':
+                display.DrawSolidSquare(display.drone.currentHitPoints().multiply(10), this.pos, 'ivory');
+                this.DisplayBuildingText(`Level: ${this.bought}<br />Housing: ${new JBDecimal(this.housingAvailable()).toString()}`, 'black');
+                break;
+            case 'ArrowTower':
+                display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(5), this.pos, ['tomato']);
+                this.DisplayBuildingText(`Level: ${this.bought}<br />Damage: ${new JBDecimal(this.arrowAttackValue()).toString()}<br />Shots: ${new JBDecimal(this.shotsPerSecond()).toString()} /s`, 'white');
+                break;
+            case 'Catapult':
+                display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(5), this.pos, ['salmon']);
+                this.DisplayBuildingText(`Level: ${this.bought}<br />Damage: ${new JBDecimal(this.catapultAttackValue()).toString()}<br />Shots: ${new JBDecimal(this.shotsPerSecond()).toString()} /s`, 'white', 10);
+                break;
+            case 'PoisonTower':
+                display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(5), this.pos, ['green']);
+                this.DisplayBuildingText(`Level: ${this.bought}<br />Damage: ${new JBDecimal(this.poisonAttackValue()).toString()}`, 'white');
+                break;
+            case 'SlowTower':
+                display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(5), this.pos, ['blue']);
+                this.DisplayBuildingText(`Level: ${this.bought}<br />Slow: ${new JBDecimal(this.slowToValue()).toString()}`, 'white');
+                break;
             case '':
-            default: {
-                this.button1AutoElement.classList.add('d-none');
-                display.DrawSolidSquare(display.drone.CurrentHitPoints().multiply(10), this.pos, 'grey');
-                if (availableTowersByType('Gun') > 0) {
-                    this.button1Element.classList.remove('d-none', 'hiddenSpaceTaken');
-                    this.baseCost = 10;
-                    if (this.affordBuy()) {
-                        this.button1Element.classList.add('btn-success');
-                        this.button1Element.classList.remove('btn-danger');
+                display.DrawSolidSquare(display.drone.currentHitPoints().multiply(10), this.pos, 'grey');
+                display.drawText(this.index.toString(), this.pos, 'white', '12px Arial', 'center', 'middle');
+                if (activeBuilding != null) {
+                    if (activeBuilding.index === this.index) {
+                        display.DrawSolidSquare(display.drone.currentHitPoints().multiply(10), this.pos, 'silver');
+                        display.drawText(this.index.toString(), this.pos, 'black', '12px Arial', 'center', 'middle');
                     }
-                    else {
-                        this.button1Element.classList.remove('btn-success');
-                        this.button1Element.classList.add('btn-danger');
-                    }
-                    this.button1Element.innerHTML = `Buy Gun (Metal: ${this.baseCost.toString()})`;
                 }
-                else {
-                    this.button1Element.classList.add('hiddenSpaceTaken');
-                }
-                if (availableTowersByType('Missile') > 0) {
-                    this.button2Element.classList.remove('d-none', 'hiddenSpaceTaken');
-                    this.baseCost = 10;
-                    if (this.affordBuy()) {
-                        this.button2Element.classList.add('btn-success');
-                        this.button2Element.classList.remove('btn-danger');
-                    }
-                    else {
-                        this.button2Element.classList.remove('btn-success');
-                        this.button2Element.classList.add('btn-danger');
-                    }
-                    this.button2Element.innerHTML = `Buy Missile (Metal: ${this.baseCost.toString()})`;
-                }
-                else {
-                    this.button2Element.classList.add('hiddenSpaceTaken');
-                }
-                if (availableTowersByType('Cannon') > 0) {
-                    this.button3Element.classList.remove('d-none', 'hiddenSpaceTaken');
-                    this.baseCost = 10;
-                    if (this.affordBuy()) {
-                        this.button3Element.classList.add('btn-success');
-                        this.button3Element.classList.remove('btn-danger');
-                    }
-                    else {
-                        this.button3Element.classList.remove('btn-success');
-                        this.button3Element.classList.add('btn-danger');
-                    }
-                    this.button3Element.innerHTML = `Buy Cannon (Metal: ${this.baseCost.toString()})`;
-                }
-                else {
-                    this.button3Element.classList.add('hiddenSpaceTaken');
-                }
-                if (availableTowersByType('Slow') < 1 || gameData.challenges[5].active || gameData.challenges[5].completed < 1) {
-                    this.button5Element.classList.add('hiddenSpaceTaken');
-                }
-                else {
-                    this.button5Element.classList.remove('d-none', 'hiddenSpaceTaken');
-                    this.baseCost = 1000000;
-                    if (this.affordBuy()) {
-                        this.button5Element.classList.add('btn-success');
-                        this.button5Element.classList.remove('btn-danger');
-                    }
-                    else {
-                        this.button5Element.classList.remove('btn-success');
-                        this.button5Element.classList.add('btn-danger');
-                    }
-                    this.button5Element.innerHTML = `Buy Slow (Metal: ${new JBDecimal(this.baseCost).toString()})`;
-                }
-                if (availableTowersByType('Poison') < 1 || gameData.challenges[4].active || gameData.challenges[4].completed < 1) {
-                    this.button4Element.classList.add('hiddenSpaceTaken');
-                }
-                else {
-                    this.button4Element.classList.remove('d-none', 'hiddenSpaceTaken');
-                    this.baseCost = 100;
-                    if (this.affordBuy()) {
-                        this.button4Element.classList.add('btn-success');
-                        this.button4Element.classList.remove('btn-danger');
-                    }
-                    else {
-                        this.button4Element.classList.remove('btn-success');
-                        this.button4Element.classList.add('btn-danger');
-                    }
-                    this.button4Element.innerHTML = `Buy Poison (Metal: ${this.baseCost.toString()})`;
-                }
-                this.deleteElement.classList.add('d-none');
-                this.button6Element.classList.add('d-none');
                 break;
+            default:
+                break;
+        }
+        if (this.type !== '') {
+            // draw delete button
+            display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(1), new Vector(this.pos.x, this.pos.y + 4), ['red']);
+            display.drawText('X', new Vector(this.pos.x, this.pos.y + 4), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+            // draw buy button
+            if (this.affordBuy()) {
+                display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(1), new Vector(this.pos.x, this.pos.y - 4), ['green']);
             }
-        }
-        if (this.type === 'Cannon' || this.type === 'Missile') {
-            display.drawText(this.index.toString(), this.pos, 'black', '12px Arial', 'center', 'middle');
-        }
-        else {
-            display.drawText(this.index.toString(), this.pos, 'white', '12px Arial', 'center', 'middle');
+            else {
+                display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(1), new Vector(this.pos.x, this.pos.y - 4), ['red']);
+            }
+            display.drawText('+', new Vector(this.pos.x, this.pos.y - 4), 'white', `${display.getFontSizeString(12)}px Arial bold`, 'center', 'middle');
+            // draw auto button
+            if (getAchievementBonus() > 20) {
+                if (this.autoOn) {
+                    display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(1), new Vector(this.pos.x + 4, this.pos.y), ['green']);
+                    display.drawText('A', new Vector(this.pos.x + 4, this.pos.y), 'black', `${display.getFontSizeString(12)}px Arial bold`, 'center', 'middle');
+                }
+                else {
+                    display.DrawEnemyCircle(display.drone.currentHitPoints().multiply(1), new Vector(this.pos.x + 4, this.pos.y), ['red']);
+                    display.drawText('A', new Vector(this.pos.x + 4, this.pos.y), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+                }
+            }
         }
     }
-    button1() {
-        dirtyTowers = true;
+    drawMenuButtons() {
         if (this.type === '') {
-            this.baseCost = 10;
-            if (this.affordBuy() && availableTowersByType('Gun') > 0) {
-                this.type = 'Gun';
-                this.setInfoByType();
-                this.buy();
-            }
             return;
         }
-        this.buy();
-    }
-    button2() {
-        dirtyTowers = true;
-        if (this.type === '') {
-            this.baseCost = 10;
-            if (this.affordBuy() && availableTowersByType('Missile') > 0) {
-                this.type = 'Missile';
-                this.setInfoByType();
-                this.buy();
-            }
-            return;
-        }
-        this.buyUpgrade();
-    }
-    button3() {
-        dirtyTowers = true;
-        if (this.type === '') {
-            this.baseCost = 10;
-            if (this.affordBuy() && availableTowersByType('Cannon') > 0) {
-                this.type = 'Cannon';
-                this.setInfoByType();
-                this.buy();
-            }
+        if (this.affordBuy()) {
+            display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE), 'green');
         }
         else {
-            this.tactics.ChangeTactic(0);
+            display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE), 'red');
         }
-    }
-    button4() {
-        dirtyTowers = true;
-        if (this.type === '') {
-            this.baseCost = 100;
-            if (this.affordBuy() && availableTowersByType('Poison') > 0) {
-                this.type = 'Poison';
-                this.setInfoByType();
-                this.buy();
+        display.displayTextArrayFromString(`Upgrade ${this.type}<br />${this.getResourcesNeededString()}`, new Vector(CANVAS_SIZE * 0.175, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
+        if (getAchievementBonus() > 20) {
+            if (this.autoOn) {
+                display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'green');
+                display.drawTextNoScale('Switch Auto Buy Off', new Vector(CANVAS_SIZE * 0.325, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+            }
+            else {
+                display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'red');
+                display.drawTextNoScale('Switch Auto Buy On', new Vector(CANVAS_SIZE * 0.325, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
             }
         }
-        else {
-            this.tactics.ChangeTactic(1);
-        }
-    }
-    button5() {
-        dirtyTowers = true;
-        if (this.type === '') {
-            this.baseCost = 1000000;
-            if (this.affordBuy() && availableTowersByType('Slow') > 0) {
-                this.type = 'Slow';
-                this.setInfoByType();
-                this.buy();
+        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.9, CANVAS_SIZE), 'red');
+        display.drawTextNoScale('Destroy', new Vector(CANVAS_SIZE * 0.85, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+        if (this.arrowAttackValue().greaterThan(0) || this.catapultAttackValue().greaterThan(0)) {
+            if (this.tactics.fastest) {
+                display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'green');
+            }
+            else {
+                display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'red');
+            }
+            display.drawTextNoScale('Target Fastest', new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+            if (this.tactics.highestHealth) {
+                display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'green');
+            }
+            else {
+                display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'red');
+            }
+            display.drawTextNoScale('Target Strongest', new Vector(CANVAS_SIZE * 0.55, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+            if (this.tactics.lowestHealth) {
+                display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.7, CANVAS_SIZE), 'green');
+            }
+            else {
+                display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.7, CANVAS_SIZE), 'red');
+            }
+            display.drawTextNoScale('Target Weakest', new Vector(CANVAS_SIZE * 0.65, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
+            if (gameData.pebbleUpgrades[11].bought > 0) {
+                if (this.tactics.healer) {
+                    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE), 'green');
+                }
+                else {
+                    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE), 'red');
+                }
+                display.drawTextNoScale('Target Healers', new Vector(CANVAS_SIZE * 0.75, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
             }
         }
-        else {
-            this.tactics.ChangeTactic(2);
-        }
-    }
-    button6() {
-        dirtyTowers = true;
-        this.tactics.ChangeTactic(3);
     }
     setInfoByType() {
         switch (this.type) {
-            case 'Gun':
-                this.baseAttack = 1;
-                this.baseRange = 15;
-                this.baseTicksPerShot = 1000;
-                // eslint-disable-next-line prefer-destructuring
-                this.bonusPerLevelBoughtUpgrade = gameData.upgrades[6];
-                // eslint-disable-next-line prefer-destructuring
-                this.boulderDamageUpgrade = gameData.boulderUpgrades[4];
-                this.costMultiplier = 1.5;
-                this.equipmentPhrase = 'Gun Attack';
-                // eslint-disable-next-line prefer-destructuring
-                this.pebbleDamageUpgrade = gameData.upgrades[0];
-                // eslint-disable-next-line prefer-destructuring
-                this.rockDamageUpgrade = gameData.rockUpgrades[1];
-                this.ticksToNextBullet = 1000;
-                this.upgradeCost = 1;
-                this.upgradeCostMultiplier = 2;
+            case 'LumberJack':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'LumberJack';
+                this.inflationFloor = 100;
+                this.peopleCostPer = 1;
+                this.woodCostPer = new JBDecimal(LUMBERJACK_COST);
+                this.woodCostMultiplierPer = LUMBERJACK_MULTIPLIER;
+                this.baseProductionPerSec = 1;
+                // this.baseWoodStorage = 1000;
+                // this.baseArrowStorage = 0;
+                this.baseHousing = new JBDecimal(0);
+                // this.baseStoneStorage = 0;
+                this.stoneCostPer = new JBDecimal(0);
+                this.stoneCostMultiplierPer = 0;
+                // this.baseRedResearchStorage = 0;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.baseArrowAttack = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
                 break;
-            case 'Missile':
-                this.baseAttack = 1;
-                this.baseRange = 30;
-                this.baseTicksPerShot = 2000;
-                // eslint-disable-next-line prefer-destructuring
-                this.bonusPerLevelBoughtUpgrade = gameData.upgrades[18];
-                // eslint-disable-next-line prefer-destructuring
-                this.boulderDamageUpgrade = gameData.boulderUpgrades[10];
-                this.costMultiplier = 1.5;
-                this.equipmentPhrase = 'Missile Attack';
-                // eslint-disable-next-line prefer-destructuring
-                this.pebbleDamageUpgrade = gameData.upgrades[20];
-                // eslint-disable-next-line prefer-destructuring
-                this.rockDamageUpgrade = gameData.rockUpgrades[15];
-                this.ticksToNextBullet = 2000;
-                this.upgradeCost = 1;
-                this.upgradeCostMultiplier = 2;
+            case 'RedResearchLab':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'RedResearch';
+                this.inflationFloor = 20;
+                this.peopleCostPer = 10;
+                this.woodCostPer = new JBDecimal(RED_RESEARCH_LAB_WOOD_COST);
+                this.woodCostMultiplierPer = RED_RESEARCH_LAB_WOOD_MULTIPLIER;
+                this.baseProductionPerSec = 0.1;
+                // this.baseWoodStorage = 0;
+                // this.baseArrowStorage = 0;
+                // this.baseRedResearchStorage = 1000;
+                this.baseHousing = new JBDecimal(0);
+                // this.baseStoneStorage = 0;
+                this.stoneCostPer = new JBDecimal(RED_RESEARCH_LAB_STONE_COST);
+                this.stoneCostMultiplierPer = RED_RESEARCH_LAB_STONE_MULTIPLIER;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.baseArrowAttack = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
                 break;
-            case 'Cannon':
-                this.baseAttack = 2;
-                this.baseRange = 15;
-                this.baseTicksPerShot = 2000;
-                // eslint-disable-next-line prefer-destructuring
-                this.bonusPerLevelBoughtUpgrade = gameData.upgrades[19];
-                // eslint-disable-next-line prefer-destructuring
-                this.boulderDamageUpgrade = gameData.boulderUpgrades[11];
-                this.costMultiplier = 1.5;
-                this.equipmentPhrase = 'Cannon Attack';
-                // eslint-disable-next-line prefer-destructuring
-                this.pebbleDamageUpgrade = gameData.upgrades[21];
-                // eslint-disable-next-line prefer-destructuring
-                this.rockDamageUpgrade = gameData.rockUpgrades[16];
-                this.ticksToNextBullet = 2000;
-                this.upgradeCost = 1;
-                this.upgradeCostMultiplier = 2;
+            case 'StoneMason':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'StoneMason';
+                this.inflationFloor = 50;
+                this.peopleCostPer = 3;
+                this.woodCostPer = new JBDecimal(STONEMASON_COST);
+                this.woodCostMultiplierPer = STONEMASON_MULTIPLIER;
+                this.baseProductionPerSec = 1;
+                // this.baseWoodStorage = 0;
+                // this.baseStoneStorage = 1000;
+                // this.baseArrowStorage = 0;
+                this.baseHousing = new JBDecimal(0);
+                this.stoneCostPer = new JBDecimal(0);
+                this.stoneCostMultiplierPer = 0;
+                // this.baseRedResearchStorage = 0;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.baseArrowAttack = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
                 break;
-            case 'Slow':
-                this.baseAttack = 0;
-                this.baseRange = 15;
-                this.baseTicksPerShot = 0;
-                // eslint-disable-next-line prefer-destructuring
-                this.bonusPerLevelBoughtUpgrade = gameData.dummyUpgrade;
-                // eslint-disable-next-line prefer-destructuring
-                this.boulderDamageUpgrade = gameData.dummyUpgrade;
-                this.costMultiplier = 1.5;
-                this.equipmentPhrase = '';
-                // eslint-disable-next-line prefer-destructuring
-                this.pebbleDamageUpgrade = gameData.dummyUpgrade;
-                // eslint-disable-next-line prefer-destructuring
-                this.rockDamageUpgrade = gameData.dummyUpgrade;
-                this.ticksToNextBullet = 0;
-                this.upgradeCost = 1;
-                this.upgradeCostMultiplier = 10;
+            case 'Shack':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'Housing';
+                this.inflationFloor = 25;
+                this.peopleCostPer = 0;
+                this.woodCostPer = new JBDecimal(SHACK_COST);
+                this.woodCostMultiplierPer = SHACK_MULTIPLIER;
+                this.baseHousing = new JBDecimal(3);
+                this.baseProductionPerSec = 0;
+                // this.baseArrowStorage = 0;
+                // this.baseWoodStorage = 0;
+                // this.baseStoneStorage = 0;
+                this.stoneCostPer = new JBDecimal(0);
+                this.stoneCostMultiplierPer = 0;
+                // this.baseRedResearchStorage = 0;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.baseArrowAttack = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
                 break;
-            case 'Poison':
-                this.baseAttack = 0;
+            case 'House':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'Housing';
+                this.inflationFloor = 25;
+                this.peopleCostPer = 0;
+                this.woodCostPer = new JBDecimal(HOUSE_WOOD_COST);
+                this.woodCostMultiplierPer = HOUSE_WOOD_MULTIPLIER;
+                this.stoneCostPer = new JBDecimal(HOUSE_STONE_COST);
+                this.stoneCostMultiplierPer = HOUSE_STONE_MULTIPLIER;
+                this.baseHousing = new JBDecimal(5);
+                this.baseProductionPerSec = 0;
+                // this.baseArrowStorage = 0;
+                // this.baseWoodStorage = 0;
+                // this.baseStoneStorage = 0;
+                // this.baseRedResearchStorage = 0;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.baseArrowAttack = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
+                break;
+            case 'Mansion':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'Housing';
+                this.inflationFloor = 25;
+                this.peopleCostPer = 0;
+                this.woodCostPer = new JBDecimal(MANSION_WOOD_COST);
+                this.woodCostMultiplierPer = MANSION_WOOD_MULTIPLIER;
+                this.stoneCostPer = new JBDecimal(MANSION_STONE_COST);
+                this.stoneCostMultiplierPer = MANSION_STONE_MULTIPLIER;
+                this.baseHousing = new JBDecimal(10);
+                this.baseProductionPerSec = 0;
+                // this.baseArrowStorage = 0;
+                // this.baseWoodStorage = 0;
+                // this.baseStoneStorage = 0;
+                // this.baseRedResearchStorage = 0;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.baseArrowAttack = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
+                break;
+            case 'Fletcher':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'Fletcher';
+                this.inflationFloor = 30;
+                this.peopleCostPer = 1;
+                this.woodCostPer = new JBDecimal(FLETCHER_COST);
+                this.woodCostMultiplierPer = FLETCHER_MULTIPLIER;
+                this.baseProductionPerSec = 1;
+                // this.baseArrowStorage = 1000;
+                this.baseHousing = new JBDecimal(0);
+                // this.baseWoodStorage = 0;
+                // this.baseStoneStorage = 0;
+                this.stoneCostPer = new JBDecimal(0);
+                this.stoneCostMultiplierPer = 0;
+                // this.baseRedResearchStorage = 0;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.baseArrowAttack = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
+                break;
+            case 'ArrowTower':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'ArrowTower';
+                this.inflationFloor = 10;
+                this.peopleCostPer = 1;
                 this.baseRange = 15;
-                this.baseTicksPerShot = 0;
-                // eslint-disable-next-line prefer-destructuring
-                this.bonusPerLevelBoughtUpgrade = gameData.dummyUpgrade;
-                // eslint-disable-next-line prefer-destructuring
-                this.boulderDamageUpgrade = gameData.dummyUpgrade;
-                this.costMultiplier = 1.5;
-                this.equipmentPhrase = 'Poison Effect';
-                // eslint-disable-next-line prefer-destructuring
-                this.pebbleDamageUpgrade = gameData.dummyUpgrade;
-                // eslint-disable-next-line prefer-destructuring
-                this.rockDamageUpgrade = gameData.dummyUpgrade;
-                this.ticksToNextBullet = 0;
-                this.upgradeCost = 1;
-                this.upgradeCostMultiplier = 2;
+                this.baseShotsPerSec = 1;
+                this.woodCostPer = new JBDecimal(ARROW_TOWER_COST);
+                this.woodCostMultiplierPer = ARROW_TOWER_MULTIPLIER;
+                this.baseArrowAttack = 1;
+                // this.baseStoneStorage = 0;
+                this.stoneCostPer = new JBDecimal(0);
+                this.stoneCostMultiplierPer = 0;
+                // this.baseRedResearchStorage = 0;
+                // this.baseArrowStorage = 0;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
+                break;
+            case 'Catapult':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'CatapultTower';
+                this.inflationFloor = 10;
+                this.peopleCostPer = 5;
+                this.baseRange = 25;
+                this.baseShotsPerSec = 0.25;
+                this.woodCostPer = new JBDecimal(CATAPULT_WOOD_COST);
+                this.woodCostMultiplierPer = CATAPULT_WOOD_MULTIPLIER;
+                this.baseArrowAttack = 0;
+                this.baseCatapultAttack = 4;
+                // this.baseStoneStorage = 0;
+                this.stoneCostPer = new JBDecimal(CATAPULT_STONE_COST);
+                this.stoneCostMultiplierPer = CATAPULT_STONE_MULTIPLIER;
+                // this.baseRedResearchStorage = 0;
+                // this.baseArrowStorage = 0;
+                this.essenceCostPer = new JBDecimal(0);
+                this.essenceCostMultiplierPer = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 0;
+                break;
+            case 'PoisonTower':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'PoisonTower';
+                this.inflationFloor = 0; // removes inflation
+                this.peopleCostPer = 1;
+                this.baseRange = 15;
+                this.baseShotsPerSec = 0;
+                this.woodCostPer = new JBDecimal(0);
+                this.woodCostMultiplierPer = 2;
+                this.essenceCostPer = new JBDecimal(POISON_TOWER_COST);
+                this.essenceCostMultiplierPer = POISON_TOWER_MULTIPLIER;
+                this.baseArrowAttack = 0;
+                // this.baseStoneStorage = 0;
+                this.stoneCostPer = new JBDecimal(0);
+                this.stoneCostMultiplierPer = 2;
+                // this.baseRedResearchStorage = 0;
+                // this.baseArrowStorage = 0;
+                this.basePoisonAttack = 1;
+                this.baseSlow = 0;
+                this.baseCatapultAttack = 0;
+                break;
+            case 'SlowTower':
+                this.active = true;
+                this.autoOn = false;
+                this.equipmentPhrase = 'SlowTower';
+                this.inflationFloor = 0;
+                this.peopleCostPer = 1;
+                this.baseRange = 15;
+                this.baseShotsPerSec = 0;
+                this.woodCostPer = new JBDecimal(0);
+                this.woodCostMultiplierPer = 2;
+                this.essenceCostPer = new JBDecimal(SLOW_TOWER_COST);
+                this.essenceCostMultiplierPer = SLOW_TOWER_MULTIPLIER;
+                this.baseArrowAttack = 0;
+                // this.baseStoneStorage = 0;
+                this.stoneCostPer = new JBDecimal(0);
+                this.stoneCostMultiplierPer = 2;
+                // this.baseRedResearchStorage = 0;
+                // this.baseArrowStorage = 0;
+                this.basePoisonAttack = 0;
+                this.baseSlow = 1;
+                this.baseCatapultAttack = 0;
                 break;
             default:
                 break;
         }
     }
-    delete() {
-        this.bought = 0;
-        this.upgradeLevel = 0;
-        this.type = '';
-        this.towerRow.classList.remove('bg-primary');
-        this.towerRow.classList.remove('bg-danger');
-        this.towerRow.classList.remove('bg-success');
-        dirtyTowers = true;
+    housingAvailable() {
+        const ret = new JBDecimal(this.baseHousing).multiply(this.bought * (gameData.researches[3].bought + gameData.powderUpgrades[5].bought + 1));
+        return ret;
     }
-    AttackValue() {
-        let AttackPerLevel = this.baseAttack * Math.pow(1.1, (this.upgradeLevel + this.pebbleDamageUpgrade.bought));
-        AttackPerLevel *= Math.pow(2, (this.rockDamageUpgrade.bought + this.boulderDamageUpgrade.bought));
-        if (this.bonusPerLevelBoughtUpgrade.bought > 0) {
-            const bonusPer = 1 + this.bonusPerLevelBoughtUpgrade.bought / 100;
-            AttackPerLevel *= Math.pow(bonusPer, this.bought);
+    // eslint-disable-next-line class-methods-use-this
+    powderUpgrade7Bonus() {
+        let ret = 1;
+        if (gameData.powderUpgrades[7].bought > 0) {
+            ret = Math.sqrt(1 + gameData.stats.prestige1ticks / 600000);
         }
+        return ret;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    powderUpgrade9Bonus() {
+        let ret = 1;
+        if (gameData.powderUpgrades[9].bought > 0) {
+            ret = Math.sqrt(1 + gameData.stats.prestige1);
+        }
+        return ret;
+    }
+    redResearchProductionPerSec() {
+        let ret = this.bought * this.baseProductionPerSec;
+        ret *= Math.pow(1.1, gameData.powderUpgrades[13].bought);
+        ret *= this.powderUpgrade7Bonus();
+        ret *= this.powderUpgrade9Bonus();
+        ret *= Math.pow((1 + gameData.powderUpgrades[18].bought / 100), this.bought);
         if (gameData.equipment.length > 0) {
             gameData.equipment[0].abilities.forEach((a) => {
                 if (a.name === this.equipmentPhrase) {
-                    AttackPerLevel *= a.levels / 10;
-                }
-            });
-        }
-        AttackPerLevel *= getAchievementBonus();
-        return new JBDecimal(this.bought).multiply(AttackPerLevel);
-    }
-    PoisonAttack() {
-        if (gameData.challenges[4].active || gameData.challenges[4].completed < 1) {
-            return new JBDecimal(0);
-        }
-        let AttackPerLevel = gameData.challenges[4].completed * 0.05;
-        AttackPerLevel *= Math.pow(1.1, this.upgradeLevel);
-        AttackPerLevel *= Math.pow(2, (gameData.rockUpgrades[13].bought + gameData.boulderUpgrades[9].bought));
-        if (gameData.rockUpgrades[14].bought > 0) {
-            const bonusPer = 1 + gameData.rockUpgrades[14].bought / 100;
-            AttackPerLevel *= Math.pow(bonusPer, this.bought);
-        }
-        if (gameData.equipment.length > 0) {
-            gameData.equipment[0].abilities.forEach((a) => {
-                if (a.name === 'Poison Effect') {
-                    AttackPerLevel *= 1 + a.levels / 10;
-                }
-            });
-        }
-        let ret = new JBDecimal(this.bought).multiply(AttackPerLevel).add(1);
-        ret = ret.multiply(getAchievementBonus());
-        return ret;
-    }
-    SlowEffect() {
-        if (gameData.challenges[5].active || gameData.challenges[5].completed < 1) {
-            return 0;
-        }
-        let ret = 100 * gameData.challenges[5].completed;
-        ret += this.bought * (1 + this.upgradeLevel);
-        ret *= skillDeterioration();
-        return ret / 1000;
-    }
-    // eslint-disable-next-line class-methods-use-this
-    DefenseDamage() {
-        if (gameData.challenges[7].active || gameData.challenges[7].completed < 1) {
-            return 0;
-        }
-        const bonusper = 1 + gameData.rockUpgrades[12].bought / 10 + gameData.boulderUpgrades[8].bought / 10;
-        let ret = bonusper * gameData.challenges[7].completed;
-        if (gameData.equipment.length > 0) {
-            gameData.equipment[0].abilities.forEach((a) => {
-                if (a.name === 'Shield Break') {
                     ret *= 1 + a.levels / 10;
                 }
             });
         }
-        ret *= skillDeterioration();
-        return ret / 100;
+        return ret;
     }
-    Range() {
-        if (gameData.challenges[3].active || gameData.challenges[3].completed < 1) {
+    woodProductionPerSec() {
+        let boughtToUse = this.bought;
+        if (gameData.pebbleUpgrades[13].bought > 0) {
+            boughtToUse += peopleAvailable().divide(1000).ToNumber();
+        }
+        let ret = boughtToUse * this.baseProductionPerSec;
+        ret *= Math.pow(1.1, (gameData.powderUpgrades[2].bought + gameData.researches[4].bought));
+        ret *= this.powderUpgrade7Bonus();
+        ret *= this.powderUpgrade9Bonus();
+        ret *= Math.pow((1 + gameData.powderUpgrades[14].bought / 100), boughtToUse);
+        if (gameData.equipment.length > 0) {
+            gameData.equipment[0].abilities.forEach((a) => {
+                if (a.name === this.equipmentPhrase) {
+                    ret *= 1 + a.levels / 10;
+                }
+            });
+        }
+        return ret;
+    }
+    stoneProductionPerSec() {
+        let boughtToUse = this.bought;
+        if (gameData.pebbleUpgrades[13].bought > 0) {
+            boughtToUse += peopleAvailable().divide(1000).ToNumber();
+        }
+        let ret = boughtToUse * this.baseProductionPerSec;
+        ret *= Math.pow(1.1, (gameData.powderUpgrades[12].bought + gameData.researches[5].bought));
+        ret *= this.powderUpgrade7Bonus();
+        ret *= this.powderUpgrade9Bonus();
+        ret *= Math.pow((1 + gameData.powderUpgrades[15].bought / 100), boughtToUse);
+        if (gameData.equipment.length > 0) {
+            gameData.equipment[0].abilities.forEach((a) => {
+                if (a.name === this.equipmentPhrase) {
+                    ret *= 1 + a.levels / 10;
+                }
+            });
+        }
+        return ret;
+    }
+    arrowProductionPerSec() {
+        let ret = this.bought * this.baseProductionPerSec;
+        ret *= Math.pow(1.1, (gameData.powderUpgrades[6].bought + gameData.researches[7].bought));
+        ret *= this.powderUpgrade7Bonus();
+        ret *= this.powderUpgrade9Bonus();
+        ret *= Math.pow((1 + gameData.powderUpgrades[19].bought / 100), this.bought);
+        if (gameData.equipment.length > 0) {
+            gameData.equipment[0].abilities.forEach((a) => {
+                if (a.name === this.equipmentPhrase) {
+                    ret *= 1 + a.levels / 10;
+                }
+            });
+        }
+        return ret;
+    }
+    delete(allowChecks = true) {
+        const housingFree = totalHousing.subtract(workersUsed().add(this.housingAvailable()));
+        if (housingFree.lessThanOrEqualTo(0) && allowChecks) {
+            display.addToDisplay("Can't destroy this building until more people are unemployed", DisplayCategory.Tutorial);
+            return;
+        }
+        this.active = true;
+        this.autoOn = false;
+        this.equipmentPhrase = '';
+        this.inflationFloor = 0;
+        this.peopleCostPer = 0;
+        this.woodCostPer = new JBDecimal(0);
+        this.woodCostMultiplierPer = 0;
+        this.baseProductionPerSec = 0;
+        // this.baseWoodStorage = 0;
+        // this.baseArrowStorage = 0;
+        this.baseHousing = new JBDecimal(0);
+        // this.baseStoneStorage = 0;
+        this.stoneCostPer = new JBDecimal(0);
+        this.stoneCostMultiplierPer = 0;
+        // this.baseRedResearchStorage = 0;
+        this.essenceCostPer = new JBDecimal(0);
+        this.essenceCostMultiplierPer = 0;
+        this.baseArrowAttack = 0;
+        this.basePoisonAttack = 0;
+        this.baseSlow = 0;
+        this.bought = 0;
+        this.type = '';
+        this.tactics.changeTactic(0);
+    }
+    arrowAttackValue() {
+        let AttackPerLevel = this.baseArrowAttack * Math.pow(1.1, (gameData.researches[1].bought + gameData.powderUpgrades[0].bought));
+        AttackPerLevel *= Math.pow(2, gameData.pebbleUpgrades[1].bought);
+        AttackPerLevel *= Math.pow((1 + (gameData.powderUpgrades[8].bought + gameData.pebbleUpgrades[14].bought) / 100), this.bought);
+        // AttackPerLevel *= this.bought;
+        if (gameData.researches[0].bought) {
+            AttackPerLevel *= 2;
+        }
+        if (gameData.equipment.length > 0) {
+            gameData.equipment[0].abilities.forEach((a) => {
+                if (a.name === this.equipmentPhrase) {
+                    AttackPerLevel *= 1 + a.levels / 10;
+                }
+            });
+        }
+        AttackPerLevel *= getAchievementBonus();
+        let critchance = critChance();
+        const multiplier = critMultiplier();
+        while (critchance >= 100) {
+            AttackPerLevel *= multiplier;
+            critchance -= 100;
+        }
+        return new JBDecimal(AttackPerLevel);
+    }
+    catapultAttackValue() {
+        let AttackPerLevel = this.baseCatapultAttack * Math.pow(1.1, (gameData.researches[8].bought + gameData.powderUpgrades[16].bought));
+        AttackPerLevel *= Math.pow(2, gameData.pebbleUpgrades[2].bought);
+        AttackPerLevel *= Math.pow((1 + (gameData.powderUpgrades[17].bought + gameData.pebbleUpgrades[15].bought) / 100), this.bought);
+        // AttackPerLevel *= this.bought;
+        if (gameData.researches[2].bought) {
+            AttackPerLevel *= 3;
+        }
+        if (gameData.equipment.length > 0) {
+            gameData.equipment[0].abilities.forEach((a) => {
+                if (a.name === this.equipmentPhrase) {
+                    AttackPerLevel *= 1 + a.levels / 10;
+                }
+            });
+        }
+        AttackPerLevel *= getAchievementBonus();
+        let critchance = critChance();
+        const multiplier = critMultiplier();
+        while (critchance >= 100) {
+            AttackPerLevel *= multiplier;
+            critchance -= 100;
+        }
+        return new JBDecimal(AttackPerLevel);
+    }
+    range() {
+        if (gameData.challenges[2].active || gameData.challenges[2].completed < 1) {
             return this.baseRange;
         }
-        let ret = this.baseRange;
-        ret += (this.baseRange * gameData.challenges[3].completed) / 5;
+        let ret = (this.baseRange * gameData.challenges[2].completed) / 5;
         ret *= skillDeterioration();
+        ret += this.baseRange;
         if (ret < this.baseRange) {
             ret = this.baseRange;
         }
@@ -924,199 +1055,176 @@ class Tower {
         }
         return ret;
     }
-    ShotsPerSecond() {
-        if (gameData.challenges[2].active || gameData.challenges[2].completed < 1) {
-            return 1000 / this.baseTicksPerShot;
+    shotsPerSecond() {
+        if (gameData.challenges[1].active || gameData.challenges[1].completed < 1) {
+            return this.baseShotsPerSec * this.bought;
         }
-        let bonusperupgrade = 1;
-        if (gameData.rockUpgrades[10].bought > 0) {
-            bonusperupgrade += gameData.rockUpgrades[10].bought / 10;
-        }
-        let ret = 1 + gameData.challenges[2].completed * bonusperupgrade;
-        ret *= skillDeterioration();
-        if (ret > 10) {
-            ret = 10;
-        }
-        return ret * (1000 / this.baseTicksPerShot);
+        let bonusperupgrade = this.baseShotsPerSec / 5;
+        bonusperupgrade += bonusperupgrade * gameData.pebbleUpgrades[9].bought;
+        let totalChange = gameData.challenges[2].completed * bonusperupgrade;
+        totalChange *= skillDeterioration();
+        const ret = this.baseShotsPerSec + totalChange;
+        return ret * this.bought;
     }
     ticksPerShot() {
-        return 1000 / this.ShotsPerSecond();
+        return 1000 / this.shotsPerSecond();
     }
-    buy() {
-        if (!this.affordBuy()) {
-            return;
-        }
-        gameData.resources.metal.subtract(this.buyCost());
-        this.bought += 1;
-        CheckAchievementCompletions();
-    }
-    buyUpgrade() {
+    buyLumberJack() {
         if (this.type === '') {
-            return;
+            this.peopleCostPer = 1;
+            this.woodCostPer = new JBDecimal(LUMBERJACK_COST);
+            this.woodCostMultiplierPer = LUMBERJACK_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(0);
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'LumberJack';
+                this.setInfoByType();
+                this.buy();
+            }
         }
-        if (!this.affordUpgrade()) {
-            return;
-        }
-        gameData.resources.dust.subtract(this.buyUpgradeCost());
-        this.upgradeLevel += 1;
     }
-    currentInflationFloor() {
-        if (gameData.challenges[0].active) {
-            return 1;
-        }
-        let ret = this.levelsInflationFloor;
-        if (gameData.challenges[0].completed > 0) {
-            const bonus = 1.05 + gameData.rockUpgrades[3].bought * 0.01;
-            ret *= Math.pow(bonus, gameData.challenges[0].completed);
-        }
-        return ret;
-    }
-    buyUpgradeCost() {
-        let ret = new JBDecimal(this.upgradeCostMultiplier);
-        ret = ret.pow(this.upgradeLevel);
-        ret = ret.multiply(this.upgradeCost);
-        return ret;
-    }
-    buyCost() {
-        let itemQty = this.bought;
-        if (itemQty >= this.currentInflationFloor()) {
-            const increase = Math.ceil(itemQty - this.currentInflationFloor());
-            itemQty += internalInflationCost(increase);
-        }
-        const ret = new JBDecimal(this.costMultiplier).pow(itemQty).multiply(this.baseCost);
-        return ret;
-    }
-    affordBuy() {
-        if (this.buyCost().greaterThan(gameData.resources.metal.amount)) {
-            return false;
-        }
-        return true;
-    }
-    affordUpgrade() {
-        if (this.buyUpgradeCost().greaterThan(gameData.resources.dust.amount)) {
-            return false;
-        }
-        return true;
-    }
-    autoSwitch() {
-        this.autoOn = !this.autoOn;
-    }
-    CreateDisplay() {
-        const newTowerRow = document.createElement('div');
-        newTowerRow.classList.add('row', 'p-0', 'm-0', 'text-light', 'bg-opacity-25', 'text-xsmall');
-        newTowerRow.id = `Tower${this.index.toString()}`;
-        const NameCol = document.createElement('div');
-        NameCol.classList.add('col-md-2', 'p-0', 'm-0', 'text-center');
-        const TowerInfoSpan = document.createElement('span');
-        TowerInfoSpan.id = `Tower${this.index.toString()}Info`;
-        NameCol.appendChild(TowerInfoSpan);
-        newTowerRow.appendChild(NameCol);
-        this.towerRow = newTowerRow;
-        const buttonCol = document.createElement('div');
-        buttonCol.classList.add('col-md-10', 'p-0', 'm-0');
-        const button1 = document.createElement('button');
-        button1.id = `btnTower${this.index.toString()}Slot1`;
-        button1.innerHTML = 'Button 1';
-        button1.classList.add('button', 'text-center', 'align-middle');
-        const i = this.index;
-        // eslint-disable-next-line func-names
-        button1.addEventListener('click', function () {
-            gameData.towers[i].button1();
-        });
-        buttonCol.appendChild(button1);
-        const button1auto = document.createElement('button');
-        button1auto.id = `btnTower${this.index.toString()}Slot1A`;
-        button1auto.innerHTML = 'A';
-        button1auto.classList.add('button', 'text-center', 'autobutton', 'align-middle');
-        // eslint-disable-next-line func-names
-        button1auto.addEventListener('click', function () {
-            gameData.towers[i].autoSwitch();
-        });
-        buttonCol.appendChild(button1auto);
-        this.button1Element = button1;
-        this.button1AutoElement = button1auto;
-        newTowerRow.appendChild(buttonCol);
-        const button2 = document.createElement('button');
-        button2.id = `btnTower${this.index.toString()}Slot2`;
-        button2.innerHTML = 'Button 2';
-        button2.classList.add('button', 'text-center', 'align-middle');
-        // eslint-disable-next-line func-names
-        button2.addEventListener('click', function () {
-            gameData.towers[i].button2();
-        });
-        buttonCol.appendChild(button2);
-        this.button2Element = button2;
-        const button3 = document.createElement('button');
-        button3.id = `btnTower${this.index.toString()}Slot3`;
-        button3.innerHTML = 'Button 3';
-        button3.classList.add('button', 'text-center', 'align-middle');
-        // eslint-disable-next-line func-names
-        button3.addEventListener('click', function () {
-            gameData.towers[i].button3();
-        });
-        buttonCol.appendChild(button3);
-        this.button3Element = button3;
-        const button4 = document.createElement('button');
-        button4.id = `btnTower${this.index.toString()}Slot4`;
-        button4.innerHTML = 'Button 3';
-        button4.classList.add('button', 'text-center', 'align-middle');
-        // eslint-disable-next-line func-names
-        button4.addEventListener('click', function () {
-            gameData.towers[i].button4();
-        });
-        buttonCol.appendChild(button4);
-        this.button4Element = button4;
-        const button5 = document.createElement('button');
-        button5.id = `btnTower${this.index.toString()}Slot5`;
-        button5.innerHTML = 'Button 3';
-        button5.classList.add('button', 'text-center', 'align-middle');
-        // eslint-disable-next-line func-names
-        button5.addEventListener('click', function () {
-            gameData.towers[i].button5();
-        });
-        buttonCol.appendChild(button5);
-        this.button5Element = button5;
-        const button6 = document.createElement('button');
-        button6.id = `btnTower${this.index.toString()}Slot6`;
-        button6.innerHTML = 'Button 3';
-        button6.classList.add('button', 'text-center', 'align-middle');
-        // eslint-disable-next-line func-names
-        button6.addEventListener('click', function () {
-            gameData.towers[i].button6();
-        });
-        buttonCol.appendChild(button6);
-        this.button6Element = button6;
-        // <input type="checkbox" id="showGunArea" name="chkGunArea" value="GunArea" checked="true">
-        // <label for="showGunArea"> Show Gun Tower Ranges</label><br>
-        const showArea = document.createElement('input');
-        showArea.setAttribute('type', 'checkbox'); // SPECIFY THE TYPE OF ELEMENT.
-        showArea.setAttribute('id', `show${this.index.toString()}`);
-        showArea.innerHTML = 'Show Range';
-        showArea.checked = true;
-        buttonCol.appendChild(showArea);
-        this.showRangeElement = showArea;
-        const lbl = document.createElement('label'); // CREATE LABEL.
-        lbl.setAttribute('for', `show${this.index.toString()}`);
-        lbl.innerHTML = 'Show Range';
-        this.lbl = lbl;
-        buttonCol.appendChild(lbl);
-        const deleteButton = document.createElement('button');
-        deleteButton.id = `btnTower${this.index.toString()}delete`;
-        deleteButton.innerHTML = 'X';
-        deleteButton.classList.add('button', 'text-center', 'autobutton', 'bg-danger', 'align-middle');
-        // eslint-disable-next-line func-names
-        deleteButton.addEventListener('click', function () {
-            gameData.towers[i].delete();
-        });
-        buttonCol.appendChild(deleteButton);
-        this.deleteElement = deleteButton;
+    buyStoneMason() {
         if (this.type === '') {
-            document.getElementById('TowerUnBoughtInfo').appendChild(newTowerRow);
-            document.getElementById('TowerUnboughtHeader').classList.remove('d-none');
+            this.peopleCostPer = 3;
+            this.woodCostPer = new JBDecimal(STONEMASON_COST);
+            this.woodCostMultiplierPer = STONEMASON_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(0);
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'StoneMason';
+                this.setInfoByType();
+                this.buy();
+            }
         }
-        else {
-            document.getElementById('TowerBoughtInfo').appendChild(newTowerRow);
-            document.getElementById('TowerBoughtHeader').classList.remove('d-none');
+    }
+    buyShack() {
+        if (this.type === '') {
+            this.peopleCostPer = 0;
+            this.woodCostPer = new JBDecimal(SHACK_COST);
+            this.woodCostMultiplierPer = SHACK_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(0);
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'Shack';
+                this.setInfoByType();
+                this.buy();
+            }
+        }
+    }
+    buyHouse() {
+        if (this.type === '') {
+            this.peopleCostPer = 0;
+            this.woodCostPer = new JBDecimal(HOUSE_WOOD_COST);
+            this.woodCostMultiplierPer = HOUSE_WOOD_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(HOUSE_STONE_COST);
+            this.stoneCostMultiplierPer = HOUSE_STONE_MULTIPLIER;
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'House';
+                this.setInfoByType();
+                this.buy();
+            }
+        }
+    }
+    buyMansion() {
+        if (this.type === '') {
+            this.peopleCostPer = 0;
+            this.woodCostPer = new JBDecimal(MANSION_WOOD_COST);
+            this.woodCostMultiplierPer = MANSION_WOOD_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(MANSION_STONE_COST);
+            this.stoneCostMultiplierPer = MANSION_STONE_MULTIPLIER;
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'Mansion';
+                this.setInfoByType();
+                this.buy();
+            }
+        }
+    }
+    buyRedResearchLab() {
+        if (this.type === '') {
+            this.peopleCostPer = 10;
+            this.woodCostPer = new JBDecimal(RED_RESEARCH_LAB_WOOD_COST);
+            this.woodCostMultiplierPer = RED_RESEARCH_LAB_WOOD_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(RED_RESEARCH_LAB_STONE_COST);
+            this.stoneCostMultiplierPer = RED_RESEARCH_LAB_STONE_MULTIPLIER;
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'RedResearchLab';
+                this.setInfoByType();
+                this.buy();
+            }
+        }
+    }
+    buyFletcher() {
+        if (this.type === '') {
+            this.peopleCostPer = 1;
+            this.woodCostPer = new JBDecimal(FLETCHER_COST);
+            this.woodCostMultiplierPer = FLETCHER_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(0);
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'Fletcher';
+                this.setInfoByType();
+                this.buy();
+            }
+        }
+    }
+    buyArrowTower() {
+        if (this.type === '') {
+            this.woodCostPer = new JBDecimal(ARROW_TOWER_COST);
+            this.peopleCostPer = 1;
+            this.woodCostMultiplierPer = ARROW_TOWER_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(0);
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'ArrowTower';
+                this.setInfoByType();
+                this.buy();
+            }
+        }
+    }
+    buyCatapult() {
+        if (this.type === '') {
+            this.peopleCostPer = 5;
+            this.woodCostPer = new JBDecimal(CATAPULT_WOOD_COST);
+            this.woodCostMultiplierPer = CATAPULT_WOOD_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(CATAPULT_STONE_COST);
+            this.stoneCostMultiplierPer = CATAPULT_STONE_MULTIPLIER;
+            this.essenceCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'Catapult';
+                this.setInfoByType();
+                this.buy();
+            }
+        }
+    }
+    buyPoisonTower() {
+        if (this.type === '') {
+            this.essenceCostPer = new JBDecimal(POISON_TOWER_COST);
+            this.peopleCostPer = 1;
+            this.essenceCostMultiplierPer = POISON_TOWER_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(0);
+            this.woodCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'PoisonTower';
+                this.setInfoByType();
+                this.buy();
+            }
+        }
+    }
+    buySlowTower() {
+        if (this.type === '') {
+            this.essenceCostPer = new JBDecimal(SLOW_TOWER_COST);
+            this.peopleCostPer = 1;
+            this.essenceCostMultiplierPer = SLOW_TOWER_MULTIPLIER;
+            this.stoneCostPer = new JBDecimal(0);
+            this.woodCostPer = new JBDecimal(0);
+            if (this.affordBuy()) {
+                this.type = 'SlowTower';
+                this.setInfoByType();
+                this.buy();
+            }
         }
     }
 }
@@ -1125,96 +1233,70 @@ class Enemy extends movingObject {
     constructor(displayDrone) {
         super(new Vector(0, 5), 0, false, []);
         this.bullets = [];
-        this.type = '';
+        this.type = 0;
+        this.ticksToNextTheft = 0;
+        this.theftBucket = [];
         const tieradjustment = gameData.world.currentTier - 1;
+        this.shielded = false;
+        this.healer = false;
+        this.fast = false;
+        this.strong = false;
+        this.thief = false;
         this.baseMaxHitPoints = new JBDecimal(1.2 + tieradjustment / 100).pow(gameData.world.currentWave - 1);
         this.baseMaxHitPoints.exponent += tieradjustment;
         this.damagetaken = new JBDecimal(0);
-        this.defense = new JBDecimal(0);
         this.poisonPerSec = new JBDecimal(0);
+        this.defense = new JBDecimal(0);
         if (displayDrone) {
             return;
         }
         this.createTargetList();
         this.movementPerSec = 10;
+        // eslint-disable-next-line no-use-before-define
         if (Math.random() * gameData.world.enemiesToSpawn < getSpecialsCount()) {
             const choicesArr = getSpecialsArray();
-            const i = Math.floor(Math.random() * choicesArr.length);
-            if (choicesArr[i] === 'F') {
-                gameData.world.fastEnemiesToSpawn -= 1;
-                this.movementPerSec *= 3;
-                this.type = 'Fast';
+            let type = choicesArr[Math.floor(Math.random() * choicesArr.length)];
+            gameData.world.spawnsRemaining[type] -= 1;
+            this.type = type;
+            if (type >= 16) {
+                this.shielded = true;
+                this.defense = new JBDecimal(this.baseMaxHitPoints.multiply(gameData.world.currentWave / 400));
+                type -= 16;
             }
-            else if (choicesArr[i] === 'T') {
-                gameData.world.tankEnemiesToSpawn -= 1;
-                this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
-                this.type = 'Tank';
+            if (type >= 8) {
+                this.healer = true;
+                type -= 8;
             }
-            else if (choicesArr[i] === 'M') {
-                gameData.world.medicEnemiesToSpawn -= 1;
-                this.defense = new JBDecimal(this.baseMaxHitPoints.multiply(gameData.world.currentWave / 100));
-                this.type = 'Medic';
+            if (type >= 4) {
+                this.fast = true;
+                this.movementPerSec *= 2;
+                type -= 4;
             }
-            else if (choicesArr[i] === 'b') {
-                gameData.world.bradleyEnemiesToSpawn -= 1;
-                this.movementPerSec *= 3;
-                this.type = 'Bradley';
+            if (type >= 2) {
+                this.strong = true;
+                this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(2);
+                type -= 2;
             }
-            else if (choicesArr[i] === 'P') {
-                gameData.world.paladinEnemiesToSpawn -= 1;
-                this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
-                this.defense = new JBDecimal(this.baseMaxHitPoints.multiply(gameData.world.currentWave / 100));
-                this.type = 'Paladin';
-            }
-            else if (choicesArr[i] === 'K') {
-                gameData.world.knightEnemiesToSpawn -= 1;
-                this.defense = new JBDecimal(this.baseMaxHitPoints.multiply(gameData.world.currentWave / 100));
-                this.type = 'Knight';
-            }
-            else if (choicesArr[i] === 'C') {
-                gameData.world.clericEnemiesToSpawn -= 1;
-                this.type = 'Cleric';
-            }
-            else if (choicesArr[i] === 'D') {
-                gameData.world.dumboEnemiesToSpawn -= 1;
-                this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(3);
-                this.targetList = [];
-                this.targetList.push(new Vector(gameData.world.currentTier * 10 + 35, gameData.world.currentTier * 10 + 35));
-                this.targetList.push(new Vector(gameData.world.currentTier * 10 + 35, gameData.world.currentTier * 10 + 50));
-                this.type = 'Dumbo';
-            }
-            else if (choicesArr[i] === 'H') {
-                gameData.world.hummingbirdEnemiesToSpawn -= 1;
-                this.targetList = [];
-                this.targetList.push(new Vector(gameData.world.currentTier * 10 + 35, gameData.world.currentTier * 10 + 35));
-                this.targetList.push(new Vector(gameData.world.currentTier * 10 + 35, gameData.world.currentTier * 10 + 50));
-                this.movementPerSec *= 3;
-                this.type = 'Hummingbird';
-            }
-            else if (choicesArr[i] === 'f') {
-                gameData.world.flyerEnemiesToSpawn -= 1;
-                this.targetList = [];
-                this.targetList.push(new Vector(gameData.world.currentTier * 10 + 35, gameData.world.currentTier * 10 + 35));
-                this.targetList.push(new Vector(gameData.world.currentTier * 10 + 35, gameData.world.currentTier * 10 + 50));
-                this.type = 'Flyer';
-            }
-            else if (choicesArr[i] === 'B') {
-                gameData.world.bossEnemiesToSpawn -= 1;
-                this.type = 'Boss';
-                this.movementPerSec *= 0.5;
-                this.baseMaxHitPoints = this.baseMaxHitPoints.multiply(5);
+            if (type >= 1) {
+                this.thief = true;
+                type -= 1;
             }
         }
     }
-    MaxHitPoints() {
+    // setFlyerTargetList() {
+    //   this.targetList = [];
+    //   this.targetList.push(new Vector(getTierSize() - 5, getTierSize() - 5));
+    //   this.targetList.push(new Vector(getTierSize() - 5, getTierSize() + 5));
+    // }
+    maxHitPoints() {
         const ret = new JBDecimal(this.baseMaxHitPoints);
         return ret;
     }
-    CurrentHitPoints() {
-        return new JBDecimal(this.MaxHitPoints()).subtract(this.damagetaken);
+    currentHitPoints() {
+        return new JBDecimal(this.maxHitPoints()).subtract(this.damagetaken);
     }
     createTargetList() {
-        const currentTierSize = 40 + Math.ceil(gameData.world.currentTier / 5) * 10;
+        const currentTierSize = getTierSize();
         let currentx = 10;
         let currenty = 5;
         while (currenty <= currentTierSize) {
@@ -1239,18 +1321,127 @@ class Enemy extends movingObject {
         }
         return ret / this.movementPerSec;
     }
+    theftBucketTotal() {
+        let total = new JBDecimal(0);
+        this.theftBucket.forEach((b) => {
+            total = total.add(b.amount);
+        });
+        if (this.thief) {
+            total = total.divide(10);
+        }
+        return total;
+    }
     act() {
         this.move();
         this.takePoisonDamage();
         this.checkForHit();
-        if (this.CurrentHitPoints().greaterThan(0)) {
-            if (this.type === 'Cleric' || this.type === 'Medic') {
+        this.ticksToNextTheft -= gameData.world.currentTickLength;
+        if (this.currentHitPoints().greaterThan(0)) {
+            const theftMaxValue = this.currentHitPoints()
+                .multiply(gameData.world.currentTickLength / 100)
+                .subtract(this.theftBucketTotal());
+            if (theftMaxValue.greaterThan(0) && this.ticksToNextTheft <= 0) {
+                this.ticksToNextTheft = 100;
+                gameData.buildings.forEach((b) => {
+                    if (this.pos.getLengthFromAnotherVector(b.pos) < 11) {
+                        if (b.netWoodPerSec.greaterThan(0)) {
+                            let theftValue = new JBDecimal(theftMaxValue);
+                            if (theftValue.greaterThan(gameData.resources.wood.amount)) {
+                                theftValue = new JBDecimal(gameData.resources.wood.amount);
+                            }
+                            if (theftValue.greaterThan(0)) {
+                                display.floaters.push(new FloatingText(`${theftValue.toString()} wood stolen`, 'red', b.pos));
+                                const newtheft = new Resource('wood');
+                                newtheft.amount = theftValue;
+                                let found = false;
+                                this.theftBucket.forEach((tb) => {
+                                    if (tb.name === 'wood') {
+                                        found = true;
+                                        tb.add(newtheft.amount);
+                                    }
+                                });
+                                if (!found) {
+                                    this.theftBucket.push(newtheft);
+                                }
+                                gameData.resources.wood.subtract(theftValue);
+                            }
+                        }
+                        if (b.netStonePerSec.greaterThan(0)) {
+                            let theftValue = new JBDecimal(theftMaxValue);
+                            if (theftValue.greaterThan(gameData.resources.stone.amount)) {
+                                theftValue = new JBDecimal(gameData.resources.stone.amount);
+                            }
+                            if (theftValue.greaterThan(0)) {
+                                gameData.resources.stone.subtract(theftValue);
+                                const newtheft = new Resource('stone');
+                                newtheft.amount = theftValue;
+                                let found = false;
+                                this.theftBucket.forEach((tb) => {
+                                    if (tb.name === 'stone') {
+                                        found = true;
+                                        tb.add(newtheft.amount);
+                                    }
+                                });
+                                if (!found) {
+                                    this.theftBucket.push(newtheft);
+                                }
+                                display.floaters.push(new FloatingText(`${theftValue.toString()} stone stolen`, 'red', b.pos));
+                            }
+                        }
+                        if (b.netArrowPerSec.greaterThan(0)) {
+                            let theftValue = new JBDecimal(theftMaxValue);
+                            if (theftValue.greaterThan(gameData.resources.arrow.amount)) {
+                                theftValue = new JBDecimal(gameData.resources.arrow.amount);
+                            }
+                            if (theftValue.greaterThan(0)) {
+                                gameData.resources.arrow.subtract(theftValue);
+                                const newtheft = new Resource('arrow');
+                                newtheft.amount = theftValue;
+                                let found = false;
+                                this.theftBucket.forEach((tb) => {
+                                    if (tb.name === 'arrow') {
+                                        found = true;
+                                        tb.add(newtheft.amount);
+                                    }
+                                });
+                                if (!found) {
+                                    this.theftBucket.push(newtheft);
+                                }
+                                display.floaters.push(new FloatingText(`${theftValue.toString()} arrows stolen`, 'red', b.pos));
+                            }
+                        }
+                        if (b.netRedResearchPerSec.greaterThan(0)) {
+                            let theftValue = new JBDecimal(theftMaxValue.divide(10));
+                            if (theftValue.greaterThan(gameData.resources.redResearch.amount)) {
+                                theftValue = new JBDecimal(gameData.resources.redResearch.amount);
+                            }
+                            if (theftValue.greaterThan(0)) {
+                                gameData.resources.redResearch.subtract(theftValue);
+                                const newtheft = new Resource('redresearch');
+                                newtheft.amount = theftValue;
+                                let found = false;
+                                this.theftBucket.forEach((tb) => {
+                                    if (tb.name === 'redresearch') {
+                                        found = true;
+                                        tb.add(newtheft.amount);
+                                    }
+                                });
+                                if (!found) {
+                                    this.theftBucket.push(newtheft);
+                                }
+                                display.floaters.push(new FloatingText(`${theftValue.toString()} red research stolen`, 'red', b.pos));
+                            }
+                        }
+                    }
+                });
+            }
+            if (this.healer) {
                 // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const me = this;
                 gameData.enemies.forEach((e) => {
                     const healRange = gameData.world.currentWave / 5;
                     if (e.pos.getLengthFromAnotherVector(me.pos) < healRange) {
-                        e.damagetaken = e.damagetaken.subtract(me.CurrentHitPoints().divide(2000).multiply(gameData.world.currentTickLength));
+                        e.damagetaken = e.damagetaken.subtract(me.currentHitPoints().multiply(gameData.world.currentTickLength / 10000));
                         if (e.damagetaken.lessThan(0)) {
                             e.damagetaken = new JBDecimal(0);
                         }
@@ -1259,79 +1450,98 @@ class Enemy extends movingObject {
             }
             return false;
         }
-        let dustGained = new JBDecimal(0);
-        let metalGained = new JBDecimal(gameData.derivatives[0].production(1000));
-        if (metalGained.lessThan(gameData.world.currentTickLength)) {
-            metalGained = new JBDecimal(gameData.world.currentWave);
-        }
-        if (this.type === 'Boss') {
-            if (gameData.world.currentWave > gameData.world.highestWaveCompleted) {
-                dustGained = new JBDecimal(10 * Math.pow(1.05, gameData.world.currentWave));
-                dustGained = dustGained.multiply(Math.pow(2, (gameData.world.currentTier - 1)));
-                metalGained = new JBDecimal(0);
+        // below fires when enemy is dead
+        let essenceGained = new JBDecimal(0);
+        // let metalGained = new JBDecimal(gameData.world.currentWave);
+        this.theftBucket.forEach((e) => {
+            switch (e.name) {
+                case 'wood': {
+                    gameData.resources.wood.add(e.amount.divide(2));
+                    display.floaters.push(new FloatingText(`${e.amount.divide(2).toString()} wood returned`, 'green', this.pos));
+                    break;
+                }
+                case 'stone': {
+                    gameData.resources.stone.add(e.amount.divide(2));
+                    display.floaters.push(new FloatingText(`${e.amount.divide(2).toString()} stone returned`, 'green', this.pos));
+                    break;
+                }
+                case 'arrow': {
+                    gameData.resources.arrow.add(e.amount.divide(2));
+                    display.floaters.push(new FloatingText(`${e.amount.divide(2).toString()} arrows returned`, 'green', this.pos));
+                    break;
+                }
+                case 'redresearch': {
+                    gameData.resources.redResearch.add(e.amount.divide(2));
+                    display.floaters.push(new FloatingText(`${e.amount.divide(2).toString()} red research returned`, 'green', this.pos));
+                    break;
+                }
+                default:
+                    break;
             }
+        });
+        if (this.type === 0) {
+            return true;
         }
-        const UpgradeBonus = 0.1 * Math.pow(2, gameData.rockUpgrades[2].bought);
-        const lootBonus = Math.pow((1 + UpgradeBonus), gameData.upgrades[1].bought);
-        if (dustGained.greaterThan(0)) {
-            dustGained = dustGained.multiply(lootBonus);
-            gameData.resources.dust.add(dustGained);
-            display.floaters.push(new FloatingText(`${dustGained.toString()} dust gained`, 'yellow', this.pos));
+        if (gameData.world.currentWave > gameData.world.highestWaveCompleted) {
+            essenceGained = new JBDecimal(Math.pow(1.05, gameData.world.currentWave));
+            essenceGained = essenceGained.multiply(Math.pow(2, (gameData.world.currentTier - 1)));
+        }
+        if (this.fast) {
+            essenceGained = essenceGained.multiply(1.1);
+        }
+        if (this.strong) {
+            essenceGained = essenceGained.multiply(1.1);
+        }
+        if (this.healer) {
+            essenceGained = essenceGained.multiply(1.1);
+        }
+        if (this.shielded) {
+            essenceGained = essenceGained.multiply(1.1);
+        }
+        if (this.thief) {
+            essenceGained = essenceGained.multiply(1.1);
+        }
+        const UpgradeBonus = 0.1 * Math.pow(2, gameData.pebbleUpgrades[4].bought);
+        const lootBonus = 1 + Math.pow(UpgradeBonus, gameData.powderUpgrades[1].bought);
+        if (essenceGained.greaterThan(0)) {
+            essenceGained = essenceGained.multiply(lootBonus);
+            gameData.resources.essence.add(essenceGained);
+            display.floaters.push(new FloatingText(`${essenceGained.toString()} essence gained`, 'yellow', new Vector(this.pos.x - 1, this.pos.y + 1)));
             // display.addToDisplay(`${dustGained.ToString()} dust gained`, DisplayCategory.Loot);
         }
-        if (metalGained.greaterThan(0)) {
-            metalGained = metalGained.multiply(lootBonus);
-            gameData.resources.metal.add(metalGained);
-            display.floaters.push(new FloatingText(`${metalGained.toString()} metal gained`, 'white', this.pos));
-            // display.addToDisplay(`${metalGained.ToString()} metal gained`, DisplayCategory.Loot);
-        }
+        // if (metalGained.greaterThan(0)) {
+        //   metalGained = metalGained.multiply(lootBonus);
+        //   gameData.resources.metal.add(metalGained);
+        //   display.floaters.push(new FloatingText(`${metalGained.toString()} metal gained`, 'white', this.pos));
+        //   // display.addToDisplay(`${metalGained.ToString()} metal gained`, DisplayCategory.Loot);
+        // }
         return true;
     }
     draw() {
-        switch (this.type) {
-            case '':
-            case 'Tank': {
-                display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'white');
-                break;
+        const colors = [];
+        if (this.movementPerSec > 10) {
+            colors.push('yellow');
+        }
+        if (this.healer) {
+            colors.push('green');
+        }
+        if (this.thief) {
+            colors.push('red');
+        }
+        if (colors.length === 0) {
+            colors.push('white');
+        }
+        if (this.defense.greaterThan(0)) {
+            if (this.defense.greaterThan(this.currentHitPoints())) {
+                display.DrawEnemyCircle(this.currentHitPoints(), this.pos, colors);
             }
-            case 'Paladin':
-            case 'Knight': {
-                display.DrawEnemyCircle(this.defense, this.pos, 'blue');
-                display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'white');
-                break;
+            else {
+                display.DrawEnemyCircle(this.currentHitPoints(), this.pos, colors);
+                display.DrawSolidSquare(this.defense, this.pos, 'blue');
             }
-            case 'Medic': {
-                display.DrawEnemyCircle(this.defense, this.pos, 'blue');
-                display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'green');
-                break;
-            }
-            case 'Dumbo':
-            case 'Flyer': {
-                display.DrawSolidDiamond(this.CurrentHitPoints(), this.pos, 'white');
-                break;
-            }
-            case 'Hummingbird': {
-                display.DrawSolidDiamond(this.CurrentHitPoints(), this.pos, 'yellow');
-                break;
-            }
-            case 'Bradley':
-            case 'Fast': {
-                display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'yellow');
-                break;
-            }
-            case 'Cleric': {
-                display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'green');
-                break;
-            }
-            case 'Boss': {
-                display.DrawEnemyCircle(this.defense, this.pos, 'blue');
-                display.DrawSolidSquare(this.CurrentHitPoints(), this.pos, 'red');
-                break;
-            }
-            case this.type:
-            default: {
-                display.addToDisplay('Missing enemy draw', DisplayCategory.Challenge);
-            }
+        }
+        else {
+            display.DrawEnemyCircle(this.currentHitPoints(), this.pos, colors);
         }
     }
     takePoisonDamage() {
@@ -1340,10 +1550,6 @@ class Enemy extends movingObject {
     recieveHit(bullet) {
         let damageToTake = new JBDecimal(bullet.damage);
         if (this.defense.greaterThan(0)) {
-            this.defense = this.defense.subtract(damageToTake.multiply(bullet.defenseDamage));
-            if (this.defense.lessThan(0)) {
-                this.defense = new JBDecimal(0);
-            }
             damageToTake = damageToTake.subtract(this.defense);
             if (damageToTake.lessThan(0)) {
                 return; // no damage will be taken, time to bounce
@@ -1351,22 +1557,10 @@ class Enemy extends movingObject {
         }
         this.damagetaken = this.damagetaken.add(damageToTake);
     }
-    beTargetedByWeapon(damagePassed, attackerPos, DefenseDamage) {
-        let damage = new JBDecimal(damagePassed);
-        let critchance = critChance();
-        let crit = false;
-        const multiplier = critMultiplier();
-        while (critchance > 100) {
-            damage = damage.multiply(multiplier);
-            critchance -= 100;
-            crit = true;
-        }
-        const rndvalue = Math.random() * 100;
-        if (rndvalue < critchance) {
-            damage = damage.multiply(multiplier);
-            crit = true;
-        }
-        this.bullets.push(new Bullet(attackerPos, this.pos, damage, DefenseDamage, crit));
+    beTargetedByWeapon(damagePassed, attackerPos) {
+        const newBullet = new Bullet(attackerPos, this.pos, damagePassed);
+        newBullet.setDamage();
+        this.bullets.push(newBullet);
     }
     checkForHit() {
         for (let index = this.bullets.length - 1; index >= 0; index--) {
@@ -1379,27 +1573,107 @@ class Enemy extends movingObject {
             }
         }
     }
-    expectedHitsRemaining(damage) {
+    expectedHitPointsRemaining() {
         if (this.bullets.length === 0) {
-            return this.CurrentHitPoints().divide(damage).ToNumber();
+            return this.currentHitPoints();
         }
-        let damageper = new JBDecimal(damage).subtract(this.defense);
-        if (damageper.lessThan(0)) {
-            damageper = damage.divide(100);
-        }
-        let leftoverHitpoints = this.CurrentHitPoints();
-        this.bullets.forEach(() => {
-            leftoverHitpoints = leftoverHitpoints.subtract(damageper);
+        let leftoverHitpoints = this.currentHitPoints();
+        this.bullets.forEach((b) => {
+            leftoverHitpoints = leftoverHitpoints.subtract(b.damage.subtract(this.defense));
         });
-        return leftoverHitpoints.divide(damage).ToNumber();
+        return leftoverHitpoints;
     }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function NumberOfTowerLevelsBought() {
+function numberOfTowerLevelsBought() {
     let ret = 0;
-    gameData.towers.forEach((t) => {
+    gameData.buildings.forEach((t) => {
         ret += t.bought;
     });
     return ret;
+}
+function getSpecialsCount() {
+    let total = 0;
+    gameData.world.spawnsRemaining.forEach((s) => {
+        total += s;
+    });
+    return total;
+}
+function getNumberOfEnemies(wave) {
+    let div = wave - (gameData.world.currentTier - 1);
+    if (div < 1) {
+        div = 1;
+    }
+    return Math.floor(gameData.world.currentWave / div);
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function resetSpawns(killexistingenemies = true) {
+    gameData.world.currentWave += 1;
+    if (gameData.world.currentWave === 1) {
+        gameData.world.ticksToNextSpawn = 1000 * 60 * 10;
+    }
+    else {
+        gameData.world.ticksToNextSpawn = 1000;
+    }
+    if (killexistingenemies) {
+        gameData.enemies = [];
+    }
+    else {
+        display.addToDisplay(`Wave ${gameData.world.currentWave - 1} completed!`, DisplayCategory.Story);
+    }
+    gameData.challenges.forEach((ch) => {
+        if (ch.active) {
+            ch.checkForCompletion();
+        }
+    });
+    CheckAchievementCompletions(); // check before resetting to new tier
+    if (gameData.world.currentWave > getWavesNeededForTier()) {
+        // gameData.world.nextSaveGameTime = new Date();
+        // quitChallenges();
+        if (gameData.world.currentTier === gameData.world.tierUnlocked) {
+            gameData.world.tierUnlocked += 1;
+            while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
+                gameData.tierBlueprints.push(new TierBluePrint());
+            }
+        }
+        // init(1);
+    }
+    display.drone = new Enemy(true);
+    gameData.world.enemiesToSpawn = 9 + gameData.world.currentWave - gameData.pebbleUpgrades[10].bought;
+    gameData.world.spawnsRemaining[1] = getNumberOfEnemies(5);
+    gameData.world.spawnsRemaining[2] = getNumberOfEnemies(10);
+    gameData.world.spawnsRemaining[3] = getNumberOfEnemies(20);
+    gameData.world.spawnsRemaining[4] = getNumberOfEnemies(15);
+    gameData.world.spawnsRemaining[5] = getNumberOfEnemies(30);
+    gameData.world.spawnsRemaining[6] = getNumberOfEnemies(50);
+    gameData.world.spawnsRemaining[7] = getNumberOfEnemies(60);
+    gameData.world.spawnsRemaining[8] = getNumberOfEnemies(25);
+    gameData.world.spawnsRemaining[9] = getNumberOfEnemies(35);
+    gameData.world.spawnsRemaining[10] = getNumberOfEnemies(55);
+    gameData.world.spawnsRemaining[11] = getNumberOfEnemies(70);
+    gameData.world.spawnsRemaining[12] = getNumberOfEnemies(65);
+    gameData.world.spawnsRemaining[13] = getNumberOfEnemies(80);
+    gameData.world.spawnsRemaining[14] = getNumberOfEnemies(110);
+    gameData.world.spawnsRemaining[15] = getNumberOfEnemies(115);
+    gameData.world.spawnsRemaining[16] = getNumberOfEnemies(40);
+    gameData.world.spawnsRemaining[17] = getNumberOfEnemies(45);
+    gameData.world.spawnsRemaining[18] = getNumberOfEnemies(75);
+    gameData.world.spawnsRemaining[19] = getNumberOfEnemies(90);
+    gameData.world.spawnsRemaining[20] = getNumberOfEnemies(85);
+    gameData.world.spawnsRemaining[21] = getNumberOfEnemies(100);
+    gameData.world.spawnsRemaining[22] = getNumberOfEnemies(120);
+    gameData.world.spawnsRemaining[23] = getNumberOfEnemies(135);
+    gameData.world.spawnsRemaining[24] = getNumberOfEnemies(95);
+    gameData.world.spawnsRemaining[25] = getNumberOfEnemies(105);
+    gameData.world.spawnsRemaining[26] = getNumberOfEnemies(125);
+    gameData.world.spawnsRemaining[27] = getNumberOfEnemies(140);
+    gameData.world.spawnsRemaining[28] = getNumberOfEnemies(130);
+    gameData.world.spawnsRemaining[29] = getNumberOfEnemies(145);
+    gameData.world.spawnsRemaining[30] = getNumberOfEnemies(150);
+    gameData.world.spawnsRemaining[31] = getNumberOfEnemies(155);
+    gameData.world.spawnsRemaining[32] = getNumberOfEnemies(100000000000);
+    if (gameData.world.enemiesToSpawn < getSpecialsCount()) {
+        gameData.world.enemiesToSpawn = getSpecialsCount();
+    }
 }
 //# sourceMappingURL=Tower.js.map

@@ -14,20 +14,17 @@ class Challenge {
         this.active = true;
         init(1);
         display.addToDisplay(`Challenge ${this.name} begun`, DisplayCategory.Challenge);
-        dirtyTowers = true;
     }
     quit() {
         this.active = false;
         display.addToDisplay('Challenge exited', DisplayCategory.Challenge);
-        dirtyTowers = true;
     }
     fail() {
         this.active = false;
         display.addToDisplay('Challenge failed!', DisplayCategory.Challenge);
-        dirtyTowers = true;
     }
     waveRequiredforCompletion() {
-        const waveper = this.wavePerComplete - gameData.boulderUpgrades[0].bought;
+        const waveper = this.wavePerComplete - gameData.rockUpgrades[0].bought;
         return this.completed * waveper + this.startingWaveToComplete;
     }
     checkForCompletion() {

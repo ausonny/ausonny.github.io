@@ -10,13 +10,13 @@ button {
 }
 
 canvas {
-  width: 520px;
-  height: 520px;
+  width: 100%;
+  height: auto;
   display: block;
 }
 
 .challengebutton {
-  width: 180px;
+  width: 100px;
   margin: 1px;
   height: 40px;
 }
@@ -49,7 +49,7 @@ canvas {
   width: 100px;
   margin: 1px;
   padding: 1px;
-  height: 50px;
+  height: 30px;
 }
 
 .autoamountbutton {
@@ -59,7 +59,7 @@ canvas {
 }
 
 .upgradebutton {
-  width: 251px;
+  width: 246px;
   margin: 1px;
   height: 90px;
 }
@@ -70,16 +70,90 @@ canvas {
   height: 30px;
 }
 
+.towerbutton {
+  width: 150px;
+  margin: 1px;
+  height: 60px;
+  color: white;
+}
+
+.gainsboro {
+  background-color: gainsboro;
+  color: black
+}
+
+.salmon {
+  background-color: salmon;
+  color: white
+}
 .red {
   background-color: red;
+  color: white;
+}
+
+.blue {
+  background-color: blue;
+  color: white;
+}
+
+.green {
+  background-color: green;
+  color: white;
+}
+
+.white {
+  background-color: white;
+  color: black;
 }
 
 .yellow {
   background-color: yellow;
+  color: black;
+}
+
+.purple {
+  background-color: purple;
+  color: white;
 }
 
 .orange {
   background-color: orange;
+  color: black;
+}
+
+.turquoise {
+  background-color: turquoise;
+  color: black;
+}
+
+.tomato {
+  background-color: tomato;
+  color: white;
+}
+
+.black {
+  background-color: black;
+  color: white;
+}
+
+.burleywood {
+  background-color: burlywood;
+  color: black;
+}
+
+.brown {
+  background-color: brown;
+  color: white;
+}
+
+.ivory {
+  background-color: ivory;
+  color: black;
+}
+
+.snow {
+  background-color: snow;
+  color: black
 }
 
 .hidden{
@@ -113,8 +187,13 @@ canvas {
 }
 
 .prestigebutton {
+  width: 220px;
+  height: 75px;
+}
+
+.bottombutton {
   width: 250px;
-  height: 100px;
+  height: 30px;
 }
 
 .autobox {
@@ -139,32 +218,12 @@ canvas {
   background-color: yellow;
 }
 
-@media (min-width: 576px) {
-  .rounded-nav {
-    border-radius: 5rem !important;
-  }
+.fixedrowbottom {
+  position:fixed;
+  bottom:0;
+  width:100%;
 }
 
-@media (min-width: 576px) {
-  .rounded-nav .nav-link {
-    border-radius: 5rem !important;
-  }
+table {
+  width: 100%;
 }
-
-.nav-tabs .nav-item .nav-link {
-  border: 1px solid #dee2e6;
-  background-color: #212529;
-  color: #009dff;
-}
-
-.nav-tabs .nav-item .nav-link.active {
-  border: 1px solid #dee2e6;
-  background-color: #6c757d;
-  color: white;
-}
-
-/* .tab-content {
-  border: 1px solid #dee2e6;
-  border-top: transparent;
-  padding: 2px;
-} */

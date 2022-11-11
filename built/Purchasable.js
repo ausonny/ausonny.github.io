@@ -1,40 +1,98 @@
-// eslint-disable-next-line no-unused-vars
+function createInternalInflationArray(size, initial = false) {
+    if (!initial) {
+        display.addToDisplay('Consider upping the initial internalinflationarray', DisplayCategory.Story);
+    }
+    // eslint-disable-next-line no-global-assign
+    internalInflationArray = [];
+    let total = 0;
+    for (let index = 0; index <= size * 1.1; index++) {
+        total += Math.floor(Math.sqrt(index));
+        internalInflationArray.push(total);
+    }
+}
 function internalInflationCost(increase) {
     if (internalInflationArray.length <= increase) {
-        display.addToDisplay('Consider upping the initial internalinflationarray', DisplayCategory.Story);
-        // eslint-disable-next-line no-global-assign
-        internalInflationArray = [];
-        let total = 0;
-        for (let index = 1; index <= increase * 1.1; index++) {
-            total += Math.floor(Math.sqrt(index));
-            internalInflationArray.push(total);
-        }
+        createInternalInflationArray(increase);
     }
     return internalInflationArray[increase];
 }
+function workersUsed() {
+    let total = new JBDecimal(0);
+    gameData.buildings.forEach((b) => {
+        total = total.add(b.peopleUsed());
+    });
+    return total;
+}
+function peopleAvailable() {
+    return gameData.resources.people.amount.subtract(workersUsed());
+}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Purchasable {
-    constructor(baseCost, costMultiplier, baseResource, upgradeCost, upgradeCostMultiplier, upgradeResource, inflationFloor, limit, buyButton, upgradeable, upgradeButton) {
-        this.baseCost = new JBDecimal(baseCost);
-        this.costMultiplier = costMultiplier;
-        this.baseResource = baseResource;
-        this.inflationFloor = inflationFloor;
-        this.limit = limit;
-        this.owned = new JBDecimal(0);
+    constructor() {
+        this.woodCostPer = new JBDecimal(0);
+        this.woodCostMultiplierPer = 1;
+        this.peopleCostPer = 0;
+        this.stoneCostPer = new JBDecimal(0);
+        this.stoneCostMultiplierPer = 1;
+        this.essenceCostPer = new JBDecimal(0);
+        this.essenceCostMultiplierPer = 1;
+        this.powderCostPer = new JBDecimal(0);
+        this.powderCostMultiplierPer = 1;
+        this.pebbleCostPer = new JBDecimal(0);
+        this.pebbleCostMultiplierPer = 1;
+        this.particleCostPer = new JBDecimal(0);
+        this.particleCostMultiplierPer = 1;
+        this.rockCostPer = new JBDecimal(0);
+        this.rockCostMultiplierPer = 1;
+        this.timeparticleCostPer = new JBDecimal(0);
+        this.timeparticleCostMultiplierPer = 1;
+        this.redResearchPer = new JBDecimal(0);
+        this.redResearchMultiplier = 1;
+        this.shardCostPer = new JBDecimal(0);
+        this.shardCostMultiplierPer = 1;
+        this.inflationFloor = 0;
         this.bought = 0;
-        this.buyButton = buyButton;
-        this.upgradeable = upgradeable;
-        this.upgradeCost = new JBDecimal(upgradeCost);
-        this.upgradeCostMultiplier = upgradeCostMultiplier;
-        this.upgradeResource = upgradeResource;
-        this.upgradeLevel = 0;
-        this.upgradeButton = upgradeButton;
+        this.limit = 0;
         this.addedlimit = 0;
+        this.addedLimitElgible = false;
         this.autoOn = false;
-        this.active = false;
+        this.active = true;
+    }
+    peopleUsed() {
+        return this.bought * this.peopleCostPer;
     }
     autoSwitch() {
         this.autoOn = !this.autoOn;
+    }
+    checkResourceAvaliablity(minResourceAvailable = 1, amt = new JBDecimal(1)) {
+        if (peopleAvailable().lessThan(this.buyPeopleNeeded())) {
+            return false;
+        }
+        if (gameData.resources.wood.amount.lessThan(this.buyWoodCost(amt).multiply(minResourceAvailable))) {
+            return false;
+        }
+        if (gameData.resources.stone.amount.lessThan(this.buyStoneCost(amt).multiply(minResourceAvailable))) {
+            return false;
+        }
+        if (gameData.resources.essence.amount.lessThan(this.buyEssenceCost(amt).multiply(minResourceAvailable))) {
+            return false;
+        }
+        if (gameData.resources.powder.amount.lessThan(this.buyPowderCost(amt).multiply(minResourceAvailable))) {
+            return false;
+        }
+        if (gameData.resources.pebble.amount.lessThan(this.buyPebbleCost(amt).multiply(minResourceAvailable))) {
+            return false;
+        }
+        if (gameData.resources.rock.amount.lessThan(this.buyRockCost(amt).multiply(minResourceAvailable))) {
+            return false;
+        }
+        if (gameData.resources.shards.amount.lessThan(this.buyShardsCost(amt).multiply(minResourceAvailable))) {
+            return false;
+        }
+        if (gameData.resources.redResearch.amount.lessThan(this.buyRedResearchCost(amt).multiply(minResourceAvailable))) {
+            return false;
+        }
+        return true;
     }
     autoBuy() {
         if (!this.autoOn) {
@@ -43,8 +101,10 @@ class Purchasable {
         if (!this.active) {
             return;
         }
-        const moneyavailable = 100;
-        if (this.baseResource.amount.lessThan(this.buyCost().multiply(moneyavailable))) {
+        if (peopleAvailable().lessThan(this.buyPeopleNeeded())) {
+            return;
+        }
+        if (!this.checkResourceAvaliablity(10)) {
             return;
         }
         this.buy();
@@ -55,28 +115,16 @@ class Purchasable {
         }
         let ret = this.inflationFloor;
         if (gameData.challenges[0].completed > 0) {
-            const bonus = 1.05 + gameData.rockUpgrades[3].bought * 0.01;
+            const bonus = 1.05 + gameData.pebbleUpgrades[5].bought * 0.01;
             ret *= Math.pow(bonus, gameData.challenges[0].completed);
         }
         return ret;
     }
-    buyUpgradeCost(amt = new JBDecimal(1)) {
-        let count = 0;
-        let ret = new JBDecimal(0);
-        while (amt.greaterThan(count)) {
-            const unitno = this.upgradeLevel;
-            const unitMultiplier = new JBDecimal(this.upgradeCostMultiplier).pow(unitno);
-            const costTemp = this.upgradeCost.multiply(unitMultiplier);
-            ret = ret.add(costTemp);
-            count += 1;
-        }
-        return ret;
-    }
-    buyCost(amt = new JBDecimal(1)) {
-        if (this.baseCost.equals(0)) {
+    genericBuyCost(costPer, costMultiplierPer, amt = new JBDecimal(1)) {
+        if (costPer.equals(0)) {
             return new JBDecimal(0);
         }
-        if (this.costMultiplier === 0) {
+        if (costMultiplierPer === 0) {
             return new JBDecimal(this.bought + 1);
         }
         let count = 0;
@@ -93,32 +141,49 @@ class Purchasable {
             qtyToUse += itemQty;
         }
         // count = this.bought;
-        return new JBDecimal(this.baseCost.multiply(new JBDecimal(this.costMultiplier).pow(qtyToUse - 1)));
+        return new JBDecimal(costPer.multiply(new JBDecimal(costMultiplierPer).pow(qtyToUse - 1)));
+    }
+    buyPeopleNeeded() {
+        return this.peopleCostPer;
+    }
+    buyWoodCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.woodCostPer, this.woodCostMultiplierPer, amt);
+    }
+    buyStoneCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.stoneCostPer, this.stoneCostMultiplierPer, amt);
+    }
+    buyEssenceCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.essenceCostPer, this.essenceCostMultiplierPer, amt);
+    }
+    buyPowderCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.powderCostPer, this.powderCostMultiplierPer, amt);
+    }
+    buyPebbleCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.pebbleCostPer, this.pebbleCostMultiplierPer, amt);
+    }
+    buyParticleCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.particleCostPer, this.particleCostMultiplierPer, amt);
+    }
+    buyRockCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.rockCostPer, this.rockCostMultiplierPer, amt);
+    }
+    buyTimeParticleCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.timeparticleCostPer, this.timeparticleCostMultiplierPer, amt);
+    }
+    buyShardsCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.shardCostPer, this.shardCostMultiplierPer, amt);
+    }
+    buyRedResearchCost(amt = new JBDecimal(1)) {
+        return this.genericBuyCost(this.redResearchPer, this.redResearchMultiplier, amt);
     }
     affordBuy(amt = new JBDecimal(1)) {
         if (this.limit > 0 && this.bought >= this.limit + this.addedlimit) {
             return false;
         }
-        if (this.buyCost(amt).greaterThan(this.baseResource.amount)) {
+        if (!this.checkResourceAvaliablity(1, amt)) {
             return false;
         }
         return true;
-    }
-    afforUpgradeBuy(amt = new JBDecimal(1)) {
-        if (this.buyUpgradeCost(amt).greaterThan(this.upgradeResource.amount)) {
-            return false;
-        }
-        return true;
-    }
-    buyUpgrade(amt = new JBDecimal(1)) {
-        let count = 0;
-        while (this.afforUpgradeBuy() && amt.greaterThan(count)) {
-            this.upgradeResource.subtract(this.buyUpgradeCost());
-            this.upgradeLevel += 1;
-            // this.bought = new JBDecimal(1);
-            // this.owned = new JBDecimal(1);
-            count += 1;
-        }
     }
     buy(amt = new JBDecimal(1)) {
         let count = 0;
@@ -126,55 +191,77 @@ class Purchasable {
             if (this.limit > 0 && this.bought > this.limit + this.addedlimit) {
                 return;
             }
-            this.baseResource.subtract(this.buyCost());
+            gameData.resources.wood.subtract(this.buyWoodCost());
+            gameData.resources.stone.subtract(this.buyStoneCost());
+            gameData.resources.essence.subtract(this.buyEssenceCost());
+            gameData.resources.powder.subtract(this.buyPowderCost());
+            gameData.resources.pebble.subtract(this.buyPebbleCost());
+            gameData.resources.rock.subtract(this.buyRockCost());
+            gameData.resources.shards.subtract(this.buyShardsCost());
+            gameData.resources.redResearch.subtract(this.buyRedResearchCost());
             this.bought += 1;
-            this.owned = this.owned.add(1);
             count += 1;
             CheckAchievementCompletions();
             dirtyUpgrades = true;
         }
     }
+    getResourcesNeededString() {
+        let ret = '';
+        if (this.buyPeopleNeeded() > 0) {
+            ret += `People: ${this.buyPeopleNeeded().toString()}<br />`;
+        }
+        if (this.buyWoodCost().greaterThan(0)) {
+            ret += `Wood: ${this.buyWoodCost().ToString()}<br />`;
+        }
+        if (this.buyStoneCost().greaterThan(0)) {
+            ret += `Stone: ${this.buyStoneCost().ToString()}<br />`;
+        }
+        if (this.buyEssenceCost().greaterThan(0)) {
+            ret += `Essence: ${this.buyEssenceCost().ToString()}<br />`;
+        }
+        if (this.buyPowderCost().greaterThan(0)) {
+            ret += `Powder: ${this.buyPowderCost().ToString()}<br />`;
+        }
+        if (this.buyPebbleCost().greaterThan(0)) {
+            ret += `Pebble: ${this.buyPebbleCost().ToString()}<br />`;
+        }
+        if (this.buyRockCost().greaterThan(0)) {
+            ret += `Rock: ${this.buyRockCost().ToString()}<br />`;
+        }
+        if (this.buyParticleCost().greaterThan(0)) {
+            ret += `Particle: ${this.buyParticleCost().ToString()}<br />`;
+        }
+        if (this.buyTimeParticleCost().greaterThan(0)) {
+            ret += `Time Particle: ${this.buyTimeParticleCost().ToString()}<br />`;
+        }
+        if (this.buyShardsCost().greaterThan(0)) {
+            ret += `Shards: ${this.buyShardsCost().ToString()}<br />`;
+        }
+        if (this.buyRedResearchCost().greaterThan(0)) {
+            ret += `Red Research: ${this.buyRedResearchCost().ToString()}<br />`;
+        }
+        return ret.slice(0, ret.length - 6);
+    }
     updateDisplay() {
-        let amt = new JBDecimal(1);
-        // if(this.multiBuyEligible) {
-        //   amt = gameData.options.MultiBuys;
-        // }
-        this.buyButton.innerHTML = '<br />';
+        const amt = new JBDecimal(1);
         if (this.limit > 0 && this.bought >= this.limit + this.addedlimit) {
+            this.buyButton.innerHTML = '';
             this.buyButton.classList.add('btn-primary');
             this.buyButton.classList.remove('btn-danger');
             this.buyButton.classList.remove('btn-success');
+            return;
         }
-        else if (this.affordBuy(amt)) {
-            this.buyButton.innerHTML = `${this.baseResource.name}: ${this.buyCost().ToString()}</br>`;
+        this.buyButton.innerHTML = this.getResourcesNeededString();
+        // this.buyButton.style.height = `${btnheight.toString()}px`;
+        if (this.affordBuy(amt)) {
             this.buyButton.classList.add('btn-success');
             this.buyButton.classList.remove('btn-danger');
             this.buyButton.classList.remove('btn-primary');
         }
         else {
-            this.buyButton.innerHTML = `${this.baseResource.name}: ${this.buyCost().ToString()}</br>`;
             this.buyButton.classList.add('btn-danger');
             this.buyButton.classList.remove('btn-primary');
             this.buyButton.classList.remove('btn-success');
-        }
-        try {
-            if (this.upgradeable) {
-                amt = new JBDecimal(1);
-                if (this.afforUpgradeBuy(amt)) {
-                    this.upgradeButton.classList.add('btn-success');
-                    this.upgradeButton.classList.remove('btn-danger');
-                    this.upgradeButton.classList.remove('btn-primary');
-                }
-                else {
-                    this.upgradeButton.classList.add('btn-danger');
-                    this.upgradeButton.classList.remove('btn-primary');
-                    this.upgradeButton.classList.remove('btn-success');
-                }
-                this.upgradeButton.innerHTML = `${this.upgradeResource.name}: ${this.buyUpgradeCost().ToString()}`;
-            }
-        }
-        catch (error) {
-            display.logMyErrors(error);
         }
     }
 }

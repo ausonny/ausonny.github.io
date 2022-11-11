@@ -1,14 +1,18 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Upgrade extends Purchasable {
-    constructor(name, description, baseCost, costMultiplier, resource, buyButton, limit) {
-        super(baseCost, costMultiplier, resource, 0, 1, new Resource('dummy'), 0, limit, buyButton, false, buyButton);
-        this.name = name;
-        this.description = description;
+    constructor() {
+        super();
+        this.name = '';
     }
     updateDisplay() {
         super.updateDisplay();
-        this.buyButton.innerHTML += this.description;
-        this.buyButton.innerHTML += `<br />${this.bought.toString()}/${(this.limit + this.addedlimit).toString()}`;
+        this.buyButton.innerHTML = `${this.description}<br/>${this.buyButton.innerHTML}<br/>`;
+        if (this.limit > 0) {
+            this.buyButton.innerHTML += `${this.bought.toString()}/${(this.limit + this.addedlimit).toString()}`;
+        }
+        else {
+            this.buyButton.innerHTML += `${this.bought.toString()}`;
+        }
     }
 }
 //# sourceMappingURL=Upgrade.js.map

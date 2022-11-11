@@ -21,10 +21,10 @@ class FloatingText {
         this.text = text;
         this.color = color;
         this.framesleft = 1000;
-        this.pos = pos;
+        this.pos = new Vector(pos.x, pos.y);
     }
     draw() {
-        display.drawText(this.text, this.pos, this.color, 'bold 10px Arial', 'center', 'bottom');
+        display.drawText(this.text, this.pos, this.color, `${display.getFontSizeString(10)} bold Arial`, 'center', 'bottom');
         this.framesleft -= 1;
         this.pos.x += 0.01;
         this.pos.y -= 0.01;
@@ -45,15 +45,26 @@ class Display {
         this.canvas = document.getElementById('gameBoard');
         this.ctx = this.canvas.getContext('2d');
     }
+    // eslint-disable-next-line class-methods-use-this
+    getFontSizeString(valueAt1000) {
+        return Math.floor((CANVAS_SIZE / 1000) * valueAt1000).toString();
+    }
     showFloaters() {
         for (let index = this.floaters.length - 1; index >= 0; index--) {
             const element = this.floaters[index];
             element.framesleft -= 1;
+            let drawBool = true;
             if (element.framesleft < 0) {
-                this.floaters.splice(index);
-                break;
+                this.floaters.splice(index, 1);
+                drawBool = false;
             }
-            element.draw();
+            else if (element.pos.y < 4) {
+                this.floaters.splice(index, 1);
+                drawBool = false;
+            }
+            if (drawBool) {
+                element.draw();
+            }
         }
     }
     prestige1DisplayReset() {
@@ -102,17 +113,6 @@ class Display {
         }
         this.textToDisplay = this.textToDisplayAchievement.concat(this.textToDisplayChallenge).concat(this.textToDisplayGameSave).concat(this.textToDisplayLoot).concat(this.textToDisplayStory);
         this.textToDisplay.sort((a, b) => (a.index < b.index ? 1 : -1));
-        let activechallenges = false;
-        let txt = 'Challenges Active:';
-        gameData.challenges.forEach((ch) => {
-            if (ch.active) {
-                activechallenges = true;
-                txt += `<br />${ch.name}: wave needed: ${ch.waveRequiredforCompletion()}`;
-            }
-        });
-        if (activechallenges) {
-            this.textToDisplay.unshift(new DisplayItem(0, this.addColor('red', txt), DisplayCategory.Achievement));
-        }
         if (this.texttoDisplayTutorial.length > 0) {
             this.textToDisplay.unshift(this.texttoDisplayTutorial[0]);
         }
@@ -213,29 +213,49 @@ class Display {
     // }
     // eslint-disable-next-line no-unused-vars, class-methods-use-this
     PrettyRatePerTime(amt, ticks) {
-        // this originally changed the time element based on size, but I found it distracting in poreactice so it is back to /hr only
+        // this originally changed the time duration based on time, but I found it distracting in practice so it is back to /hr only
         const base = amt.divide(ticks).multiply(1000 * 60 * 60);
         return `${base.ToString()} /hr`;
     }
     // eslint-disable-next-line class-methods-use-this
     TierScaling(value) {
-        const tiersize = 40 + 10 * Math.ceil(gameData.world.currentTier / 5);
-        const test = 520;
-        return (value / tiersize) * test; // is canvas.width right?
+        const tiersize = getTierSize();
+        return (value / tiersize) * CANVAS_SIZE * 0.8; // is canvas.width right?
     }
-    DrawSolidDiamond(CurrentHitPoints, position, color) {
-        let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).ToNumber();
+    // eslint-disable-next-line class-methods-use-this
+    TierScalingReverse(value) {
+        const tiersize = getTierSize();
+        return (value * tiersize) / (CANVAS_SIZE * 0.8); // is canvas.width right?
+    }
+    // eslint-disable-next-line class-methods-use-this
+    displayTextArrayFromString(textstring, centerPos, color, align, baseline, fontSize = 12) {
+        const lines = textstring.split('<br />');
+        let offset = 0.5 - lines.length / 2;
+        if (baseline === 'top') {
+            offset = 0;
+        }
+        lines.forEach((element) => {
+            display.drawTextNoScale(element, new Vector(centerPos.x, centerPos.y + offset / 0.065), color, `${display.getFontSizeString(fontSize)}px Arial`, align, baseline);
+            offset += 1;
+        });
+    }
+    drawRectangleBorder(xPos, yPos, width, height, thickness = 1) {
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillRect(xPos - thickness, yPos - thickness, width + thickness * 2, height + thickness * 2);
+    }
+    DrawSolidSmallDiamond(CurrentHitPoints, position, color) {
+        let squareSize = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
         squareSize = this.TierScaling(squareSize);
         if (squareSize < 4) {
             squareSize = 4;
         }
         this.ctx.fillStyle = color;
-        const scaledx = this.TierScaling(position.x);
-        const scaledy = this.TierScaling(position.y);
-        const top = scaledy - squareSize / 1.4;
-        const bottom = scaledy + squareSize / 1.4;
-        const left = scaledx - squareSize / 1.4;
-        const right = scaledx + squareSize / 1.4;
+        const scaledx = this.TierScaling(position.x) + CANVAS_SIZE * 0.1;
+        const scaledy = this.TierScaling(position.y) + CANVAS_SIZE * 0.1;
+        const top = scaledy - squareSize / 2;
+        const bottom = scaledy + squareSize / 2;
+        const left = scaledx - squareSize / 2;
+        const right = scaledx + squareSize / 2;
         this.ctx.beginPath();
         this.ctx.moveTo(scaledx, top);
         this.ctx.lineTo(right, scaledy);
@@ -244,14 +264,14 @@ class Display {
         this.ctx.fill();
     }
     DrawTwoColorDiamond(CurrentHitPoints, position, leftcolor, rightcolor) {
-        let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).ToNumber();
+        let squareSize = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
         squareSize = this.TierScaling(squareSize);
         if (squareSize < 4) {
             squareSize = 4;
         }
         this.ctx.fillStyle = leftcolor;
-        const scaledx = this.TierScaling(position.x);
-        const scaledy = this.TierScaling(position.y);
+        const scaledx = this.TierScaling(position.x) + CANVAS_SIZE * 0.1;
+        const scaledy = this.TierScaling(position.y) + CANVAS_SIZE * 0.1;
         const top = scaledy - squareSize / 1.4;
         const bottom = scaledy + squareSize / 1.4;
         const left = scaledx - squareSize / 1.4;
@@ -268,9 +288,20 @@ class Display {
         this.ctx.lineTo(scaledx, bottom);
         this.ctx.fill();
     }
+    drawTextNoScale(text, position, color, font, align, baseline) {
+        const scaledx = position.x;
+        const scaledy = position.y;
+        this.ctx.font = font;
+        this.ctx.textAlign = align;
+        this.ctx.textBaseline = baseline;
+        this.ctx.fillStyle = color;
+        this.ctx.fillText(text, scaledx, scaledy);
+        this.ctx.textAlign = 'left';
+        this.ctx.textBaseline = 'middle';
+    }
     drawText(text, position, color, font, align, baseline) {
-        const scaledx = this.TierScaling(position.x);
-        const scaledy = this.TierScaling(position.y);
+        const scaledx = this.TierScaling(position.x) + CANVAS_SIZE * 0.1;
+        const scaledy = this.TierScaling(position.y) + CANVAS_SIZE * 0.1;
         this.ctx.font = font;
         this.ctx.textAlign = align;
         this.ctx.textBaseline = baseline;
@@ -283,45 +314,75 @@ class Display {
         this.ctx.fillStyle = color;
         this.ctx.globalAlpha = alpha;
         this.ctx.beginPath();
-        this.ctx.arc(this.TierScaling(pos.x), this.TierScaling(pos.y), this.TierScaling(radius), 0, 2 * Math.PI);
+        this.ctx.arc(this.TierScaling(pos.x) + CANVAS_SIZE * 0.1, this.TierScaling(pos.y) + CANVAS_SIZE * 0.1, this.TierScaling(radius), 0, 2 * Math.PI);
         // this.ctx.arc(100, 75, 50, 0, 2 * Math.PI);
         this.ctx.fill();
         this.ctx.globalAlpha = 1;
     }
-    DrawEnemyCircle(CurrentHitPoints, pos, color) {
-        let radius = CurrentHitPoints.divide(this.drone.MaxHitPoints()).ToNumber();
+    DrawEnemyCircle(CurrentHitPoints, pos, colors) {
+        let radius = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
         radius = this.TierScaling(radius);
         if (radius < 2) {
             radius = 2;
         }
+        const scaledx = this.TierScaling(pos.x) + CANVAS_SIZE * 0.1;
+        const scaledy = this.TierScaling(pos.y) + CANVAS_SIZE * 0.1;
+        this.ctx.moveTo(scaledx, scaledy);
+        for (let index = 0; index < colors.length; index++) {
+            const startAngle = (index * 2 * Math.PI) / colors.length;
+            const endAngle = startAngle + (2 * Math.PI) / colors.length;
+            this.ctx.beginPath();
+            this.ctx.moveTo(scaledx, scaledy);
+            this.ctx.arc(scaledx, scaledy, radius, startAngle, endAngle);
+            this.ctx.closePath();
+            // filling the slices with the corresponding mood's color
+            this.ctx.fillStyle = colors[index];
+            this.ctx.fill();
+        }
+    }
+    DrawSolidRectangleNoScale(topLeftPosition, bottomRightPosition, color, border = true) {
+        const scaledtopleftx = topLeftPosition.x;
+        const scaledtoplefty = topLeftPosition.y;
+        const scaledbottomrightx = bottomRightPosition.x;
+        const scaledbottomrighty = bottomRightPosition.y;
+        if (border) {
+            this.drawRectangleBorder(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
+        }
         this.ctx.fillStyle = color;
-        const scaledx = this.TierScaling(pos.x);
-        const scaledy = this.TierScaling(pos.y);
-        this.ctx.beginPath();
-        this.ctx.arc(scaledx, scaledy, radius, 0, 2 * Math.PI);
-        this.ctx.fill();
+        this.ctx.fillRect(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
+    }
+    DrawSolidRectangle(topLeftPosition, bottomRightPosition, color, border = true) {
+        const scaledtopleftx = this.TierScaling(topLeftPosition.x) + CANVAS_SIZE * 0.1;
+        const scaledtoplefty = this.TierScaling(topLeftPosition.y) + CANVAS_SIZE * 0.1;
+        const scaledbottomrightx = this.TierScaling(bottomRightPosition.x) + CANVAS_SIZE * 0.1;
+        const scaledbottomrighty = this.TierScaling(bottomRightPosition.y) + CANVAS_SIZE * 0.1;
+        if (border) {
+            this.drawRectangleBorder(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
+        }
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
     }
     DrawSolidSquare(CurrentHitPoints, position, color) {
-        let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).ToNumber();
+        let squareSize = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
         squareSize = this.TierScaling(squareSize);
         if (squareSize < 4) {
             squareSize = 4;
         }
         this.ctx.fillStyle = color;
-        const scaledx = this.TierScaling(position.x);
-        const scaledy = this.TierScaling(position.y);
+        const scaledx = this.TierScaling(position.x) + CANVAS_SIZE * 0.1;
+        const scaledy = this.TierScaling(position.y) + CANVAS_SIZE * 0.1;
         this.ctx.fillRect(scaledx - squareSize / 2, scaledy - squareSize / 2, squareSize, squareSize);
     }
     DrawTwoColorSquare(CurrentHitPoints, position, leftcolor, rightcolor) {
-        let squareSize = CurrentHitPoints.divide(this.drone.MaxHitPoints()).ToNumber();
+        let squareSize = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
         squareSize = this.TierScaling(squareSize);
         if (squareSize < 4) {
             squareSize = 4;
         }
         this.ctx.fillStyle = leftcolor;
-        this.ctx.fillRect(this.TierScaling(position.x) - squareSize / 2, this.TierScaling(position.y) - squareSize / 2, squareSize / 2, squareSize);
+        this.ctx.fillRect(this.TierScaling(position.x) - squareSize / 2 + CANVAS_SIZE * 0.1, this.TierScaling(position.y) - squareSize / 2 + CANVAS_SIZE * 0.1, squareSize / 2, squareSize);
         this.ctx.fillStyle = rightcolor;
-        this.ctx.fillRect(this.TierScaling(position.x), this.TierScaling(position.y) - squareSize / 2, squareSize / 2, squareSize);
+        this.ctx.fillRect(this.TierScaling(position.x) + CANVAS_SIZE * 0.1, this.TierScaling(position.y) - squareSize / 2 + CANVAS_SIZE * 0.1, squareSize / 2, squareSize);
     }
 }
 //# sourceMappingURL=displayUtils.js.map

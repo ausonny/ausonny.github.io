@@ -3,33 +3,39 @@ achievementbonusarray = [];
 
 let lastachievementcount = 0;
 // eslint-disable-next-line no-unused-vars
-class Achievement {
+class Achievements {
   index: number;
 
   name: string;
 
   desc: string;
 
-  completed: boolean;
+  completed: number;
 
-  aIndex: number;
+  completionValues: JBDecimal[];
 
-  aValue: JBDecimal;
+  secondaryValue: number;
 
   UIDisplay: HTMLElement;
 
-  constructor(index: number, name: string, desc: string, aIndex: number, aValue: number, parentdiv: HTMLElement = document.getElementById('AchievementSection')) {
+  lastCalculated: JBDecimal;
+
+  amTier: boolean;
+
+  constructor(index: number, name: string, desc: string, completionValues: JBDecimal[], secondaryValue: number, parentdiv: HTMLElement = document.getElementById('AchievementSection'), amtier = false) {
     this.index = index;
     this.name = name;
     this.desc = desc;
-    this.completed = false;
-    this.aIndex = aIndex;
-    this.aValue = new JBDecimal(aValue);
+    this.completed = 0;
+    this.secondaryValue = secondaryValue;
+    this.completionValues = completionValues;
+    this.lastCalculated = new JBDecimal(0);
+    this.amTier = amtier;
 
     this.UIDisplay = document.createElement('div');
 
     this.UIDisplay.innerHTML = this.desc;
-    this.UIDisplay.classList.add('col-1', 'm-1', 'p-1', 'text-light', 'text-center', 'align-items-center', 'text-small', 'achievementbutton');
+    this.UIDisplay.classList.add('col-2', 'm-1', 'p-1', 'text-light', 'text-center', 'align-items-center', 'text-small', 'upgradebutton');
 
     if (this.completed) {
       this.UIDisplay.classList.add('bg-success');
@@ -42,177 +48,257 @@ class Achievement {
     this.UIDisplay.id = `Achievement${this.index}`;
 
     parentdiv.appendChild(this.UIDisplay);
-
-    // if (tier > 1) {
-    //   document.getElementById('TierSection').appendChild(this.UIDisplay);
-    // } else {
-    //   document.getElementById('AchievementSection').appendChild(this.UIDisplay);
-    // }
   }
 
   draw() {
-    if (this.completed) {
+    this.UIDisplay.innerHTML = `${this.desc}`;
+    if (this.completed === this.completionValues.length) {
       this.UIDisplay.classList.add('bg-success');
       this.UIDisplay.classList.remove('bg-danger');
-    } else {
+      this.UIDisplay.classList.remove('bg-primary');
+      if (!this.amTier) {
+        const completionLevels = `<br /><br />${this.completed} / ${this.completionValues.length}`;
+        this.UIDisplay.innerHTML += completionLevels;
+      }
+    } else if (this.completed === 0) {
       this.UIDisplay.classList.add('bg-danger');
       this.UIDisplay.classList.remove('bg-success');
+      this.UIDisplay.classList.remove('bg-primary');
+      if (!this.amTier) {
+        const neededLevels = `<br />${this.lastCalculated} / ${this.completionValues[this.completed].toString()}`;
+        const completionLevels = `<br />${this.completed} / ${this.completionValues.length}`;
+        this.UIDisplay.innerHTML += neededLevels + completionLevels;
+      }
+    } else {
+      this.UIDisplay.classList.remove('bg-danger');
+      this.UIDisplay.classList.remove('bg-success');
+      this.UIDisplay.classList.add('bg-primary');
+      if (!this.amTier) {
+        const neededLevels = `<br />${this.lastCalculated} / ${this.completionValues[this.completed].toString()}`;
+        const completionLevels = `<br />${this.completed} / ${this.completionValues.length}`;
+        this.UIDisplay.innerHTML += neededLevels + completionLevels;
+      }
     }
   }
 
-  writeToBoard() {
-    display.addToDisplay(`Achievement completed: ${this.desc}`, DisplayCategory.Achievement);
+  writeToBoard(feat = false) {
+    if (feat) {
+      display.addToDisplay(`Feat completed: ${this.desc}`, DisplayCategory.Achievement);
+    } else {
+      display.addToDisplay(`Achievement completed: ${this.desc} ${this.completionValues[this.completed]}`, DisplayCategory.Achievement);
+    }
   }
 
   checkforCompletion() {
-    if (this.completed) {
-      return;
-    }
-
-    if (this.name.slice(0, 5) === 'Miner') {
-      if (this.aValue.lessThanOrEqualTo(gameData.derivatives[this.aIndex].bought)) {
-        this.completed = true;
-        this.writeToBoard();
-        return;
+    if (this.name === 'Resource') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        let total = 0;
+        gameData.buildings.forEach((b) => {
+          if (b.type === 'LumberJack' || b.type === 'Stone') {
+            total += b.woodProductionPerSec();
+          }
+        });
+        this.lastCalculated = new JBDecimal(total);
+        if (e.lessThanOrEqualTo(total)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
       }
     }
 
-    if (this.name.slice(0, 4) === 'Wave') {
-      if (gameData.world.currentWave > this.aValue.ToNumber()) {
-        this.completed = true;
-        this.writeToBoard();
-        return;
+    if (this.name === 'Survivor') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        this.lastCalculated = new JBDecimal(gameData.world.currentWave);
+        if (this.lastCalculated.greaterThan(e) && gameData.world.deathLevel === 0) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
       }
     }
 
-    if (this.name.slice(0, 5) === 'Tower') {
+    if (this.name === 'Population') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        this.lastCalculated = new JBDecimal(gameData.resources.people.amount);
+        if (this.lastCalculated.greaterThan(e)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
+      }
+    }
+
+    if (this.name === 'Wave') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        this.lastCalculated = new JBDecimal(gameData.world.currentWave);
+        if (this.lastCalculated.greaterThan(e)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
+      }
+    }
+
+    if (this.name.slice(0, 8) === 'Building') {
       let towers = 0;
-      for (let index = 0; index < gameData.towers.length; index++) {
-        const element = gameData.towers[index];
+      for (let index = 0; index < gameData.buildings.length; index++) {
+        const element = gameData.buildings[index];
         if (element.type !== '') {
           towers += element.bought;
         }
       }
-      if (towers >= this.aValue.ToNumber()) {
-        this.completed = true;
-        this.writeToBoard();
-        return;
-      }
-    }
-
-    if (this.name.slice(0, 6) === 'Attack') {
-      let totalAttack = new JBDecimal(0);
-      for (let index = 0; index < gameData.towers.length; index++) {
-        const element = gameData.towers[index];
-        if (element.type === 'Gun' || element.type === 'Cannon' || element.type === 'Missile') {
-          totalAttack = totalAttack.add(element.AttackValue());
+      this.lastCalculated = new JBDecimal(towers);
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        if (this.lastCalculated.greaterThanOrEqualTo(e)) {
+          this.writeToBoard();
+          this.completed += 1;
         }
       }
-      if (totalAttack.greaterThanOrEqualTo(this.aValue)) {
-        this.completed = true;
-        this.writeToBoard();
-        return;
+    }
+
+    if (this.name === 'Attack') {
+      let totalAttack = new JBDecimal(0);
+      for (let index = 0; index < gameData.buildings.length; index++) {
+        const element = gameData.buildings[index];
+        totalAttack = totalAttack.add(element.arrowAttackValue().multiply(element.bought));
+        totalAttack = totalAttack.add(element.catapultAttackValue().multiply(element.bought));
+        totalAttack = totalAttack.add(element.poisonAttackValue().multiply(element.bought));
+      }
+      this.lastCalculated = new JBDecimal(totalAttack);
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        if (this.lastCalculated.greaterThanOrEqualTo(e)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
       }
     }
 
-    if (this.name.slice(0, 9) === '1Prestige') {
-      if (gameData.stats.prestige1 >= this.aValue.ToNumber()) {
-        this.completed = true;
-        this.writeToBoard();
-        return;
+    if (this.name === '1Prestige') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        this.lastCalculated = new JBDecimal(gameData.stats.prestige1);
+        if (e.lessThanOrEqualTo(this.lastCalculated)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
       }
     }
 
-    if (this.name.slice(0, 9) === '2Prestige') {
-      if (gameData.stats.prestige2 >= this.aValue.ToNumber()) {
-        this.completed = true;
-        this.writeToBoard();
-        return;
+    if (this.name === '2Prestige') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        this.lastCalculated = new JBDecimal(gameData.stats.prestige2);
+        if (e.lessThanOrEqualTo(this.lastCalculated)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
       }
     }
 
-    if (this.name.slice(0, 9) === '3Prestige') {
-      if (gameData.stats.prestige3 >= this.aValue.ToNumber()) {
-        this.completed = true;
-        this.writeToBoard();
-        return;
+    if (this.name === '3Prestige') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        this.lastCalculated = new JBDecimal(gameData.stats.prestige3);
+        if (e.lessThanOrEqualTo(this.lastCalculated)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
       }
     }
 
-    if (this.name.slice(0, 10) === 'PebblesPer') {
-      if (getCurrentPebbleRate().greaterThanOrEqualTo(this.aValue)) {
-        this.completed = true;
-        this.writeToBoard();
-        return;
+    if (this.name === 'PowderPer') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        this.lastCalculated = new JBDecimal(getCurrentPowderRate());
+        if (this.lastCalculated.greaterThanOrEqualTo(e)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
       }
     }
 
     if (this.name.slice(0, 12) === 'CompleteTier') {
-      if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
-        if (gameData.world.currentTier >= this.aValue.ToNumber()) {
-          this.completed = true;
-          this.writeToBoard();
-          return;
+      if (this.completed < 1) {
+        if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
+          if (gameData.world.currentTier >= this.secondaryValue) {
+            this.completed = 1;
+            this.writeToBoard(true);
+            return;
+          }
         }
       }
     }
 
     if (this.name.slice(0, 13) === 'TierChallenge') {
-      if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
-        if (gameData.world.currentTier >= this.aValue.ToNumber()) {
-          let complete = false;
-          gameData.challenges.forEach((ch) => {
-            if (ch.active) {
-              complete = true;
+      if (this.completed < 1) {
+        if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
+          if (gameData.world.currentTier >= this.secondaryValue) {
+            let complete = false;
+            gameData.challenges.forEach((ch) => {
+              if (ch.active) {
+                complete = true;
+              }
+            });
+            if (complete) {
+              this.writeToBoard(true);
+              this.completed = 1;
             }
-          });
-          if (complete) {
-            this.writeToBoard();
-            this.completed = true;
           }
         }
       }
     }
 
-    if (this.name.slice(0, 14) === 'TierDerivative') {
-      if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
-        if (gameData.world.currentTier >= this.aValue.ToNumber()) {
-          if (gameData.upgrades[8].bought === 0) {
-            this.completed = true;
-            this.writeToBoard();
-            return;
-          }
-        }
-      }
-    }
+    // if (this.name.slice(0, 14) === 'TierDerivative') {
+    //   if (this.completed < 1) {
+    //     if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
+    //       if (gameData.world.currentTier >= this.secondaryValue) {
+    //         if (gameData.upgrades[8].bought === 0) {
+    //           this.completed = 1;
+    //           this.writeToBoard(true);
+    //           return;
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+
     const challengesCompleted = getChallengesCompleted();
 
     if (this.name.slice(0, 15) === 'TierNoChallenge') {
-      if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
-        if (gameData.world.currentTier >= this.aValue.ToNumber()) {
-          if (challengesCompleted === 0) {
-            this.completed = true;
-            this.writeToBoard();
-            return;
+      if (this.completed < 1) {
+        if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
+          if (gameData.world.currentTier >= this.secondaryValue) {
+            if (challengesCompleted === 0) {
+              this.completed = 1;
+              this.writeToBoard(true);
+              return;
+            }
           }
         }
       }
     }
 
-    if (this.name.slice(0, 9) === 'Challenge') {
-      if (this.aValue.lessThanOrEqualTo(challengesCompleted)) {
-        this.completed = true;
-        this.writeToBoard();
+    if (this.name === 'Challenge') {
+      for (let index = this.completed; index < this.completionValues.length; index++) {
+        const e = this.completionValues[index];
+        this.lastCalculated = new JBDecimal(challengesCompleted);
+        if (e.lessThanOrEqualTo(this.lastCalculated)) {
+          this.writeToBoard();
+          this.completed += 1;
+        }
       }
     }
   }
 }
 
-class Feat extends Achievement {
+class Feat extends Achievements {
   tier: number;
 
-  constructor(index: number, name: string, desc: string, aIndex: number, aValue: number, tier: number, parentDiv: HTMLElement) {
-    super(index, name, desc, aIndex, aValue, parentDiv);
+  constructor(index: number, name: string, desc: string, tier: number, parentDiv: HTMLElement) {
+    super(index, name, desc, [new JBDecimal(0)], tier, parentDiv, true);
 
     this.tier = tier;
 
@@ -250,24 +336,29 @@ function createFeatsForTier(tier: number) {
   TierRow.appendChild(tierBonusCol);
 
   const feats = new TierFeats();
-  feats.feats.push(new Feat(1, `CompleteTier${tier.toString()}`, `Complete Tier ${tier.toString()}`, 1, tier, tier, TierRow));
-  feats.feats.push(new Feat(2, `TierChallenge${tier.toString()}`, `Complete Tier ${+tier.toString()} with a challenge active`, 1, tier, tier, TierRow));
-  feats.feats.push(new Feat(3, `TierDerivative${tier.toString()}`, `Complete Tier ${tier.toString()} with no unlocked metal producers`, 1, tier, tier, TierRow));
-  feats.feats.push(new Feat(4, `TierNoChallenge${tier.toString()}`, `Complete Tier ${tier.toString()} with no challenges completed`, 1, tier, tier, TierRow));
+  feats.feats.push(new Feat(1, 'CompleteTier', `Complete Tier ${tier.toString()}`, tier, TierRow));
+  feats.feats.push(new Feat(2, 'TierChallenge', `Complete Tier ${+tier.toString()} with a challenge active`, tier, TierRow));
+  // feats.feats.push(new Feat(3, `TierDerivative${tier.toString()}`, `Complete Tier ${tier.toString()} with no unlocked metal producers`, tier, TierRow));
+  feats.feats.push(new Feat(3, '`TierNoChallenge', `Complete Tier ${tier.toString()} with no challenges completed`, tier, TierRow));
   return feats;
+}
+
+function createAchievementBonusArray(size: number, initial = false) {
+  if (!initial) {
+    display.addToDisplay('Consider upping the initial achievementbonusarray', DisplayCategory.Story);
+  }
+  achievementbonusarray = [];
+  let total = 0;
+  for (let index = 0; index <= size * 1.1; index++) {
+    total += index;
+    achievementbonusarray.push(total);
+  }
 }
 
 // eslint-disable-next-line no-unused-vars
 function getAchievementsOnlyBonus() {
   if (achievementbonusarray.length <= lastachievementcount) {
-    // eslint-disable-next-line no-undef
-    display.addToDisplay('Consider upping the initial achievementbonusarray', DisplayCategory.Story);
-    achievementbonusarray = [];
-    let total = 0;
-    for (let index = 0; index <= lastachievementcount * 1.1; index++) {
-      total += index;
-      achievementbonusarray.push(total);
-    }
+    createAchievementBonusArray(lastachievementcount);
   }
   return (achievementbonusarray[lastachievementcount] + 100) / 100;
 }
@@ -276,7 +367,7 @@ function getTierBonus(tier: number) {
   let tiercompleted = 1; // no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
   gameData.tierfeats[tier].feats.forEach((f) => {
     if (f.completed) {
-      tiercompleted += 1;
+      tiercompleted += 0.1;
     }
   });
   return tiercompleted;
@@ -287,9 +378,7 @@ function CheckAchievementCompletions() {
   let count = 0;
   gameData.Achievements.forEach((ch) => {
     ch.checkforCompletion();
-    if (ch.completed) {
-      count += 1;
-    }
+    count += ch.completed;
   });
   gameData.tierfeats.forEach((tf) => {
     tf.feats.forEach((f) => {

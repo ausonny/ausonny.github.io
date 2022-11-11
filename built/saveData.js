@@ -5,38 +5,38 @@ class Story {
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ChooseTutorial() {
-    if (NumberOfTowerLevelsBought() < 3) {
-        display.addToDisplay(gameData.storyElements[0].text, DisplayCategory.Tutorial);
-        return;
-    }
-    if (gameData.derivatives[0].owned.lessThan(3)) {
-        display.addToDisplay(gameData.storyElements[1].text, DisplayCategory.Tutorial);
-        return;
-    }
-    if (NumberOfTowerLevelsBought() < 16) {
-        display.addToDisplay(gameData.storyElements[2].text, DisplayCategory.Tutorial);
-        return;
-    }
-    if (gameData.resources.dust.amount.lessThan(5)) {
-        display.addToDisplay(gameData.storyElements[3].text, DisplayCategory.Tutorial);
-        return;
-    }
-    if (gameData.resources.pebbles.amount.lessThan(10)) {
-        display.addToDisplay(gameData.storyElements[4].text, DisplayCategory.Tutorial);
-    }
-    if (gameData.world.highestWaveCompleted >= 20 && getChallengesCompleted() === 0) {
-        display.addToDisplay(gameData.storyElements[5].text, DisplayCategory.Tutorial);
-    }
-    display.addToDisplay(gameData.storyElements[6].text, DisplayCategory.Tutorial);
+    // if (numberOfTowerLevelsBought() < 3) {
+    //   display.addToDisplay(gameData.storyElements[0].text, DisplayCategory.Tutorial);
+    //   return;
+    // }
+    // if (gameData.derivatives[0].owned.lessThan(3)) {
+    //   display.addToDisplay(gameData.storyElements[1].text, DisplayCategory.Tutorial);
+    //   return;
+    // }
+    // if (numberOfTowerLevelsBought() < 16) {
+    //   display.addToDisplay(gameData.storyElements[2].text, DisplayCategory.Tutorial);
+    //   return;
+    // }
+    // if (gameData.resources.dust.amount.lessThan(5)) {
+    //   display.addToDisplay(gameData.storyElements[3].text, DisplayCategory.Tutorial);
+    //   return;
+    // }
+    // if (gameData.resources.pebbles.amount.lessThan(10)) {
+    //   display.addToDisplay(gameData.storyElements[4].text, DisplayCategory.Tutorial);
+    // }
+    // if (gameData.world.highestWaveCompleted >= 20 && getChallengesCompleted() === 0) {
+    //   display.addToDisplay(gameData.storyElements[5].text, DisplayCategory.Tutorial);
+    // }
+    // display.addToDisplay(gameData.storyElements[6].text, DisplayCategory.Tutorial);
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class SaveGameData {
     // automation: Automation[];
     constructor(name) {
         this.name = name;
-        this.version = 2;
-        this.dummyChallenge = new Challenge('d', 'd,', 'd', 0, 0);
-        this.dummyUpgrade = new Upgrade('d', 'd', 0, 1, new Resource('d'), document.getElementById('btnBuyUpgrade0'), 0);
+        this.version = 4;
+        // this.dummyChallenge = new Challenge('d', 'd,', 'd', 0, 0);
+        // this.dummyUpgrade = new Upgrade('d', 'd', 0, 1, new Resource('d'), document.getElementById('btnBuyUpgrade0'), 0, false);
         this.stats = {
             prestige1: 0,
             prestige2: 0,
@@ -63,17 +63,19 @@ class SaveGameData {
             standardNotation: 1,
         };
         this.resources = {
-            metal: new Resource('Metal'),
-            dust: new Resource('Dust'),
-            pebbles: new Resource('Pebbles'),
-            rocks: new Resource('Rocks'),
-            particles: new Resource('Particles'),
-            boulders: new Resource('Boulders'),
-            timeparticles: new Resource('TimeParticles'),
+            wood: new Resource('Wood'),
+            stone: new Resource('Stone'),
+            people: new Resource('People'),
+            essence: new Resource('Essence'),
+            powder: new Resource('Powder'),
+            pebble: new Resource('Pebbles'),
+            rock: new Resource('Rocks'),
             shards: new Resource('Shards'),
+            food: new Resource('Food'),
+            arrow: new Resource('Arrow'),
+            redResearch: new Resource('RedResearch'),
         };
-        this.towers = [];
-        this.resources.metal.amount = new JBDecimal(10);
+        this.buildings = [];
         this.world = {
             timeElapsed: 0,
             paused: false,
@@ -86,256 +88,523 @@ class SaveGameData {
             highestWaveCompleted: 0,
             enemiesToSpawn: 0,
             ticksToNextSpawn: 1000,
-            fastEnemiesToSpawn: 0,
-            tankEnemiesToSpawn: 0,
-            medicEnemiesToSpawn: 0,
-            bradleyEnemiesToSpawn: 0,
-            paladinEnemiesToSpawn: 0,
-            knightEnemiesToSpawn: 0,
-            flyerEnemiesToSpawn: 0,
-            dumboEnemiesToSpawn: 0,
-            hummingbirdEnemiesToSpawn: 0,
-            clericEnemiesToSpawn: 0,
-            bossEnemiesToSpawn: 0,
-            deathlevel: 0,
+            ticksToNextWave: 0,
+            spawnsRemaining: [],
             mulligansused: 0,
             autoChallenge: false,
             nextAutoChallenge: 0,
+            deathLevel: 0,
+            equipmentEarned: false,
         };
+        for (let index = 0; index <= 32; index++) {
+            this.world.spawnsRemaining.push(0);
+        }
         this.world.nextSaveGameTime.setMilliseconds(this.world.nextSaveGameTime.getMilliseconds() + 1000 * 60 * 5);
-        this.upgrades = [];
-        this.upgrades.push(new Upgrade('Upgrade0', 'Gun Attack + 10% multiplicative<br />', 1, 1.4, this.resources.pebbles, document.getElementById('btnBuyUpgrade0'), 15));
-        this.upgrades.push(new Upgrade('Upgrade1', 'Loot + 10% multiplicative<br />', 1, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade1'), 15));
-        this.upgrades.push(new Upgrade('Upgrade2', 'Bonus to metal producers from current run time', 1, 1, this.resources.pebbles, document.getElementById('btnBuyUpgrade2'), 1));
-        this.upgrades.push(new Upgrade('Upgrade3', 'Bonus to metal producers from unspent pebbles', 5, 1, this.resources.pebbles, document.getElementById('btnBuyUpgrade3'), 1));
-        this.upgrades.push(new Upgrade('Upgrade4', 'Bonus to metal producers from number of prestiges', 1, 1, this.resources.pebbles, document.getElementById('btnBuyUpgrade4'), 1));
-        this.upgrades.push(new Upgrade('Upgrade5', 'Double bonus from Production Challenges<br />', 100, 1, this.resources.pebbles, document.getElementById('btnBuyUpgrade5'), 1));
-        this.upgrades.push(new Upgrade('Upgrade6', 'Each Gun level bought increases its strength by 1%', 10, 10, this.resources.pebbles, document.getElementById('btnBuyUpgrade6'), 1));
-        this.upgrades.push(new Upgrade('Upgrade7', 'Each metal producer bought increases its production by 1% multiplicative', 1, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade7'), 10));
-        this.upgrades.push(new Upgrade('Upgrade8', 'Unlock new Metal Producer<br />', 1, 5, this.resources.pebbles, document.getElementById('btnBuyUpgrade8'), 7));
-        this.upgrades.push(new Upgrade('Upgrade9', 'Miners x2 productivity<br />', 1, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade9'), 15));
-        this.upgrades.push(new Upgrade('Upgrade10', 'Supervisors x2 productivity<br />', 2, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade10'), 15));
-        this.upgrades.push(new Upgrade('Upgrade11', 'Foremen x2 productivity<br />', 4, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade11'), 15));
-        this.upgrades.push(new Upgrade('Upgrade12', 'Managers x2 productivity<br />', 8, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade12'), 15));
-        this.upgrades.push(new Upgrade('Upgrade13', 'Middle Managers x2 productivity<br />', 16, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade13'), 15));
-        this.upgrades.push(new Upgrade('Upgrade14', 'Upper Managers x2 productivity<br />', 32, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade14'), 15));
-        this.upgrades.push(new Upgrade('Upgrade15', 'Vice Presidents x2 productivity<br />', 64, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade15'), 15));
-        this.upgrades.push(new Upgrade('Upgrade16', 'Presidents x2 productivity<br />', 128, 1.5, this.resources.pebbles, document.getElementById('btnBuyUpgrade16'), 15));
-        this.upgrades.push(new Upgrade('Upgrade17', 'Add 1 Mulligan<br />', 1, 10, this.resources.pebbles, document.getElementById('btnBuyUpgrade17'), 100));
-        this.upgrades.push(new Upgrade('Upgrade18', 'Each Missile level bought increases its strength by 1%', 10, 10, this.resources.pebbles, document.getElementById('btnBuyUpgrade18'), 1));
-        this.upgrades.push(new Upgrade('Upgrade19', 'Each Cannon level bought increases its strength by 1%', 10, 10, this.resources.pebbles, document.getElementById('btnBuyUpgrade19'), 1));
-        this.upgrades.push(new Upgrade('Upgrade20', 'Missile Attack + 10% multiplicative<br />', 1, 1.4, this.resources.pebbles, document.getElementById('btnBuyUpgrade20'), 15));
-        this.upgrades.push(new Upgrade('Upgrade21', 'Cannon Attack + 10% multiplicative<br />', 1, 1.4, this.resources.pebbles, document.getElementById('btnBuyUpgrade21'), 15));
+        this.powderUpgrades = [];
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[0].active = true;
+        this.powderUpgrades[0].addedLimitElgible = true;
+        this.powderUpgrades[0].buyButton = document.getElementById('btnBuyUpgrade0');
+        this.powderUpgrades[0].description = 'Arrow Tower + 10% multiplicative<br />';
+        this.powderUpgrades[0].limit = 15;
+        this.powderUpgrades[0].name = 'Upgrade0';
+        this.powderUpgrades[0].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[0].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[1].active = true;
+        this.powderUpgrades[1].addedLimitElgible = true;
+        this.powderUpgrades[1].buyButton = document.getElementById('btnBuyUpgrade1');
+        this.powderUpgrades[1].description = 'Essence + 10% multiplicative<br />';
+        this.powderUpgrades[1].limit = 15;
+        this.powderUpgrades[1].name = 'Upgrade1';
+        this.powderUpgrades[1].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[1].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[2].active = true;
+        this.powderUpgrades[2].addedLimitElgible = true;
+        this.powderUpgrades[2].buyButton = document.getElementById('btnBuyUpgrade2');
+        this.powderUpgrades[2].description = 'Wood + 10% multiplicative<br />';
+        this.powderUpgrades[2].limit = 15;
+        this.powderUpgrades[2].name = 'Upgrade2';
+        this.powderUpgrades[2].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[2].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[3].active = true;
+        this.powderUpgrades[3].addedLimitElgible = true;
+        this.powderUpgrades[3].buyButton = document.getElementById('btnBuyUpgrade3');
+        this.powderUpgrades[3].description = 'placeholder<br />';
+        this.powderUpgrades[3].limit = 15;
+        this.powderUpgrades[3].name = 'Upgrade3';
+        this.powderUpgrades[3].powderCostPer = new JBDecimal(1000000);
+        this.powderUpgrades[3].powderCostMultiplierPer = 1.4;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[4].active = true;
+        this.powderUpgrades[4].addedLimitElgible = false;
+        this.powderUpgrades[4].buyButton = document.getElementById('btnBuyUpgrade4');
+        this.powderUpgrades[4].description = 'Powder cost one less essence<br />';
+        this.powderUpgrades[4].limit = 10;
+        this.powderUpgrades[4].name = 'Upgrade4';
+        this.powderUpgrades[4].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[4].powderCostMultiplierPer = 0;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[5].active = true;
+        this.powderUpgrades[5].addedLimitElgible = false;
+        this.powderUpgrades[5].buyButton = document.getElementById('btnBuyUpgrade5');
+        this.powderUpgrades[5].description = 'Housing +100% additive<br />';
+        this.powderUpgrades[5].limit = 10;
+        this.powderUpgrades[5].name = 'Upgrade5';
+        this.powderUpgrades[5].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[5].powderCostMultiplierPer = 2;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[6].active = true;
+        this.powderUpgrades[6].addedLimitElgible = false;
+        this.powderUpgrades[6].buyButton = document.getElementById('btnBuyUpgrade6');
+        this.powderUpgrades[6].description = 'Fletcher +10% multipliative<br />';
+        this.powderUpgrades[6].limit = 10;
+        this.powderUpgrades[6].name = 'Upgrade6';
+        this.powderUpgrades[6].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[6].powderCostMultiplierPer = 2;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[7].active = true;
+        this.powderUpgrades[7].addedLimitElgible = false;
+        this.powderUpgrades[7].buyButton = document.getElementById('btnBuyUpgrade7');
+        this.powderUpgrades[7].description = 'Bonus to producers from current run time<br />';
+        this.powderUpgrades[7].limit = 1;
+        this.powderUpgrades[7].name = 'Upgrade7';
+        this.powderUpgrades[7].powderCostPer = new JBDecimal(10);
+        this.powderUpgrades[7].powderCostMultiplierPer = 2;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[8].active = true;
+        this.powderUpgrades[8].addedLimitElgible = false;
+        this.powderUpgrades[8].buyButton = document.getElementById('btnBuyUpgrade8');
+        this.powderUpgrades[8].description = 'Each Arrow Tower level bought increases strength by 1% multiplicative';
+        this.powderUpgrades[8].limit = 1;
+        this.powderUpgrades[8].name = 'Upgrade8';
+        this.powderUpgrades[8].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[8].powderCostMultiplierPer = 2;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[9].active = true;
+        this.powderUpgrades[9].addedLimitElgible = false;
+        this.powderUpgrades[9].buyButton = document.getElementById('btnBuyUpgrade9');
+        this.powderUpgrades[9].description = 'Bonus to producers from prestige count<br />';
+        this.powderUpgrades[9].limit = 1;
+        this.powderUpgrades[9].name = 'Upgrade9';
+        this.powderUpgrades[9].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[9].powderCostMultiplierPer = 2;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[10].active = true;
+        this.powderUpgrades[10].addedLimitElgible = true;
+        this.powderUpgrades[10].buyButton = document.getElementById('btnBuyUpgrade10');
+        this.powderUpgrades[10].description = 'Population growth +10% multiplicative<br />';
+        this.powderUpgrades[10].limit = 15;
+        this.powderUpgrades[10].name = 'Upgrade10';
+        this.powderUpgrades[10].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[10].powderCostMultiplierPer = 2.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[11].active = true;
+        this.powderUpgrades[11].addedLimitElgible = false;
+        this.powderUpgrades[11].buyButton = document.getElementById('btnBuyUpgrade11');
+        this.powderUpgrades[11].description = 'Mulligans + 1<br />';
+        this.powderUpgrades[11].limit = 10;
+        this.powderUpgrades[11].name = 'Upgrade11';
+        this.powderUpgrades[11].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[11].powderCostMultiplierPer = 10;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[12].active = true;
+        this.powderUpgrades[12].addedLimitElgible = true;
+        this.powderUpgrades[12].buyButton = document.getElementById('btnBuyUpgrade12');
+        this.powderUpgrades[12].description = 'Stone + 10% multiplicative<br />';
+        this.powderUpgrades[12].limit = 15;
+        this.powderUpgrades[12].name = 'Upgrade12';
+        this.powderUpgrades[12].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[12].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[13].active = true;
+        this.powderUpgrades[13].addedLimitElgible = true;
+        this.powderUpgrades[13].buyButton = document.getElementById('btnBuyUpgrade13');
+        this.powderUpgrades[13].description = 'Red Research + 10% multiplicative<br />';
+        this.powderUpgrades[13].limit = 15;
+        this.powderUpgrades[13].name = 'Upgrade13';
+        this.powderUpgrades[13].powderCostPer = new JBDecimal(10);
+        this.powderUpgrades[13].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[14].active = true;
+        this.powderUpgrades[14].addedLimitElgible = true;
+        this.powderUpgrades[14].buyButton = document.getElementById('btnBuyUpgrade14');
+        this.powderUpgrades[14].description = 'Each Lumberjack level bought increases production by 1%';
+        this.powderUpgrades[14].limit = 10;
+        this.powderUpgrades[14].name = 'Upgrade14';
+        this.powderUpgrades[14].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[14].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[15].active = true;
+        this.powderUpgrades[15].addedLimitElgible = true;
+        this.powderUpgrades[15].buyButton = document.getElementById('btnBuyUpgrade15');
+        this.powderUpgrades[15].description = 'Each Stone Mason level bought increases production by 1%';
+        this.powderUpgrades[15].limit = 10;
+        this.powderUpgrades[15].name = 'Upgrade15';
+        this.powderUpgrades[15].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[15].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[16].active = true;
+        this.powderUpgrades[16].addedLimitElgible = true;
+        this.powderUpgrades[16].buyButton = document.getElementById('btnBuyUpgrade16');
+        this.powderUpgrades[16].description = 'Catapults + 10% multiplicative<br />';
+        this.powderUpgrades[16].limit = 15;
+        this.powderUpgrades[16].name = 'Upgrade16';
+        this.powderUpgrades[16].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[16].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[17].active = true;
+        this.powderUpgrades[17].addedLimitElgible = true;
+        this.powderUpgrades[17].buyButton = document.getElementById('btnBuyUpgrade17');
+        this.powderUpgrades[17].description = 'Each Catapult level bought increases attack by 1%';
+        this.powderUpgrades[17].limit = 1;
+        this.powderUpgrades[17].name = 'Upgrade17';
+        this.powderUpgrades[17].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[17].powderCostMultiplierPer = 1.5;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[18].active = true;
+        this.powderUpgrades[18].addedLimitElgible = true;
+        this.powderUpgrades[18].buyButton = document.getElementById('btnBuyUpgrade18');
+        this.powderUpgrades[18].description = 'Each Red Research Lab level bought increases production by 1%';
+        this.powderUpgrades[18].limit = 10;
+        this.powderUpgrades[18].name = 'Upgrade18';
+        this.powderUpgrades[18].powderCostPer = new JBDecimal(1);
+        this.powderUpgrades[18].powderCostMultiplierPer = 1.6;
+        this.powderUpgrades.push(new Upgrade());
+        this.powderUpgrades[19].active = true;
+        this.powderUpgrades[19].addedLimitElgible = false;
+        this.powderUpgrades[19].buyButton = document.getElementById('btnBuyUpgrade19');
+        this.powderUpgrades[19].description = 'Each Fletcher bought increases production by 1% multiplicative';
+        this.powderUpgrades[19].limit = 10;
+        this.powderUpgrades[19].name = 'Upgrade19';
+        this.powderUpgrades[19].powderCostPer = new JBDecimal(10);
+        this.powderUpgrades[19].powderCostMultiplierPer = 1.5;
+        this.pebbleUpgrades = [];
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[0].active = true;
+        this.pebbleUpgrades[0].addedLimitElgible = true;
+        this.pebbleUpgrades[0].buyButton = document.getElementById('btnBuyPebbleUpgrade0');
+        this.pebbleUpgrades[0].description = 'Reduce cost of powder by one essence<br />';
+        this.pebbleUpgrades[0].limit = 10;
+        this.pebbleUpgrades[0].name = 'Upgrade0';
+        this.pebbleUpgrades[0].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[0].pebbleCostMultiplierPer = 0;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[1].active = true;
+        this.pebbleUpgrades[1].addedLimitElgible = true;
+        this.pebbleUpgrades[1].buyButton = document.getElementById('btnBuyPebbleUpgrade1');
+        this.pebbleUpgrades[1].description = 'Double Arrow Attack<br />';
+        this.pebbleUpgrades[1].limit = 10;
+        this.pebbleUpgrades[1].name = 'Upgrade1';
+        this.pebbleUpgrades[1].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[1].pebbleCostMultiplierPer = 8;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[2].active = true;
+        this.pebbleUpgrades[2].addedLimitElgible = true;
+        this.pebbleUpgrades[2].buyButton = document.getElementById('btnBuyPebbleUpgrade2');
+        this.pebbleUpgrades[2].description = 'Double Catapult Attack<br />';
+        this.pebbleUpgrades[2].limit = 10;
+        this.pebbleUpgrades[2].name = 'Upgrade2';
+        this.pebbleUpgrades[2].pebbleCostPer = new JBDecimal(2);
+        this.pebbleUpgrades[2].pebbleCostMultiplierPer = 9;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[3].active = true;
+        this.pebbleUpgrades[3].addedLimitElgible = true;
+        this.pebbleUpgrades[3].buyButton = document.getElementById('btnBuyPebbleUpgrade3');
+        this.pebbleUpgrades[3].description = 'Double Poison Attack<br />';
+        this.pebbleUpgrades[3].limit = 10;
+        this.pebbleUpgrades[3].name = 'Upgrade3';
+        this.pebbleUpgrades[3].pebbleCostPer = new JBDecimal(3);
+        this.pebbleUpgrades[3].pebbleCostMultiplierPer = 10;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[4].active = true;
+        this.pebbleUpgrades[4].addedLimitElgible = true;
+        this.pebbleUpgrades[4].buyButton = document.getElementById('btnBuyPebbleUpgrade4');
+        this.pebbleUpgrades[4].description = 'Double Essence gain<br />';
+        this.pebbleUpgrades[4].limit = 1;
+        this.pebbleUpgrades[4].name = 'Upgrade4';
+        this.pebbleUpgrades[4].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[4].pebbleCostMultiplierPer = 2;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[5].active = true;
+        this.pebbleUpgrades[5].addedLimitElgible = true;
+        this.pebbleUpgrades[5].buyButton = document.getElementById('btnBuyPebbleUpgrade5');
+        this.pebbleUpgrades[5].description = 'Increase effectiveness of Inflation Challenge completions';
+        this.pebbleUpgrades[5].limit = 10;
+        this.pebbleUpgrades[5].name = 'Upgrade5';
+        this.pebbleUpgrades[5].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[5].pebbleCostMultiplierPer = 8;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[6].active = true;
+        this.pebbleUpgrades[6].addedLimitElgible = true;
+        this.pebbleUpgrades[6].buyButton = document.getElementById('btnBuyPebbleUpgrade6');
+        this.pebbleUpgrades[6].description = 'Increase upgrade limits of certain powder upgrades';
+        this.pebbleUpgrades[6].limit = 1;
+        this.pebbleUpgrades[6].name = 'Upgrade6';
+        this.pebbleUpgrades[6].pebbleCostPer = new JBDecimal(10);
+        this.pebbleUpgrades[6].pebbleCostMultiplierPer = 1;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[7].active = true;
+        this.pebbleUpgrades[7].addedLimitElgible = true;
+        this.pebbleUpgrades[7].buyButton = document.getElementById('btnBuyPebbleUpgrade7');
+        this.pebbleUpgrades[7].description = 'Each run begins with 10000 wood<br />';
+        this.pebbleUpgrades[7].limit = 1;
+        this.pebbleUpgrades[7].name = 'Upgrade7';
+        this.pebbleUpgrades[7].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[7].pebbleCostMultiplierPer = 1;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[8].active = true;
+        this.pebbleUpgrades[8].addedLimitElgible = true;
+        this.pebbleUpgrades[8].buyButton = document.getElementById('btnBuyPebbleUpgrade8');
+        this.pebbleUpgrades[8].description = 'Each poison bought increases its production by 1% multiplicative';
+        this.pebbleUpgrades[8].limit = 1;
+        this.pebbleUpgrades[8].name = 'Upgrade8';
+        this.pebbleUpgrades[8].pebbleCostPer = new JBDecimal(10);
+        this.pebbleUpgrades[8].pebbleCostMultiplierPer = 1;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[9].active = true;
+        this.pebbleUpgrades[9].addedLimitElgible = true;
+        this.pebbleUpgrades[9].buyButton = document.getElementById('btnBuyPebbleUpgrade9');
+        this.pebbleUpgrades[9].description = 'Increase shooting speed bonus from challenge completions';
+        this.pebbleUpgrades[9].limit = 1;
+        this.pebbleUpgrades[9].name = 'Upgrade9';
+        this.pebbleUpgrades[9].pebbleCostPer = new JBDecimal(10);
+        this.pebbleUpgrades[9].pebbleCostMultiplierPer = 1;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[10].active = true;
+        this.pebbleUpgrades[10].addedLimitElgible = true;
+        this.pebbleUpgrades[10].buyButton = document.getElementById('btnBuyPebbleUpgrade10');
+        this.pebbleUpgrades[10].description = 'Each wave contains one fewer drone<br />';
+        this.pebbleUpgrades[10].limit = 100;
+        this.pebbleUpgrades[10].name = 'Upgrade10';
+        this.pebbleUpgrades[10].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[10].pebbleCostMultiplierPer = 0;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[11].active = true;
+        this.pebbleUpgrades[11].addedLimitElgible = true;
+        this.pebbleUpgrades[11].buyButton = document.getElementById('btnBuyPebbleUpgrade11');
+        this.pebbleUpgrades[11].description = 'Unlock Prioritize healer tactic<br />';
+        this.pebbleUpgrades[11].limit = 1;
+        this.pebbleUpgrades[11].name = 'Upgrade11';
+        this.pebbleUpgrades[11].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[11].pebbleCostMultiplierPer = 2;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[12].active = true;
+        this.pebbleUpgrades[12].addedLimitElgible = true;
+        this.pebbleUpgrades[12].buyButton = document.getElementById('btnBuyPebbleUpgrade12');
+        this.pebbleUpgrades[12].description = 'Begin with 100 people<br />';
+        this.pebbleUpgrades[12].limit = 1;
+        this.pebbleUpgrades[12].name = 'Upgrade12';
+        this.pebbleUpgrades[12].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[12].pebbleCostMultiplierPer = 2;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[13].active = true;
+        this.pebbleUpgrades[13].addedLimitElgible = true;
+        this.pebbleUpgrades[13].buyButton = document.getElementById('btnBuyPebbleUpgrade13');
+        this.pebbleUpgrades[13].description = 'Recieve a bonus to raw materials from the unemployed';
+        this.pebbleUpgrades[13].limit = 1;
+        this.pebbleUpgrades[13].name = 'Upgrade13';
+        this.pebbleUpgrades[13].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[13].pebbleCostMultiplierPer = 2;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[14].active = true;
+        this.pebbleUpgrades[14].addedLimitElgible = false;
+        this.pebbleUpgrades[14].buyButton = document.getElementById('btnBuyPebbleUpgrade14');
+        this.pebbleUpgrades[14].description = 'Each Arrow Tower level bought increases strength by 1% multiplicative';
+        this.pebbleUpgrades[14].limit = 1;
+        this.pebbleUpgrades[14].name = 'Upgrade14';
+        this.pebbleUpgrades[14].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[14].pebbleCostMultiplierPer = 2;
+        this.pebbleUpgrades.push(new Upgrade());
+        this.pebbleUpgrades[15].active = true;
+        this.pebbleUpgrades[15].addedLimitElgible = false;
+        this.pebbleUpgrades[15].buyButton = document.getElementById('btnBuyPebbleUpgrade15');
+        this.pebbleUpgrades[15].description = 'Each Catapult level bought increases strength by 1% multiplicative';
+        this.pebbleUpgrades[15].limit = 1;
+        this.pebbleUpgrades[15].name = 'Upgrade15';
+        this.pebbleUpgrades[15].pebbleCostPer = new JBDecimal(1);
+        this.pebbleUpgrades[15].pebbleCostMultiplierPer = 2;
+        // this.rockUpgrades.push(new Upgrade('Upgrade12', 'Increase Shield Break * 2<br />', 1000, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade12'), 10, false));
+        // this.rockUpgrades.push(new Upgrade('Upgrade20', 'Reduce cost of rocks by one pebble<br />', 1, 0, this.resources.rocks, document.getElementById('btnBuyRockUpgrade20'), 100, false));
         this.rockUpgrades = [];
-        this.rockUpgrades.push(new Upgrade('Upgrade0', 'Reduce cost of pebbles by one Dust<br />', 1, 0, this.resources.rocks, document.getElementById('btnBuyRockUpgrade0'), 80));
-        this.rockUpgrades.push(new Upgrade('Upgrade1', 'Double bonus from Gun Attack upgrade<br />', 1, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade1'), 10));
-        this.rockUpgrades.push(new Upgrade('Upgrade2', 'Double bonus from Loot pebble upgrade<br />', 10, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade2'), 1));
-        this.rockUpgrades.push(new Upgrade('Upgrade3', 'Increase Effectiveness of Inflation Challenges', 1, 5, this.resources.rocks, document.getElementById('btnBuyRockUpgrade3'), 10));
-        this.rockUpgrades.push(new Upgrade('Upgrade4', 'Double bonus from Production Challenges<br />', 1, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade4'), 1));
-        this.rockUpgrades.push(new Upgrade('Upgrade5', 'Reduce Cost Multiplier of Producer by 1<br />', 5, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade5'), 8));
-        this.rockUpgrades.push(new Upgrade('Upgrade6', 'Increase upgrade limits of certain pebble upgrades', 10, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade6'), 1));
-        this.rockUpgrades.push(new Upgrade('Upgrade7', 'Each run begins with 1000 metal<br />', 1, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade7'), 1));
-        this.rockUpgrades.push(new Upgrade('Upgrade8', 'Each wave contains one fewer drone<br />', 1, 0, this.resources.rocks, document.getElementById('btnBuyRockUpgrade8'), 100));
-        this.rockUpgrades.push(new Upgrade('Upgrade9', 'Particles gain bonus from run time<br />', 1, 0, this.resources.rocks, document.getElementById('btnBuyRockUpgrade9'), 1));
-        this.rockUpgrades.push(new Upgrade('Upgrade10', 'Increase shooting speed bonus from challenge completions', 10, 6, this.resources.rocks, document.getElementById('btnBuyRockUpgrade10'), 10));
-        this.rockUpgrades.push(new Upgrade('Upgrade11', 'Unlock Prioritize healer tactic<br />', 1, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade11'), 1));
-        this.rockUpgrades.push(new Upgrade('Upgrade12', 'Increase Shield Break on guns<br />', 1000, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade12'), 10));
-        this.rockUpgrades.push(new Upgrade('Upgrade13', 'Increase Poison effectiveness<br />', 1, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade13'), 10));
-        this.rockUpgrades.push(new Upgrade('Upgrade14', 'Each poison bought increases its production by 1% multiplicative', 100, 1, this.resources.rocks, document.getElementById('btnBuyRockUpgrade14'), 1));
-        this.rockUpgrades.push(new Upgrade('Upgrade15', 'Double bonus from Missile Attack upgrade<br />', 1, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade15'), 10));
-        this.rockUpgrades.push(new Upgrade('Upgrade16', 'Double bonus from Cannon Attack upgrade<br />', 1, 10, this.resources.rocks, document.getElementById('btnBuyRockUpgrade16'), 10));
-        this.boulderUpgrades = [];
-        this.boulderUpgrades.push(new Upgrade('Upgrade0', 'Lower Challenge Limit by 1<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade0'), 1));
-        this.boulderUpgrades.push(new Upgrade('Upgrade1', 'Reduce cost of rocks by one pebble<br />', 1, 2, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade1'), 800));
-        this.boulderUpgrades.push(new Upgrade('Upgrade2', 'Increase upgrade limits on certain pebble upgrades', 10, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade2'), 1));
-        this.boulderUpgrades.push(new Upgrade('Upgrade3', 'Double Production of all metal producers<br />', 1, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade3'), 1));
-        this.boulderUpgrades.push(new Upgrade('Upgrade4', 'Double bonus from Gun Attack upgrade<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade4'), 10));
-        this.boulderUpgrades.push(new Upgrade('Upgrade5', 'Gain Pebbles from 1% of dust every second<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade5'), 1));
-        this.boulderUpgrades.push(new Upgrade('Upgrade6', 'Increase effectiveness of Crits Challenge<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade6'), 10));
-        this.boulderUpgrades.push(new Upgrade('Upgrade7', 'Add 1 to Crit Multiplier<br />', 10, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade7'), 10));
-        this.boulderUpgrades.push(new Upgrade('Upgrade8', 'Increase Shield Break from Gun Attack<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade8'), 10));
-        this.boulderUpgrades.push(new Upgrade('Upgrade9', 'Increase Poison Effectiveness<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade9'), 10));
-        this.boulderUpgrades.push(new Upgrade('Upgrade10', 'Double bonus from Missile Attack upgrade<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade10'), 10));
-        this.boulderUpgrades.push(new Upgrade('Upgrade11', 'Double bonus from Cannon Attack upgrade<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade11'), 10));
-        this.producer = new Producer('Production Multiplier', 0, 1000, 10, this.resources.metal, this.resources.dust, document.getElementById('btnBuyProduction'), document.getElementById('btnBuyProductionDustUpgrade'), this.dummyUpgrade, 20);
-        this.derivatives = [];
-        this.derivatives.push(new Derivative('Miner', 0, 10, 1.5, this.resources.metal, this.resources.dust, document.getElementById('btnBuyMiner'), document.getElementById('btnBuyMinerDustUpgrade'), this.upgrades[9], 20, 1, true));
-        this.derivatives.push(new Derivative('Supervisor', 1, 100, 1.6, this.resources.metal, this.resources.dust, document.getElementById('btnBuySupervisor'), document.getElementById('btnBuySupervisorDustUpgrade'), this.upgrades[10], 20, 0.1, true));
-        this.derivatives.push(new Derivative('Foreman', 2, 1000, 1.7, this.resources.metal, this.resources.dust, document.getElementById('btnBuyForeman'), document.getElementById('btnBuyForemanDustUpgrade'), this.upgrades[11], 20, 0.01, true));
-        this.derivatives.push(new Derivative('Manager', 3, 10000, 1.8, this.resources.metal, this.resources.dust, document.getElementById('btnBuyManager'), document.getElementById('btnBuyManagerDustUpgrade'), this.upgrades[12], 20, 0.001, true));
-        this.derivatives.push(new Derivative('Middle Management', 4, 100000, 1.9, this.resources.metal, this.resources.dust, document.getElementById('btnBuyMiddleManagement'), document.getElementById('btnBuyMiddleManagerDustUpgrade'), this.upgrades[13], 20, 0.0001, true));
-        this.derivatives.push(new Derivative('Upper Management', 5, 1000000, 2.0, this.resources.metal, this.resources.dust, document.getElementById('btnBuyUpperManagement'), document.getElementById('btnBuyUpperManagementDustUpgrade'), this.upgrades[14], 20, 0.00001, true));
-        this.derivatives.push(new Derivative('Vice President', 6, 1e7, 2.1, this.resources.metal, this.resources.dust, document.getElementById('btnBuyVicePresident'), document.getElementById('btnBuyVicePresidentDustUpgrade'), this.upgrades[15], 20, 0.000001, true));
-        this.derivatives.push(new Derivative('President', 7, 1e8, 2.2, this.resources.metal, this.resources.dust, document.getElementById('btnBuyPresident'), document.getElementById('btnBuyPresidentDustUpgrade'), this.upgrades[16], 20, 0.0000001, true));
-        this.speedDerivatives = [];
-        this.speedDerivatives.push(new Derivative2('Speed', 0, 1, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuySpeed'), document.getElementById('btnBuySpeed'), this.dummyUpgrade, 0, 1, false));
-        this.speedDerivatives.push(new Derivative2('Acceleration', 0, 10, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuyAcceleration'), document.getElementById('btnBuyAcceleration'), this.dummyUpgrade, 0, 1, false));
-        this.speedDerivatives.push(new Derivative2('Jerk', 0, 100, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuyJerk'), document.getElementById('btnBuyJerk'), this.dummyUpgrade, 0, 1, false));
-        this.speedDerivatives.push(new Derivative2('Snap', 0, 1e4, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuySnap'), document.getElementById('btnBuySnap'), this.dummyUpgrade, 0, 1, false));
-        this.speedDerivatives.push(new Derivative2('Crackle', 0, 1e7, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuyCrackle'), document.getElementById('btnBuyMiner'), this.dummyUpgrade, 0, 1, false));
-        this.speedDerivatives.push(new Derivative2('Pop', 0, 1e11, 2, this.resources.rocks, new Resource('dummy'), document.getElementById('btnBuyPop'), document.getElementById('btnBuyMiner'), this.dummyUpgrade, 0, 1, false));
-        this.timeDerivatives = [];
-        this.timeDerivatives.push(new Derivative2('Time1', 0, 1, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime1'), document.getElementById('btnBuyTime1'), this.dummyUpgrade, 0, 1, false));
-        this.timeDerivatives.push(new Derivative2('Time2', 0, 10, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime2'), document.getElementById('btnBuyTime2'), this.dummyUpgrade, 0, 1, false));
-        this.timeDerivatives.push(new Derivative2('Time3', 0, 100, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime3'), document.getElementById('btnBuyTime3'), this.dummyUpgrade, 0, 1, false));
-        this.timeDerivatives.push(new Derivative2('Time4', 0, 1e4, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime4'), document.getElementById('btnBuyTime4'), this.dummyUpgrade, 0, 1, false));
-        this.timeDerivatives.push(new Derivative2('Time5', 0, 1e7, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime5'), document.getElementById('btnBuyTime5'), this.dummyUpgrade, 0, 1, false));
-        this.timeDerivatives.push(new Derivative2('Time6', 0, 1e11, 2, this.resources.boulders, new Resource('dummy'), document.getElementById('btnBuyTime6'), document.getElementById('btnBuyTime6'), this.dummyUpgrade, 0, 1, false));
+        this.rockUpgrades.push(new Upgrade());
+        this.rockUpgrades[0].active = true;
+        this.rockUpgrades[0].addedLimitElgible = true;
+        this.rockUpgrades[0].buyButton = document.getElementById('btnBuyRockUpgrade0');
+        this.rockUpgrades[0].description = 'Lower Challenge requirements<br />';
+        this.rockUpgrades[0].limit = 1;
+        this.rockUpgrades[0].name = 'Upgrade0';
+        this.rockUpgrades[0].rockCostPer = new JBDecimal(1);
+        this.rockUpgrades[0].rockCostMultiplierPer = 10;
+        // this.boulderUpgrades.push(new Upgrade('Upgrade0', 'Lower Challenge requirements<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade0'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade1', 'Reduce cost of rocks by one pebble<br />', 1, 0, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade1'), 100, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade2', 'Increase upgrade limits on certain pebble upgrades', 10, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade2'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade3', 'Double Production of all metal producers<br />', 1, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade3'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade4', 'Double bonus from Gun Attack upgrade<br />', 1, 8, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade4'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade5', 'Gain Pebbles from 1% of dust every second<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade5'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade6', 'Increase effectiveness of Crits Challenge<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade6'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade7', 'Add 1 to Crit Multiplier<br />', 10, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade7'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade8', 'Increase Shield Break * 2<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade8'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade9', 'Increase Poison Effectiveness<br />', 1, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade9'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade10', 'Double bonus from Missile Attack upgrade<br />', 2, 9, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade10'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade11', 'Double bonus from Cannon Attack upgrade<br />', 3, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade11'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade12', 'Reduce cost of pebbles by one dust<br />', 1, 0, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade12'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade13', 'Double bonus from Heavy Gun Attack upgrade', 4, 11, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade13'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade14', 'Double bonus from Railgun Attack upgrade<br />', 6, 13, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade14'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade15', 'Double bonus from Torpedo Attack upgrade<br />', 5, 12, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade15'), 10, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade16', 'Increase maximum Gun towers by 1<br />', 1000, 2, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade16'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade17', 'Increase maximum Missile towers by 1<br />', 2000, 2.1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade17'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade18', 'Increase maximum Cannon towers by 1<br />', 3000, 2.2, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade18'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade19', 'Increase maximum Heavy Gun towers by 1<br />', 4000, 2.3, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade19'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade20', 'Increase maximum Torpedo towers by 1<br />', 5000, 2.4, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade20'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade21', 'Increase maximum Railgun towers by 1<br />', 6000, 2.5, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade21'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade22', 'Speed up early waves<br />', 10000, 1, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade22'), 1, false));
+        // this.boulderUpgrades.push(new Upgrade('Upgrade23', 'Improve Skill Deterioration<br />', 100, 10, this.resources.boulders, document.getElementById('btnBuyBoulderUpgrade23'), 10, false));
+        this.researches = [];
+        this.researches.push(new Upgrade());
+        this.researches[0].active = true;
+        this.researches[0].addedLimitElgible = false;
+        this.researches[0].buyButton = document.getElementById('btnBuyResearch0');
+        this.researches[0].description = 'Upgrade Arrows to stone head.<br>(-1 stone per Arrow)(+1 base damage)';
+        this.researches[0].limit = 1;
+        this.researches[0].name = 'Research0';
+        this.researches[0].redResearchPer = new JBDecimal(100);
+        this.researches[0].redResearchMultiplier = 1;
+        this.researches.push(new Upgrade());
+        this.researches[1].active = true;
+        this.researches[1].addedLimitElgible = false;
+        this.researches[1].buyButton = document.getElementById('btnBuyResearch1');
+        this.researches[1].description = 'Arrows +10% damage multiplicative<br />';
+        this.researches[1].limit = 0;
+        this.researches[1].name = 'Research1';
+        this.researches[1].redResearchPer = new JBDecimal(15);
+        this.researches[1].redResearchMultiplier = 1.75;
+        this.researches.push(new Upgrade());
+        this.researches[2].active = true;
+        this.researches[2].addedLimitElgible = false;
+        this.researches[2].buyButton = document.getElementById('btnBuyResearch2');
+        this.researches[2].description = 'Triple Catapult Damage<br />';
+        this.researches[2].limit = 1;
+        this.researches[2].name = 'Research2';
+        this.researches[2].redResearchPer = new JBDecimal(10000);
+        this.researches[2].redResearchMultiplier = 1.4;
+        this.researches.push(new Upgrade());
+        this.researches[3].active = true;
+        this.researches[3].addedLimitElgible = true;
+        this.researches[3].buyButton = document.getElementById('btnBuyResearch3');
+        this.researches[3].description = 'Housing +100% additive<br />';
+        this.researches[3].limit = 15;
+        this.researches[3].name = 'Research3';
+        this.researches[3].redResearchPer = new JBDecimal(10);
+        this.researches[3].redResearchMultiplier = 2.5;
+        this.researches.push(new Upgrade());
+        this.researches[4].active = true;
+        this.researches[4].addedLimitElgible = false;
+        this.researches[4].buyButton = document.getElementById('btnBuyResearch4');
+        this.researches[4].description = 'Wood production +10% multiplicative<br />';
+        this.researches[4].limit = 0;
+        this.researches[4].name = 'Research4';
+        this.researches[4].redResearchPer = new JBDecimal(10);
+        this.researches[4].redResearchMultiplier = 1.3;
+        this.researches.push(new Upgrade());
+        this.researches[5].active = true;
+        this.researches[5].addedLimitElgible = false;
+        this.researches[5].buyButton = document.getElementById('btnBuyResearch5');
+        this.researches[5].description = 'Stone production +10% multiplicative<br />';
+        this.researches[5].limit = 0;
+        this.researches[5].name = 'Research5';
+        this.researches[5].redResearchPer = new JBDecimal(10);
+        this.researches[5].redResearchMultiplier = 1.3;
+        this.researches.push(new Upgrade());
+        this.researches[6].active = true;
+        this.researches[6].addedLimitElgible = false;
+        this.researches[6].buyButton = document.getElementById('btnBuyResearch6');
+        this.researches[6].description = 'Poison +10% multiplicative<br />';
+        this.researches[6].limit = 0;
+        this.researches[6].name = 'Research6';
+        this.researches[6].redResearchPer = new JBDecimal(25);
+        this.researches[6].redResearchMultiplier = 1.75;
+        this.researches.push(new Upgrade());
+        this.researches[7].active = true;
+        this.researches[7].addedLimitElgible = false;
+        this.researches[7].buyButton = document.getElementById('btnBuyResearch7');
+        this.researches[7].description = 'Fletcher +10% multiplicative<br />';
+        this.researches[7].limit = 0;
+        this.researches[7].name = 'Research7';
+        this.researches[7].redResearchPer = new JBDecimal(30);
+        this.researches[7].redResearchMultiplier = 1.3;
+        this.researches.push(new Upgrade());
+        this.researches[8].active = true;
+        this.researches[8].addedLimitElgible = false;
+        this.researches[8].buyButton = document.getElementById('btnBuyResearch8');
+        this.researches[8].description = 'Catapult +10% damage multiplicative<br />';
+        this.researches[8].limit = 0;
+        this.researches[8].name = 'Research8';
+        this.researches[8].redResearchPer = new JBDecimal(20);
+        this.researches[8].redResearchMultiplier = 1.75;
         this.challenges = [];
         this.challenges.push(new Challenge('Inflation', 'Inflation starts at 1', 'Inflation starts 5 percent later per completion', 5, 5));
-        this.challenges.push(new Challenge('Production', 'Production Bonus is disabled', 'Add .01 to production bonus', 20, 10));
-        this.challenges.push(new Challenge('Shooting Speed', 'Shooting Speed is set to 1/s', 'Increase shooting speed', 20, 10));
-        this.challenges.push(new Challenge('Range', 'Tower Range is set to 15', 'Increase Tower Range', 20, 10));
-        this.challenges.push(new Challenge('Poison', 'No Poison Tower', 'Unlock and improve Poison Tower', 15, 15));
+        this.challenges.push(new Challenge('Shooting Speed', 'Shooting Speed is set to minimum', 'Increase shooting speed', 20, 10));
+        this.challenges.push(new Challenge('Range', 'Tower Range is set to minimum', 'Increase Tower Range', 20, 10));
+        this.challenges.push(new Challenge('Poison', 'No Poison Tower', 'Unlock and improve Poison Tower', 25, 10));
         this.challenges.push(new Challenge('Slow', 'Slow tower disabled', 'Slow Tower unlocked and improved', 30, 15));
-        this.challenges.push(new Challenge('Crits', 'Critical Attacks are disabled', 'Unlock and improve critical hits', 35, 15));
-        this.challenges.push(new Challenge('Shield Break', 'No Shield Break', 'Unlock and improve shield break', 40, 20));
+        this.challenges.push(new Challenge('Crits', 'Critical Attacks are disabled', 'Unlock and improve critical hits for projectile towers', 35, 15));
+        this.challenges.push(new Challenge('Shield Break', 'No Shield Break', 'Unlock and improve shield break', 40, 15));
+        this.challenges.push(new Challenge('Efficiency', 'Efficiency set to normal', 'Improve ratio of raw materials to produced materials', 20, 15));
         this.tierBlueprints = [];
         this.tierBlueprints.push();
-        this.tierblueprintsauto = false;
+        this.tierblueprintsauto = true;
         // this.challenges.push(new Challenge('Slow', 'Slow disabled', 'Enemies within range slow', 30, 15));
         this.equipment = [];
         this.Achievements = [];
-        this.Achievements.push(new Achievement(1, 'Tower1', 'Buy first Tower level', 0, 1));
-        this.Achievements.push(new Achievement(2, 'Tower2', 'Buy ten Tower levels', 0, 10));
-        this.Achievements.push(new Achievement(3, 'Tower4', 'Buy fifty Tower levels', 0, 50));
-        this.Achievements.push(new Achievement(4, 'Tower8', 'Buy one hundred Tower levels', 0, 100));
-        this.Achievements.push(new Achievement(5, 'Tower16', 'Buy five hundred Tower levels', 0, 500));
-        this.Achievements.push(new Achievement(6, 'Tower32', 'Buy one thousand Tower levels', 0, 1000));
-        this.Achievements.push(new Achievement(7, 'Tower64', 'Buy five thousand Tower levels', 0, 5000));
-        this.Achievements.push(new Achievement(8, 'Tower100', 'Buy ten thousand Tower levels', 0, 10000));
-        this.Achievements.push(new Achievement(9, 'Tower200', 'Buy fifty thousand Tower levels', 0, 50000));
-        this.Achievements.push(new Achievement(10, 'Tower400', 'Buy one hundred thousand Tower levels', 0, 100000));
-        this.Achievements.push(new Achievement(11, 'Challenge1', 'Complete first Challenge', 1, 1));
-        this.Achievements.push(new Achievement(12, 'Challenge2', 'Complete two Challenges', 1, 2));
-        this.Achievements.push(new Achievement(13, 'Challenge4', 'Complete four Challenges', 1, 4));
-        this.Achievements.push(new Achievement(14, 'Challenge8', 'Complete eight Challenges', 1, 8));
-        this.Achievements.push(new Achievement(15, 'Challenge16', 'Complete sixteen Challenges', 1, 16));
-        this.Achievements.push(new Achievement(16, 'Wave1', 'Complete Wave 1', 1, 1));
-        this.Achievements.push(new Achievement(17, 'Wave10', 'Complete Wave 10', 1, 10));
-        this.Achievements.push(new Achievement(18, 'Wave20', 'Complete Wave 20', 1, 20));
-        this.Achievements.push(new Achievement(19, 'Wave30', 'Complete Wave 30', 1, 30));
-        this.Achievements.push(new Achievement(20, 'Wave40', 'Complete Wave 40', 1, 40));
-        this.Achievements.push(new Achievement(21, 'Challenge25', 'Complete twenty five Challenges', 1, 25));
-        this.Achievements.push(new Achievement(22, 'Challenge50', 'Complete fifty Challenges', 1, 50));
-        this.Achievements.push(new Achievement(23, 'Challenge100', 'Complete one hundred Challenges', 1, 100));
-        this.Achievements.push(new Achievement(24, 'Challenge200', 'Complete two hundred Challenges', 1, 200));
-        this.Achievements.push(new Achievement(25, 'Challenge500', 'Complete five hundred Challenges', 1, 500));
-        this.Achievements.push(new Achievement(26, 'Wave50', 'Complete Wave 50', 1, 50));
-        this.Achievements.push(new Achievement(27, 'Wave60', 'Complete Wave 60', 1, 60));
-        this.Achievements.push(new Achievement(28, 'Wave70', 'Complete Wave 70', 1, 70));
-        this.Achievements.push(new Achievement(29, 'Wave80', 'Complete Wave 80', 1, 80));
-        this.Achievements.push(new Achievement(30, 'Wave90', 'Complete Wave 90', 1, 90));
-        this.Achievements.push(new Achievement(31, 'Attack10', 'Have attack of 10', 1, 10));
-        this.Achievements.push(new Achievement(32, 'Attack50', 'Have attack of 50', 1, 50));
-        this.Achievements.push(new Achievement(33, 'Attack100', 'Have attack of 100', 1, 100));
-        this.Achievements.push(new Achievement(34, 'Attack500', 'Have attack of 500', 1, 500));
-        this.Achievements.push(new Achievement(35, 'Attack1000', 'Have attack of 1000', 1, 1000));
-        this.Achievements.push(new Achievement(36, 'Attack5000', 'Have attack of 5000', 1, 5000));
-        this.Achievements.push(new Achievement(37, 'Attack10000', 'Have attack of 10000', 1, 10000));
-        this.Achievements.push(new Achievement(38, 'Attack50000', 'Have attack of 50000', 1, 50000));
-        this.Achievements.push(new Achievement(39, 'Attack100000', 'Have attack of 100000', 1, 100000));
-        this.Achievements.push(new Achievement(40, 'Attack500000', 'Have attack of 500000', 1, 500000));
-        this.Achievements.push(new Achievement(41, '1Prestige10', 'Prestige 1 time', 1, 1));
-        this.Achievements.push(new Achievement(42, '1Prestige50', 'Prestige 10 times', 1, 10));
-        this.Achievements.push(new Achievement(43, '1Prestige100', 'Prestige 50 times', 1, 50));
-        this.Achievements.push(new Achievement(44, '1Prestige500', 'Prestige 100 times', 1, 100));
-        this.Achievements.push(new Achievement(45, '1Prestige1000', 'Prestige 500 times', 1, 500));
-        this.Achievements.push(new Achievement(46, '2Prestige10', 'Ascend 1 time', 1, 1));
-        this.Achievements.push(new Achievement(47, '2Prestige50', 'Ascend 10 times', 1, 10));
-        this.Achievements.push(new Achievement(48, '2Prestige100', 'Ascend 50 times', 1, 50));
-        this.Achievements.push(new Achievement(49, '2Prestige500', 'Ascend 100 times', 1, 100));
-        this.Achievements.push(new Achievement(50, '2Prestige1000', 'Ascend 500 times', 1, 500));
-        this.Achievements.push(new Achievement(51, 'PebblesPer10', 'Pebble Gain 10 per hour', 1, 10));
-        this.Achievements.push(new Achievement(52, 'PebblesPer100', 'Pebble Gain 100 per hour', 1, 100));
-        this.Achievements.push(new Achievement(53, 'PebblesPer1000', 'Pebble Gain 1000 per hour', 1, 1000));
-        this.Achievements.push(new Achievement(54, 'PebblesPer10000', 'Pebble Gain 1e4 per hour', 1, 1e4));
-        this.Achievements.push(new Achievement(55, 'PebblesPer100000', 'Pebble Gain 1e5 per hour', 1, 1e5));
-        this.Achievements.push(new Achievement(56, '3Prestige10', 'Transform 1 time', 1, 1));
-        this.Achievements.push(new Achievement(57, '3Prestige50', 'Transform 10 times', 1, 10));
-        this.Achievements.push(new Achievement(58, '3Prestige100', 'Transform 50 times', 1, 50));
-        this.Achievements.push(new Achievement(59, '3Prestige500', 'Transform 100 times', 1, 100));
-        this.Achievements.push(new Achievement(60, '3Prestige1000', 'Transform 500 times', 1, 500));
-        this.Achievements.push(new Achievement(61, 'Miner11', 'Buy one Miner', 0, 1));
-        this.Achievements.push(new Achievement(62, 'Miner110', 'Buy ten Miners', 0, 10));
-        this.Achievements.push(new Achievement(63, 'Miner125', 'Buy twenty five Miners', 0, 25));
-        this.Achievements.push(new Achievement(64, 'Miner150', 'Buy fifty Miners', 0, 50));
-        this.Achievements.push(new Achievement(65, 'Miner1100', 'Buy one hundred Miners', 0, 100));
-        this.Achievements.push(new Achievement(66, 'Miner1500', 'Buy five hundred Miners', 0, 500));
-        this.Achievements.push(new Achievement(67, 'Miner11000', 'Buy one thousand Miners', 0, 1000));
-        this.Achievements.push(new Achievement(68, 'Miner15000', 'Buy five thousand Miners', 0, 5000));
-        this.Achievements.push(new Achievement(69, 'Miner110000', 'Buy ten thousand Miners', 0, 10000));
-        this.Achievements.push(new Achievement(70, 'Miner1100000', 'Buy one hundred thousand Miners', 0, 100000));
-        this.Achievements.push(new Achievement(71, 'Miner21', 'Buy one Supervisors', 1, 1));
-        this.Achievements.push(new Achievement(72, 'Miner210', 'Buy ten Supervisors', 1, 10));
-        this.Achievements.push(new Achievement(73, 'Miner225', 'Buy twenty five Supervisors', 1, 25));
-        this.Achievements.push(new Achievement(74, 'Miner250', 'Buy fifty Supervisors', 1, 50));
-        this.Achievements.push(new Achievement(75, 'Miner2100', 'Buy one hundred Supervisors', 1, 100));
-        this.Achievements.push(new Achievement(76, 'Miner2500', 'Buy five hundred Supervisors', 1, 500));
-        this.Achievements.push(new Achievement(77, 'Miner21000', 'Buy one thousand Supervisors', 1, 1000));
-        this.Achievements.push(new Achievement(78, 'Miner25000', 'Buy five thousand Supervisors', 1, 5000));
-        this.Achievements.push(new Achievement(79, 'Miner210000', 'Buy ten thousand Supervisors', 1, 10000));
-        this.Achievements.push(new Achievement(80, 'Miner2100000', 'Buy one hundred thousand Supervisors', 1, 100000));
-        this.Achievements.push(new Achievement(81, 'Miner31', 'Buy one Foreman', 2, 1));
-        this.Achievements.push(new Achievement(82, 'Miner310', 'Buy ten Foremen', 2, 10));
-        this.Achievements.push(new Achievement(83, 'Miner325', 'Buy twenty five Foremen', 2, 25));
-        this.Achievements.push(new Achievement(84, 'Miner350', 'Buy fifty Foremen', 2, 50));
-        this.Achievements.push(new Achievement(85, 'Miner3100', 'Buy one hundred Foremen', 2, 100));
-        this.Achievements.push(new Achievement(86, 'Miner3500', 'Buy five hundred Foremen', 2, 500));
-        this.Achievements.push(new Achievement(87, 'Miner31000', 'Buy one thousand Foremen', 2, 1000));
-        this.Achievements.push(new Achievement(88, 'Miner35000', 'Buy five thousand Foremen', 2, 5000));
-        this.Achievements.push(new Achievement(89, 'Miner310000', 'Buy ten thousand Foremen', 2, 10000));
-        this.Achievements.push(new Achievement(90, 'Miner3100000', 'Buy one hundred thousand Foremen', 2, 100000));
-        this.Achievements.push(new Achievement(91, 'Miner41', 'Buy one Manager', 3, 1));
-        this.Achievements.push(new Achievement(92, 'Miner410', 'Buy ten Managers', 3, 10));
-        this.Achievements.push(new Achievement(93, 'Miner425', 'Buy twenty five Managers', 3, 25));
-        this.Achievements.push(new Achievement(94, 'Miner450', 'Buy fifty Managers', 3, 50));
-        this.Achievements.push(new Achievement(95, 'Miner4100', 'Buy one hundred Managers', 3, 100));
-        this.Achievements.push(new Achievement(96, 'Miner4500', 'Buy five hundred Managers', 3, 500));
-        this.Achievements.push(new Achievement(97, 'Miner41000', 'Buy one thousand Managers', 3, 1000));
-        this.Achievements.push(new Achievement(98, 'Miner45000', 'Buy five thousand Managers', 3, 5000));
-        this.Achievements.push(new Achievement(99, 'Miner410000', 'Buy ten thousand Managers', 3, 10000));
-        this.Achievements.push(new Achievement(100, 'Miner4100000', 'Buy one hundred thousand Managers', 3, 100000));
-        this.Achievements.push(new Achievement(101, 'Miner51', 'Buy one Middle Manager', 4, 1));
-        this.Achievements.push(new Achievement(102, 'Miner510', 'Buy ten Middle Managers', 4, 10));
-        this.Achievements.push(new Achievement(103, 'Miner525', 'Buy twenty five Middle Managers', 4, 25));
-        this.Achievements.push(new Achievement(104, 'Miner550', 'Buy fifty Middle Managers', 4, 50));
-        this.Achievements.push(new Achievement(105, 'Miner5100', 'Buy one hundred Middle Managers', 4, 100));
-        this.Achievements.push(new Achievement(106, 'Miner5500', 'Buy five hundred Middle Managers', 4, 500));
-        this.Achievements.push(new Achievement(107, 'Miner51000', 'Buy one thousand Middle Managers', 4, 1000));
-        this.Achievements.push(new Achievement(108, 'Miner55000', 'Buy five thousand Middle Managers', 4, 5000));
-        this.Achievements.push(new Achievement(109, 'Miner510000', 'Buy ten thousand Middle Managers', 4, 10000));
-        this.Achievements.push(new Achievement(110, 'Miner5100000', 'Buy one hundred thousand Supervisors', 5, 100000));
-        this.Achievements.push(new Achievement(111, 'Miner61', 'Buy one Upper Manager', 5, 1));
-        this.Achievements.push(new Achievement(112, 'Miner610', 'Buy ten Upper Managers', 5, 10));
-        this.Achievements.push(new Achievement(113, 'Miner625', 'Buy twenty five Upper Managers', 5, 25));
-        this.Achievements.push(new Achievement(114, 'Miner650', 'Buy fifty Upper Managers', 5, 50));
-        this.Achievements.push(new Achievement(115, 'Miner6100', 'Buy one hundred Upper Managers', 5, 100));
-        this.Achievements.push(new Achievement(116, 'Miner6500', 'Buy five hundred Upper Managers', 5, 500));
-        this.Achievements.push(new Achievement(117, 'Miner61000', 'Buy one thousand Upper Managers', 5, 1000));
-        this.Achievements.push(new Achievement(118, 'Miner65000', 'Buy five thousand Upper Managers', 5, 5000));
-        this.Achievements.push(new Achievement(119, 'Miner610000', 'Buy ten thousand Upper Managers', 5, 10000));
-        this.Achievements.push(new Achievement(120, 'Miner6100000', 'Buy one hundred thousand Upper Managers', 5, 100000));
-        this.Achievements.push(new Achievement(121, 'Miner71', 'Buy one Vice President', 6, 1));
-        this.Achievements.push(new Achievement(122, 'Miner710', 'Buy ten Vice Presidents', 6, 10));
-        this.Achievements.push(new Achievement(123, 'Miner725', 'Buy twenty five Vice Presidents', 6, 25));
-        this.Achievements.push(new Achievement(124, 'Miner750', 'Buy fifty Vice Presidents', 6, 50));
-        this.Achievements.push(new Achievement(125, 'Miner7100', 'Buy one hundred Vice Presidents', 6, 100));
-        this.Achievements.push(new Achievement(126, 'Miner7500', 'Buy five hundred Vice Presidents', 6, 500));
-        this.Achievements.push(new Achievement(127, 'Miner71000', 'Buy one thousand Vice Presidents', 6, 1000));
-        this.Achievements.push(new Achievement(128, 'Miner75000', 'Buy five thousand  Vice Presidents', 6, 5000));
-        this.Achievements.push(new Achievement(129, 'Miner710000', 'Buy ten thousand Vice Presidents', 6, 10000));
-        this.Achievements.push(new Achievement(130, 'Miner7100000', 'Buy one hundred thousand Vice Presidents', 6, 100000));
-        this.Achievements.push(new Achievement(131, 'Miner81', 'Buy one President', 7, 1));
-        this.Achievements.push(new Achievement(132, 'Miner810', 'Buy ten Presidents', 7, 10));
-        this.Achievements.push(new Achievement(133, 'Miner825', 'Buy twenty five Presidents', 7, 25));
-        this.Achievements.push(new Achievement(134, 'Miner850', 'Buy fifty Presidents', 7, 50));
-        this.Achievements.push(new Achievement(135, 'Miner8100', 'Buy one hundred Presidents', 7, 100));
-        this.Achievements.push(new Achievement(136, 'Miner8500', 'Buy five hundred Presidents', 7, 500));
-        this.Achievements.push(new Achievement(137, 'Miner81000', 'Buy one thousand Presidents', 7, 1000));
-        this.Achievements.push(new Achievement(138, 'Miner85000', 'Buy five thousand Presidents', 7, 5000));
-        this.Achievements.push(new Achievement(139, 'Miner810000', 'Buy ten thousand Presidents', 7, 10000));
-        this.Achievements.push(new Achievement(140, 'Miner8100000', 'Buy one hundred thousand Presidents', 7, 100000));
+        this.Achievements.push(new Achievements(1, 'Building', 'Buy building levels', [new JBDecimal(1), new JBDecimal(5), new JBDecimal(10), new JBDecimal(50), new JBDecimal(100), new JBDecimal(500), new JBDecimal(1000), new JBDecimal(5000), new JBDecimal(10000), new JBDecimal(50000)], 0));
+        this.Achievements.push(new Achievements(2, 'Challenge', 'Complete challenges', [new JBDecimal(1), new JBDecimal(2), new JBDecimal(4), new JBDecimal(8), new JBDecimal(16), new JBDecimal(25), new JBDecimal(50), new JBDecimal(100), new JBDecimal(200), new JBDecimal(400)], 0));
+        this.Achievements.push(new Achievements(3, 'Wave', 'Beat waves', [new JBDecimal(1), new JBDecimal(10), new JBDecimal(20), new JBDecimal(30), new JBDecimal(40), new JBDecimal(50), new JBDecimal(60), new JBDecimal(70), new JBDecimal(80), new JBDecimal(90)], 0));
+        this.Achievements.push(new Achievements(4, 'Attack', 'Total Projectile attack', [
+            new JBDecimal(1),
+            new JBDecimal(10),
+            new JBDecimal(50),
+            new JBDecimal(100),
+            new JBDecimal(500),
+            new JBDecimal(1000),
+            new JBDecimal(5000),
+            new JBDecimal(1e4),
+            new JBDecimal(5e4),
+            new JBDecimal(1e5),
+            new JBDecimal(5e5),
+            new JBDecimal(1e6),
+            new JBDecimal(5e6),
+            new JBDecimal(1e7),
+            new JBDecimal(5e7),
+            new JBDecimal(1e8),
+        ], 0));
+        this.Achievements.push(new Achievements(6, '1Prestige', 'Prestige count', [new JBDecimal(1), new JBDecimal(5), new JBDecimal(10), new JBDecimal(20), new JBDecimal(50), new JBDecimal(100)], 0));
+        this.Achievements.push(new Achievements(7, '2Prestige', 'Ascend count', [new JBDecimal(1), new JBDecimal(5), new JBDecimal(10), new JBDecimal(20), new JBDecimal(50), new JBDecimal(100)], 0));
+        this.Achievements.push(new Achievements(8, '3Prestige', 'Transform count', [new JBDecimal(1), new JBDecimal(5), new JBDecimal(10), new JBDecimal(20), new JBDecimal(50), new JBDecimal(100)], 0));
+        this.Achievements.push(new Achievements(9, 'PowderPer', 'Powder gain per hour', [new JBDecimal(10), new JBDecimal(100), new JBDecimal(1000), new JBDecimal(1e4), new JBDecimal(1e5), new JBDecimal(1e6)], 0));
+        this.Achievements.push(new Achievements(10, 'Resource', 'Resource production', [
+            new JBDecimal(1),
+            new JBDecimal(10),
+            new JBDecimal(25),
+            new JBDecimal(50),
+            new JBDecimal(100),
+            new JBDecimal(500),
+            new JBDecimal(1000),
+            new JBDecimal(5000),
+            new JBDecimal(1e4),
+            new JBDecimal(5e4),
+            new JBDecimal(1e5),
+            new JBDecimal(5e5),
+            new JBDecimal(1e6),
+            new JBDecimal(5e6),
+            new JBDecimal(1e7),
+            new JBDecimal(5e7),
+            new JBDecimal(1e8),
+        ], 0));
+        this.Achievements.push(new Achievements(11, 'Survivor', 'Wave reached without failing', [new JBDecimal(5), new JBDecimal(10), new JBDecimal(20), new JBDecimal(30), new JBDecimal(40), new JBDecimal(50), new JBDecimal(60), new JBDecimal(70), new JBDecimal(80), new JBDecimal(90), new JBDecimal(100)], 0));
+        this.Achievements.push(new Achievements(11, 'Population', 'Reach population level', [new JBDecimal(25), new JBDecimal(50), new JBDecimal(100), new JBDecimal(200), new JBDecimal(500), new JBDecimal(1000), new JBDecimal(2000), new JBDecimal(5000), new JBDecimal(10000), new JBDecimal(20000), new JBDecimal(50000)], 0));
         this.tierfeats = [];
         this.storyElements = [];
         this.storyElements.push(new Story("Welcome to Continuous! Continuous is a tower defense game with incremental and idle elements. See the white boxes moving through the maze?  We don't like them.  If one of them reaches the end the wave will start again. Initially you can build three towers.  A Gun Tower, a Missile Tower and a Cannon Tower.  Build any of them on any of the available slots. You should build all three when you can afford them."));
@@ -345,6 +614,11 @@ class SaveGameData {
         this.storyElements.push(new Story("If you haven't yet spent your pebble(s) go to the upgrades tab and choose an upgrade. 1000 pebbles will get you a rock. 10000 rocks will get you a boulder.  The object is to advance as far as you can, gaining more and more power."));
         this.storyElements.push(new Story('You have unlocked Challenges.  A challenge is a game run that has a penalty, and if more enemies makes it through the maze than you have mulligans then the challenge ends although the run ontinues.  Challenges give you new towers or tower abilities or production abilities.'));
         this.storyElements.push(new Story('As you progress you will unlock new towers and tower abilities.  You will unlock new production resources. Completing challenges will increase your power. Completing achievements will increase your power.  Finishing tiers will gain you new equipment and new abilities and more power.  Good luck!'));
+        this.resources.wood.amount = new JBDecimal(100);
+        this.resources.people.amount = new JBDecimal(10);
+        if (this.pebbleUpgrades[12].bought > 0) {
+            this.resources.people.amount = new JBDecimal(100);
+        }
     }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -369,5 +643,221 @@ function saveGame(currentTime) {
     xhr.open('GET', 'version.txt');
     xhr.send();
     // }
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function loadSaveGame() {
+    const savegame = JSON.parse(localStorage.getItem('save'));
+    if (savegame !== null) {
+        gameData.name = savegame.name;
+        if (savegame.version >= 4) {
+            for (let index = 0; index < savegame.storyElements.length; index += 1) {
+                const element = savegame.storyElements[index];
+                gameData.storyElements[index].printed = element.printed;
+            }
+            gameData.stats.bestPrestige2Rate.mantissa = savegame.stats.bestPrestige2Rate.mantissa;
+            gameData.stats.bestPrestige2Rate.exponent = savegame.stats.bestPrestige2Rate.exponent;
+            for (let index = 0; index < savegame.stats.last10Prestige2amounts.length; index += 1) {
+                const element = savegame.stats.last10Prestige2amounts[index];
+                const item = new JBDecimal(1);
+                item.mantissa = element.mantissa;
+                item.exponent = element.exponent;
+                gameData.stats.last10Prestige2amounts.push(item);
+            }
+            gameData.stats.last10Prestige2times = savegame.stats.last10Prestige2times;
+            gameData.stats.prestige2ticks = savegame.stats.prestige2ticks;
+            gameData.stats.prestige2 = savegame.stats.prestige2;
+            gameData.stats.bestPrestige3Rate.mantissa = savegame.stats.bestPrestige3Rate.mantissa;
+            gameData.stats.bestPrestige3Rate.exponent = savegame.stats.bestPrestige3Rate.exponent;
+            for (let index = 0; index < savegame.stats.last10Prestige3amounts.length; index += 1) {
+                const element = savegame.stats.last10Prestige3amounts[index];
+                const item = new JBDecimal(1);
+                item.mantissa = element.mantissa;
+                item.exponent = element.exponent;
+                gameData.stats.last10Prestige3amounts.push(item);
+            }
+            gameData.stats.last10Prestige3times = savegame.stats.last10Prestige3times;
+            gameData.stats.prestige3 = savegame.stats.prestige3;
+            gameData.stats.prestige3ticks = savegame.stats.prestige3ticks;
+            gameData.stats.prestige1 = savegame.stats.prestige1;
+            gameData.stats.prestige1ticks = savegame.stats.prestige1ticks;
+            gameData.stats.bestPrestige1Rate.mantissa = savegame.stats.bestPrestige1Rate.mantissa;
+            gameData.stats.bestPrestige1Rate.exponent = savegame.stats.bestPrestige1Rate.exponent;
+            gameData.stats.highestEverWave = savegame.stats.highestEverWave;
+            for (let index = 0; index < savegame.stats.last10Prestige1amounts.length; index += 1) {
+                const element = savegame.stats.last10Prestige1amounts[index];
+                const item = new JBDecimal(1);
+                item.mantissa = element.mantissa;
+                item.exponent = element.exponent;
+                gameData.stats.last10Prestige1amounts.push(item);
+            }
+            gameData.stats.last10Prestige1times = savegame.stats.last10Prestige1times;
+            gameData.stats.last10Prestige1tier = savegame.stats.last10Prestige1tier;
+            gameData.stats.last10Prestige1waves = savegame.stats.last10Prestige1waves;
+            gameData.options.standardNotation = savegame.options.standardNotation;
+            gameData.options.logNotBase = savegame.options.logNotBase;
+            gameData.world.timeElapsed = savegame.world.timeElapsed;
+            gameData.world.paused = savegame.world.paused;
+            gameData.world.currentWave = savegame.world.currentWave;
+            gameData.world.enemiesToSpawn = savegame.world.enemiesToSpawn;
+            gameData.world.highestWaveCompleted = savegame.world.highestWaveCompleted;
+            gameData.world.tierUnlocked = savegame.world.tierUnlocked;
+            gameData.world.currentTier = savegame.world.currentTier;
+            gameData.world.timeElapsed = savegame.world.timeElapsed;
+            gameData.world.ticksToNextSpawn = savegame.world.ticksToNextSpawn;
+            gameData.world.deathLevel = savegame.world.deathLevel;
+            gameData.world.autoChallenge = savegame.world.autoChallenge;
+            gameData.world.nextAutoChallenge = savegame.world.nextAutoChallenge;
+            gameData.world.equipmentEarned = savegame.world.equipmentEarned;
+            if (typeof savegame.world.spawnsRemaining !== 'undefined') {
+                for (let index = 0; index <= 32; index++) {
+                    if (typeof savegame.world.spawnsRemaining[index] !== 'undefined') {
+                        gameData.world.spawnsRemaining[index] = savegame.world.spawnsRemaining[index];
+                    }
+                }
+            }
+            while (gameData.tierBlueprints.length < gameData.world.tierUnlocked + 1) {
+                const newGuy = new TierBluePrint();
+                gameData.tierBlueprints.push(newGuy);
+            }
+            if (typeof savegame.tierBlueprints !== 'undefined') {
+                savegame.tierBlueprints.forEach((tbp, tbpIndex) => {
+                    gameData.tierBlueprints[tbpIndex] = tbp;
+                });
+            }
+            for (let index = 0; index < savegame.enemies.length; index += 1) {
+                const element = savegame.enemies[index];
+                const newEnemy = new Enemy(false);
+                newEnemy.pos.x = element.pos.x;
+                newEnemy.pos.y = element.pos.y;
+                if (typeof element.healer !== 'undefined') {
+                    newEnemy.healer = element.healer;
+                }
+                if (typeof element.thief !== 'undefined') {
+                    newEnemy.thief = element.thief;
+                }
+                if (typeof element.fast !== 'undefined') {
+                    newEnemy.fast = element.fast;
+                }
+                if (typeof element.strong !== 'undefined') {
+                    newEnemy.strong = element.strong;
+                }
+                if (typeof element.shielded !== 'undefined') {
+                    newEnemy.shielded = element.shielded;
+                }
+                newEnemy.baseMaxHitPoints.mantissa = element.baseMaxHitPoints.mantissa;
+                newEnemy.baseMaxHitPoints.exponent = element.baseMaxHitPoints.exponent;
+                newEnemy.damagetaken.mantissa = element.damagetaken.mantissa;
+                newEnemy.damagetaken.exponent = element.damagetaken.exponent;
+                newEnemy.movementPerSec = element.movementPerSec;
+                newEnemy.isBullet = false;
+                newEnemy.slowed = element.slowed;
+                newEnemy.targetList = [];
+                // eslint-disable-next-line no-loop-func
+                element.targetList.forEach((t) => {
+                    newEnemy.targetList.push(new Vector(t.x, t.y));
+                });
+                // element.targetList.forEach(t => newEnemy.targetList.push(new movingObject(t.pos.x, t.pos.y, t.movementPerSec, [])))
+                newEnemy.targetListIndex = element.targetListIndex;
+                newEnemy.type = element.type;
+                // eslint-disable-next-line no-loop-func
+                element.theftBucket.forEach((tb) => {
+                    const newTB = new Resource(tb.name);
+                    newTB.amount.mantissa = tb.amount.mantissa;
+                    newTB.amount.exponent = tb.amount.exponent;
+                    newEnemy.theftBucket.push(newTB);
+                });
+                // eslint-disable-next-line no-loop-func
+                // element.bullets.forEach((b: { pos: { x: number; y: number }; damage: JBDecimal; crit: boolean }) => {
+                //   const newb = new Bullet(new Vector(b.pos.x, b.pos.y), element, b.damage);
+                //   newb.crit = b.crit;
+                //   newEnemy.bullets.push(newb);
+                // });
+                gameData.enemies.push(newEnemy);
+            }
+            createBuildingSites();
+            // gameData.towers = [];
+            for (let index = 0; index < gameData.buildings.length; index += 1) {
+                const element = savegame.buildings[index];
+                const newTower = gameData.buildings[index];
+                newTower.type = element.type;
+                newTower.setInfoByType();
+                newTower.bought = element.bought;
+                newTower.tactics.fastest = element.tactics.fastest;
+                newTower.tactics.highestHealth = element.tactics.highestHealth;
+                newTower.tactics.lowestHealth = element.tactics.lowestHealth;
+                newTower.tactics.healer = element.tactics.healer;
+                newTower.autoOn = element.autoOn;
+            }
+            gameData.tierblueprintsauto = savegame.tierblueprintsauto;
+            gameData.resources.essence.amount.mantissa = savegame.resources.essence.amount.mantissa;
+            gameData.resources.essence.amount.exponent = savegame.resources.essence.amount.exponent;
+            gameData.resources.wood.amount.mantissa = savegame.resources.wood.amount.mantissa;
+            gameData.resources.wood.amount.exponent = savegame.resources.wood.amount.exponent;
+            gameData.resources.people.amount.mantissa = savegame.resources.people.amount.mantissa;
+            gameData.resources.people.amount.exponent = savegame.resources.people.amount.exponent;
+            gameData.resources.rock.amount.mantissa = savegame.resources.rock.amount.mantissa;
+            gameData.resources.rock.amount.exponent = savegame.resources.rock.amount.exponent;
+            gameData.resources.food.amount.mantissa = savegame.resources.food.amount.mantissa;
+            gameData.resources.food.amount.exponent = savegame.resources.food.amount.exponent;
+            gameData.resources.pebble.amount.mantissa = savegame.resources.pebble.amount.mantissa;
+            gameData.resources.pebble.amount.exponent = savegame.resources.pebble.amount.exponent;
+            gameData.resources.powder.amount.mantissa = savegame.resources.powder.amount.mantissa;
+            gameData.resources.powder.amount.exponent = savegame.resources.powder.amount.exponent;
+            gameData.resources.stone.amount.mantissa = savegame.resources.stone.amount.mantissa;
+            gameData.resources.stone.amount.exponent = savegame.resources.stone.amount.exponent;
+            gameData.resources.shards.amount.mantissa = savegame.resources.shards.amount.mantissa;
+            gameData.resources.shards.amount.exponent = savegame.resources.shards.amount.exponent;
+            if (typeof savegame.resources.arrow !== 'undefined') {
+                gameData.resources.arrow.amount.mantissa = savegame.resources.arrow.amount.mantissa;
+                gameData.resources.arrow.amount.exponent = savegame.resources.arrow.amount.exponent;
+            }
+            if (typeof savegame.resources.redResearch !== 'undefined') {
+                gameData.resources.redResearch.amount.mantissa = savegame.resources.redResearch.amount.mantissa;
+                gameData.resources.redResearch.amount.exponent = savegame.resources.redResearch.amount.exponent;
+            }
+            for (let index = 0; index < savegame.researches.length; index += 1) {
+                const element = savegame.researches[index];
+                gameData.researches[index].bought = element.bought;
+            }
+            for (let index = 0; index < savegame.powderUpgrades.length; index += 1) {
+                const element = savegame.powderUpgrades[index];
+                gameData.powderUpgrades[index].bought = element.bought;
+            }
+            for (let index = 0; index < savegame.rockUpgrades.length; index += 1) {
+                const element = savegame.rockUpgrades[index];
+                gameData.rockUpgrades[index].bought = element.bought;
+            }
+            for (let index = 0; index < savegame.pebbleUpgrades.length; index += 1) {
+                const element = savegame.pebbleUpgrades[index];
+                gameData.pebbleUpgrades[index].bought = element.bought;
+            }
+            savegame.equipment.forEach((e) => {
+                const newEquipment = new Equipment(e.name);
+                e.abilities.forEach((a) => {
+                    const newAbility = new EquipmentAbility(a.name);
+                    newAbility.levels = a.levels;
+                    newEquipment.abilities.push(newAbility);
+                });
+                gameData.equipment.push(newEquipment);
+            });
+            for (let index = 0; index < savegame.challenges.length; index += 1) {
+                const element = gameData.challenges[index];
+                element.active = savegame.challenges[index].active;
+                element.completed = savegame.challenges[index].completed;
+            }
+            for (let index = 0; index < savegame.Achievements.length; index += 1) {
+                const element = savegame.Achievements[index];
+                gameData.Achievements[index].completed = element.completed;
+            }
+            while (gameData.tierfeats.length < gameData.world.tierUnlocked) {
+                gameData.tierfeats.push(createFeatsForTier(gameData.tierfeats.length + 1));
+            }
+            savegame.tierfeats.forEach((tf, tierindex) => {
+                tf.feats.forEach((f, featindex) => {
+                    gameData.tierfeats[tierindex].feats[featindex].completed = savegame.tierfeats[tierindex].feats[featindex].completed;
+                });
+            });
+        }
+    }
 }
 //# sourceMappingURL=saveData.js.map
