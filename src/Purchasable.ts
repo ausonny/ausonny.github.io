@@ -32,41 +32,33 @@ function peopleAvailable() {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Purchasable {
-  woodCostPer: JBDecimal;
+  woodCostPer: number;
 
   woodCostMultiplierPer: number;
 
   peopleCostPer: number;
 
-  stoneCostPer: JBDecimal;
+  stoneCostPer: number;
 
   stoneCostMultiplierPer: number;
 
-  essenceCostPer: JBDecimal;
+  essenceCostPer: number;
 
   essenceCostMultiplierPer: number;
 
-  powderCostPer: JBDecimal;
+  powderCostPer: number;
 
   powderCostMultiplierPer: number;
 
-  pebbleCostPer: JBDecimal;
+  pebbleCostPer: number;
 
   pebbleCostMultiplierPer: number;
 
-  particleCostPer: JBDecimal;
-
-  particleCostMultiplierPer: number;
-
-  rockCostPer: JBDecimal;
+  rockCostPer: number;
 
   rockCostMultiplierPer: number;
 
-  timeparticleCostPer: JBDecimal;
-
-  timeparticleCostMultiplierPer: number;
-
-  shardCostPer: JBDecimal;
+  shardCostPer: number;
 
   shardCostMultiplierPer: number;
 
@@ -86,31 +78,27 @@ class Purchasable {
 
   active: boolean;
 
-  redResearchPer: JBDecimal;
+  redResearchPer: number;
 
   redResearchMultiplier: number;
 
   constructor() {
-    this.woodCostPer = new JBDecimal(0);
+    this.woodCostPer = 0;
     this.woodCostMultiplierPer = 1;
     this.peopleCostPer = 0;
-    this.stoneCostPer = new JBDecimal(0);
+    this.stoneCostPer = 0;
     this.stoneCostMultiplierPer = 1;
-    this.essenceCostPer = new JBDecimal(0);
+    this.essenceCostPer = 0;
     this.essenceCostMultiplierPer = 1;
-    this.powderCostPer = new JBDecimal(0);
+    this.powderCostPer = 0;
     this.powderCostMultiplierPer = 1;
-    this.pebbleCostPer = new JBDecimal(0);
+    this.pebbleCostPer = 0;
     this.pebbleCostMultiplierPer = 1;
-    this.particleCostPer = new JBDecimal(0);
-    this.particleCostMultiplierPer = 1;
-    this.rockCostPer = new JBDecimal(0);
+    this.rockCostPer = 0;
     this.rockCostMultiplierPer = 1;
-    this.timeparticleCostPer = new JBDecimal(0);
-    this.timeparticleCostMultiplierPer = 1;
-    this.redResearchPer = new JBDecimal(0);
+    this.redResearchPer = 0;
     this.redResearchMultiplier = 1;
-    this.shardCostPer = new JBDecimal(0);
+    this.shardCostPer = 0;
     this.shardCostMultiplierPer = 1;
     this.inflationFloor = 0;
     this.bought = 0;
@@ -129,7 +117,7 @@ class Purchasable {
     this.autoOn = !this.autoOn;
   }
 
-  checkResourceAvaliablity(minResourceAvailable = 1, amt = new JBDecimal(1)) {
+  checkResourceAvaliablity(minResourceAvailable = 1, amt = 1) {
     if (peopleAvailable().lessThan(this.buyPeopleNeeded())) {
       return false;
     }
@@ -194,8 +182,8 @@ class Purchasable {
     return ret;
   }
 
-  genericBuyCost(costPer: JBDecimal, costMultiplierPer: number, amt: JBDecimal = new JBDecimal(1)) {
-    if (costPer.equals(0)) {
+  genericBuyCost(costPer: number, costMultiplierPer: number, amt = 1) {
+    if (costPer === 0) {
       return new JBDecimal(0);
     }
     if (costMultiplierPer === 0) {
@@ -203,7 +191,7 @@ class Purchasable {
     }
     let count = 0;
     let qtyToUse = 0;
-    while (amt.greaterThan(count)) {
+    while (amt > count) {
       count += 1;
       let itemQty = this.bought + count;
       if (this.inflationFloor > 0) {
@@ -215,54 +203,46 @@ class Purchasable {
       qtyToUse += itemQty;
     }
     // count = this.bought;
-    return new JBDecimal(costPer.multiply(new JBDecimal(costMultiplierPer).pow(qtyToUse - 1)));
+    return new JBDecimal(new JBDecimal(costMultiplierPer).pow(qtyToUse - 1)).multiply(costPer);
   }
 
   buyPeopleNeeded() {
     return this.peopleCostPer;
   }
 
-  buyWoodCost(amt: JBDecimal = new JBDecimal(1)) {
+  buyWoodCost(amt = 1) {
     return this.genericBuyCost(this.woodCostPer, this.woodCostMultiplierPer, amt);
   }
 
-  buyStoneCost(amt: JBDecimal = new JBDecimal(1)) {
+  buyStoneCost(amt = 1) {
     return this.genericBuyCost(this.stoneCostPer, this.stoneCostMultiplierPer, amt);
   }
 
-  buyEssenceCost(amt: JBDecimal = new JBDecimal(1)) {
+  buyEssenceCost(amt = 1) {
     return this.genericBuyCost(this.essenceCostPer, this.essenceCostMultiplierPer, amt);
   }
 
-  buyPowderCost(amt: JBDecimal = new JBDecimal(1)) {
+  buyPowderCost(amt = 1) {
     return this.genericBuyCost(this.powderCostPer, this.powderCostMultiplierPer, amt);
   }
 
-  buyPebbleCost(amt: JBDecimal = new JBDecimal(1)) {
+  buyPebbleCost(amt = 1) {
     return this.genericBuyCost(this.pebbleCostPer, this.pebbleCostMultiplierPer, amt);
   }
 
-  buyParticleCost(amt: JBDecimal = new JBDecimal(1)) {
-    return this.genericBuyCost(this.particleCostPer, this.particleCostMultiplierPer, amt);
-  }
-
-  buyRockCost(amt: JBDecimal = new JBDecimal(1)) {
+  buyRockCost(amt = 1) {
     return this.genericBuyCost(this.rockCostPer, this.rockCostMultiplierPer, amt);
   }
 
-  buyTimeParticleCost(amt: JBDecimal = new JBDecimal(1)) {
-    return this.genericBuyCost(this.timeparticleCostPer, this.timeparticleCostMultiplierPer, amt);
-  }
-
-  buyShardsCost(amt: JBDecimal = new JBDecimal(1)) {
+  buyShardsCost(amt = 1) {
     return this.genericBuyCost(this.shardCostPer, this.shardCostMultiplierPer, amt);
   }
 
-  buyRedResearchCost(amt: JBDecimal = new JBDecimal(1)) {
+  buyRedResearchCost(amt = 1) {
     return this.genericBuyCost(this.redResearchPer, this.redResearchMultiplier, amt);
   }
 
-  affordBuy(amt: JBDecimal = new JBDecimal(1)) {
+  affordBuy(amt = 1) {
     if (this.limit > 0 && this.bought >= this.limit + this.addedlimit) {
       return false;
     }
@@ -320,12 +300,6 @@ class Purchasable {
     if (this.buyRockCost().greaterThan(0)) {
       ret += `Rock: ${this.buyRockCost().ToString()}<br />`;
     }
-    if (this.buyParticleCost().greaterThan(0)) {
-      ret += `Particle: ${this.buyParticleCost().ToString()}<br />`;
-    }
-    if (this.buyTimeParticleCost().greaterThan(0)) {
-      ret += `Time Particle: ${this.buyTimeParticleCost().ToString()}<br />`;
-    }
     if (this.buyShardsCost().greaterThan(0)) {
       ret += `Shards: ${this.buyShardsCost().ToString()}<br />`;
     }
@@ -336,7 +310,7 @@ class Purchasable {
   }
 
   updateDisplay() {
-    const amt = new JBDecimal(1);
+    const amt = 1;
     if (this.limit > 0 && this.bought >= this.limit + this.addedlimit) {
       this.buyButton.innerHTML = '';
       this.buyButton.classList.add('btn-primary');

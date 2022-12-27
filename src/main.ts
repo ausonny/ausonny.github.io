@@ -8,9 +8,12 @@ let dirtyEquipment = true;
 
 let dirtyUpgrades = true;
 
+// eslint-disable-next-line prefer-const
+let dirtyRange = true;
+
 let upgradeRefreshTickCount = 0;
 
-// let AutoBuyPebblesTickCount = 0;
+let AutoBuyPowderTickCount = 0;
 
 let UIElementActive = '';
 
@@ -19,6 +22,12 @@ let activeBuilding = null;
 let gameSpeed = 1;
 
 let initted = false;
+
+let achievementbonus = 0;
+
+let testtick = 0;
+
+let testframe = 0;
 
 let gameData: SaveGameData;
 const display = new Display();
@@ -53,9 +62,9 @@ function challengeAuto() {
   gameData.world.nextAutoChallenge = 0;
 }
 
-function powderFromPrestige(amt: JBDecimal = new JBDecimal(0)) {
-  if (amt.equals(new JBDecimal(0))) {
-    return gameData.resources.essence.amount.divide(100 - gameData.pebbleUpgrades[0].bought - gameData.powderUpgrades[4].bought).floor(); // - gameData.boulderUpgrades[12].bought */).floor();
+function powderFromPrestige(amt = new JBDecimal(0)) {
+  if (amt.equals(0)) {
+    return gameData.resources.essence.amount.divide(100 - gameData.pebbleUpgrades[0].bought - gameData.powderUpgrades[4].bought - gameData.rockUpgrades[1].bought).floor(); // - gameData.boulderUpgrades[12].bought */).floor();
   }
   return amt.divide(100 - gameData.pebbleUpgrades[0].bought /*  - gameData.upgrades[22].bought - gameData.boulderUpgrades[12].bought */).floor();
 }
@@ -63,7 +72,7 @@ function powderFromPrestige(amt: JBDecimal = new JBDecimal(0)) {
 function pebbleFromPrestige() {
   return gameData.resources.powder.amount
     .add(powderFromPrestige())
-    .divide(1000) /*  - gameData.boulderUpgrades[1].bought - gameData.rockUpgrades[20].bought */
+    .divide(1000 - gameData.rockUpgrades[2].bought) /*  - gameData.boulderUpgrades[1].bought - gameData.rockUpgrades[20].bought */
     .floor();
 }
 
@@ -83,18 +92,18 @@ function getCurrentRocksRate() {
   return rockFromPrestige().multiply(3600000).divide(gameData.stats.prestige3ticks);
 }
 
-// function AutoBuyPowder() {
-//   AutoBuyPebblesTickCount += gameData.world.currentTickLength;
-//   if (AutoBuyPebblesTickCount > 1000) {
-//     const essenceToUse = gameData.resources.essence.amount.divide(100);
-//     const powdergained = powderFromPrestige(essenceToUse);
-//     if (powdergained.greaterThanOrEqualTo(1)) {
-//       gameData.resources.essence.subtract(essenceToUse);
-//       gameData.resources.powder.add(powderFromPrestige(essenceToUse));
-//     }
-//     AutoBuyPebblesTickCount -= 1000;
-//   }
-// }
+function AutoBuyPowder() {
+  AutoBuyPowderTickCount += gameData.world.currentTickLength;
+  if (AutoBuyPowderTickCount > 1000) {
+    const essenceToUse = gameData.resources.essence.amount.divide(100);
+    const powdergained = powderFromPrestige(essenceToUse);
+    if (powdergained.greaterThanOrEqualTo(1)) {
+      gameData.resources.essence.subtract(essenceToUse);
+      gameData.resources.powder.add(powderFromPrestige(essenceToUse));
+    }
+    AutoBuyPowderTickCount -= 1000;
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function blueprintAuto() {
@@ -110,9 +119,20 @@ function blueprintLoad() {
 
   gameData.buildings.forEach((b, index) => {
     b.delete(false);
+    let go = true;
     if (typeof currentBluePrint.blueprints[index] !== 'undefined') {
-      b.type = currentBluePrint.blueprints[index].towerType;
-      b.setInfoByType();
+      if (currentBluePrint.blueprints[index].towerType === 'PoisonTower' && (gameData.challenges[3].active || gameData.challenges[3].completed === 0)) {
+        go = false;
+      }
+      if (currentBluePrint.blueprints[index].towerType === 'SlowTower' && (gameData.challenges[4].active || gameData.challenges[4].completed === 0)) {
+        go = false;
+      }
+      if (go) {
+        b.type = currentBluePrint.blueprints[index].towerType;
+        b.setInfoByType();
+        b.autoOn = currentBluePrint.blueprints[index].autoOn;
+        b.tactics.changeTactic(currentBluePrint.blueprints[index].tactic);
+      }
     }
   });
 }
@@ -123,6 +143,8 @@ function blueprintSave() {
   gameData.buildings.forEach((b) => {
     const newbp = new Blueprint();
     newbp.towerType = b.type;
+    newbp.autoOn = b.autoOn;
+    newbp.tactic = b.tactics.getIndex();
     newTBP.blueprints.push(newbp);
   });
   while (gameData.tierBlueprints.length < gameData.world.currentTier + 1) {
@@ -214,6 +236,7 @@ function createBuildingSites() {
 }
 
 function init(prestigelevel = 0) {
+  // dirtyRange = true;
   if (prestigelevel >= 1) {
     display.prestige1DisplayReset();
     gameData.buildings.forEach((t) => {
@@ -224,7 +247,7 @@ function init(prestigelevel = 0) {
       gameData.stats.last10Prestige1amounts.splice(10);
       gameData.stats.last10Prestige1times.unshift(gameData.stats.prestige1ticks);
       gameData.stats.last10Prestige1times.splice(10);
-      gameData.stats.last10Prestige1waves.unshift(gameData.world.currentWave - 1);
+      gameData.stats.last10Prestige1waves.unshift(gameData.world.currentWave);
       gameData.stats.last10Prestige1waves.splice(10);
       gameData.stats.last10Prestige1tier.unshift(gameData.world.currentTier);
       gameData.stats.last10Prestige1tier.splice(10);
@@ -236,6 +259,14 @@ function init(prestigelevel = 0) {
     gameData.stats.prestige1ticks = 0;
     gameData.stats.bestPrestige1Rate = new JBDecimal(0.00000000001);
     gameData.resources.powder.add(powderFromPrestige());
+    gameData.resources.essence.amount = new JBDecimal(0);
+    gameData.resources.arrow.amount = new JBDecimal(0);
+    gameData.resources.stone.amount = new JBDecimal(0);
+    gameData.resources.redResearch.amount = new JBDecimal(0);
+    gameData.world.currentWave = 0;
+    gameData.world.highestWaveCompleted = 0;
+    gameData.world.equipmentEarned = false;
+
     gameData.resources.wood.amount = new JBDecimal(100);
     if (gameData.pebbleUpgrades[7].bought > 0) {
       gameData.resources.wood.amount = new JBDecimal(10000);
@@ -244,13 +275,6 @@ function init(prestigelevel = 0) {
     if (gameData.pebbleUpgrades[12].bought > 0) {
       gameData.resources.people.amount = new JBDecimal(100);
     }
-    gameData.resources.essence.amount = new JBDecimal(0);
-    gameData.resources.arrow.amount = new JBDecimal(0);
-    gameData.resources.stone.amount = new JBDecimal(0);
-    gameData.resources.redResearch.amount = new JBDecimal(0);
-    gameData.world.currentWave = 0;
-    gameData.world.highestWaveCompleted = 0;
-    gameData.world.equipmentEarned = false;
 
     gameData.researches.forEach((r) => {
       r.bought = 0;
@@ -287,6 +311,14 @@ function init(prestigelevel = 0) {
     gameData.powderUpgrades.forEach((u) => {
       u.bought = 0;
     });
+    gameData.resources.wood.amount = new JBDecimal(100);
+    if (gameData.pebbleUpgrades[7].bought > 0) {
+      gameData.resources.wood.amount = new JBDecimal(10000);
+    }
+    gameData.resources.people.amount = new JBDecimal(10);
+    if (gameData.pebbleUpgrades[12].bought > 0) {
+      gameData.resources.people.amount = new JBDecimal(100);
+    }
   }
 
   if (prestigelevel >= 3) {
@@ -307,6 +339,14 @@ function init(prestigelevel = 0) {
     gameData.pebbleUpgrades.forEach((u) => {
       u.bought = 0;
     });
+    gameData.resources.wood.amount = new JBDecimal(100);
+    if (gameData.pebbleUpgrades[7].bought > 0) {
+      gameData.resources.wood.amount = new JBDecimal(10000);
+    }
+    gameData.resources.people.amount = new JBDecimal(10);
+    if (gameData.pebbleUpgrades[12].bought > 0) {
+      gameData.resources.people.amount = new JBDecimal(100);
+    }
   }
 
   if (prestigelevel === 0) {
@@ -318,7 +358,14 @@ function init(prestigelevel = 0) {
     loadSaveGame();
   }
 
-  display.drone = new Enemy(true);
+  display.drone1 = new Enemy(true);
+  display.drone02 = new Enemy(true);
+  display.drone02.baseMaxHitPoints = display.drone1.baseMaxHitPoints.divide(5);
+  display.drone5 = new Enemy(true);
+  display.drone5.baseMaxHitPoints = display.drone1.baseMaxHitPoints.multiply(5);
+  display.drone10 = new Enemy(true);
+  display.drone10.baseMaxHitPoints = display.drone1.baseMaxHitPoints.multiply(10);
+
   if (gameData.stats.prestige1 > 0 || gameData.stats.prestige2 > 0 || gameData.stats.prestige3 > 0) {
     display.addToDisplay('Here we go again', DisplayCategory.Story);
   } else {
@@ -338,9 +385,9 @@ function init(prestigelevel = 0) {
 }
 
 function processStuff(ticks: number) {
-  // if (gameData.boulderUpgrades[5].bought > 0) {
-  //   AutoBuyPebbles();
-  // }
+  if (gameData.rockUpgrades[5].bought > 0) {
+    AutoBuyPowder();
+  }
 
   while (gameData.tierfeats.length < gameData.world.tierUnlocked) {
     gameData.tierfeats.push(createFeatsForTier(gameData.tierfeats.length + 1));
@@ -353,8 +400,9 @@ function processStuff(ticks: number) {
   gameData.challenges[0].available = true;
   gameData.challenges[1].available = true;
   gameData.challenges[2].available = true;
+  gameData.challenges[7].available = true;
 
-  const achievementbonus = getAchievementBonus();
+  achievementbonus = getAchievementBonus();
 
   if (achievementbonus > 5) {
     gameData.challenges[3].available = true;
@@ -421,13 +469,15 @@ function processStuff(ticks: number) {
     u.addedlimit = 0;
   });
 
-  gameData.powderUpgrades[0].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
-  gameData.powderUpgrades[1].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
-  gameData.powderUpgrades[2].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
-  gameData.powderUpgrades[3].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
-  gameData.powderUpgrades[12].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
-  gameData.powderUpgrades[13].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
-  gameData.powderUpgrades[16].limit = 15 + gameData.pebbleUpgrades[6].bought * 10;
+  const addedlimit = (gameData.pebbleUpgrades[6].bought + gameData.rockUpgrades[12].bought) * 10;
+
+  gameData.powderUpgrades[0].limit = 15 + addedlimit;
+  gameData.powderUpgrades[1].limit = 15 + addedlimit;
+  gameData.powderUpgrades[2].limit = 15 + addedlimit;
+  gameData.powderUpgrades[6].limit = 15 + addedlimit;
+  gameData.powderUpgrades[12].limit = 15 + addedlimit;
+  gameData.powderUpgrades[13].limit = 15 + addedlimit;
+  gameData.powderUpgrades[16].limit = 15 + addedlimit;
 
   gameData.researches[1].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted / 5), 1);
   // gameData.researches[2].limit = Math.max(Math.floor(gameData.world.highestWaveCompleted), 1);
@@ -442,9 +492,16 @@ function processStuff(ticks: number) {
     u.addedlimit = 0;
   });
 
-  if (getAchievementBonus() > 20) {
+  if (achievementbonus > 20) {
     gameData.buildings.forEach((b) => {
       b.autoBuy();
+    });
+  }
+
+  if (achievementbonus > 25) {
+    gameData.researches.forEach((r) => {
+      r.autoOn = true;
+      r.autoBuy();
     });
   }
 
@@ -503,24 +560,29 @@ function processStuff(ticks: number) {
   if (gameData.pebbleUpgrades[12].bought > 0) {
     totalHousing = new JBDecimal(100);
   }
-  netStone = new JBDecimal(0);
-  netWood = new JBDecimal(0);
-  netArrows = new JBDecimal(0);
-  netRedResearch = new JBDecimal(0);
+  netStone = new JBDecimal(gameData.resources.stone.amount);
+  netWood = new JBDecimal(gameData.resources.wood.amount);
+  netArrows = new JBDecimal(gameData.resources.arrow.amount);
+  netRedResearch = new JBDecimal(gameData.resources.redResearch.amount);
   gameData.buildings.forEach((b) => {
     b.act();
     totalHousing = totalHousing.add(b.housingAvailable());
-    netStone = netStone.add(b.netStonePerSec);
-    netWood = netWood.add(b.netWoodPerSec);
-    netArrows = netArrows.add(b.netArrowPerSec);
-    netRedResearch = netRedResearch.add(b.netRedResearchPerSec);
+    // netStone = netStone.add(b.netStonePerSec);
+    // netWood = netWood.add(b.netWoodPerSec);
+    // netArrows = netArrows.add(b.netArrowPerSec);
+    // netRedResearch = netRedResearch.add(b.netRedResearchPerSec);
   });
+
+  netStone = gameData.resources.stone.amount.subtract(netStone);
+  netWood = gameData.resources.wood.amount.subtract(netWood);
+  netArrows = gameData.resources.arrow.amount.subtract(netArrows);
+  netRedResearch = gameData.resources.redResearch.amount.subtract(netRedResearch);
 
   const housingAvailable = totalHousing.subtract(gameData.resources.people.amount);
   if (housingAvailable.greaterThan(0)) {
     const peoplegrowth = housingAvailable
       .add(peopleAvailable().add(gameData.resources.people.amount))
-      .multiply(1.1 ** gameData.powderUpgrades[10].bought)
+      .multiply(1.05 ** gameData.powderUpgrades[10].bought)
       .multiply(gameData.world.currentTickLength / 2000000);
     gameData.resources.people.add(peoplegrowth);
   }
@@ -567,6 +629,7 @@ function processStuff(ticks: number) {
         gameData.equipment.push(newEquipment);
         gameData.world.equipmentEarned = true;
         display.addToDisplay('New Gem found', DisplayCategory.Story);
+        // init(1);
       }
     }
     resetSpawns(false);
@@ -577,6 +640,154 @@ function processStuff(ticks: number) {
       ch.checkForCompletion();
     }
   });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function building1Click() {
+  if (activeBuilding == null) {
+    return;
+  }
+
+  if (activeBuilding.type !== '') {
+    activeBuilding.buy();
+    return;
+  }
+
+  activeBuilding.bought = 0;
+
+  if (UIElementActive !== '') {
+    UIElementActive = '';
+    return;
+  }
+
+  UIElementActive = 'H';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function building2Click() {
+  if (activeBuilding == null) {
+    return;
+  }
+
+  if (activeBuilding.type !== '') {
+    activeBuilding.autoSwitch();
+    return;
+  }
+
+  activeBuilding.bought = 0;
+
+  if (UIElementActive !== '') {
+    if (UIElementActive === 'H') {
+      activeBuilding.buyShack();
+    }
+    if (UIElementActive === 'R') {
+      activeBuilding.buyLumberJack();
+    }
+    if (UIElementActive === 'D') {
+      activeBuilding.buyArrowTower();
+    }
+    UIElementActive = '';
+    return;
+  }
+
+  UIElementActive = 'R';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function building3Click() {
+  if (activeBuilding == null) {
+    return;
+  }
+
+  if (activeBuilding.type !== '') {
+    activeBuilding.tactics.changeTactic(0);
+    return;
+  }
+
+  activeBuilding.bought = 0;
+
+  if (UIElementActive !== '') {
+    if (UIElementActive === 'H') {
+      activeBuilding.buyHouse();
+    }
+    if (UIElementActive === 'R') {
+      activeBuilding.buyStoneMason();
+    }
+    if (UIElementActive === 'D') {
+      activeBuilding.buyCatapult();
+    }
+    UIElementActive = '';
+    return;
+  }
+
+  UIElementActive = 'D';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function building4Click() {
+  if (activeBuilding == null) {
+    return;
+  }
+
+  if (activeBuilding.type !== '') {
+    activeBuilding.tactics.changeTactic(1);
+    return;
+  }
+
+  activeBuilding.bought = 0;
+
+  if (UIElementActive !== '') {
+    if (UIElementActive === 'H') {
+      activeBuilding.buyMansion();
+    }
+    if (UIElementActive === 'R') {
+      activeBuilding.buyFletcher();
+    }
+    if (UIElementActive === 'D') {
+      activeBuilding.buyPoisonTower();
+    }
+    UIElementActive = '';
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function building5Click() {
+  if (activeBuilding == null) {
+    return;
+  }
+
+  if (activeBuilding.type !== '') {
+    activeBuilding.tactics.changeTactic(2);
+    return;
+  }
+
+  activeBuilding.bought = 0;
+
+  if (UIElementActive !== '') {
+    if (UIElementActive === 'R') {
+      activeBuilding.buyRedResearchLab();
+    }
+    if (UIElementActive === 'D') {
+      activeBuilding.buySlowTower();
+    }
+    UIElementActive = '';
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function building6Click() {
+  if (activeBuilding == null) {
+    return;
+  }
+  activeBuilding.tactics.changeTactic(3);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function building7Click() {
+  if (activeBuilding == null) {
+    return;
+  }
+  activeBuilding.delete();
 }
 
 function getObjectFitSize(contains: boolean /* true = contain, false = cover */, containerWidth: number, containerHeight: number, width: number, height: number) {
@@ -604,7 +815,6 @@ function getObjectFitSize(contains: boolean /* true = contain, false = cover */,
 
 function updateGUI() {
   ChooseTutorial();
-  const achBonus = getAchievementBonus();
 
   if (gameData.challenges[3].active || gameData.challenges[3].completed < 1) {
     document.getElementById('btnBuyResearch6').classList.add('d-none');
@@ -647,7 +857,7 @@ function updateGUI() {
   }
 
   if (document.getElementById('researchModal').classList.contains('show')) {
-    document.getElementById('researchRedResearch').innerHTML = `${gameData.resources.redResearch.amount.toString()} (${netRedResearch.toString()})`;
+    document.getElementById('researchRedResearch').innerHTML = `${gameData.resources.redResearch.amount.toString()} (${netRedResearch.multiply(1000 / gameData.world.currentTickLength).toString()})`;
     gameData.researches.forEach((r) => {
       r.updateDisplay();
     });
@@ -664,7 +874,7 @@ function updateGUI() {
       document.getElementById('btnChallengeAuto').innerHTML = 'Turn Auto Challenge On';
     }
 
-    if (achBonus > 28) {
+    if (gameData.world.tierUnlocked > 1) {
       document.getElementById('btnChallengeAuto').classList.remove('d-none');
     } else {
       document.getElementById('btnChallengeAuto').classList.add('d-none');
@@ -701,7 +911,7 @@ function updateGUI() {
   }
 
   if (document.getElementById('achievementModal').classList.contains('show')) {
-    document.getElementById('totalachievementbonus').innerHTML = new JBDecimal(getAchievementBonus()).ToString();
+    document.getElementById('totalachievementbonus').innerHTML = new JBDecimal(achievementbonus).ToString();
     const achBonusText = `${new JBDecimal(getAchievementsOnlyBonus()).ToString()}x`;
     gameData.tierfeats.forEach((tf, index) => {
       if (getTierBonus(index) > 1) {
@@ -891,39 +1101,427 @@ function updateGUI() {
 
   document.getElementById('textToDisplay').innerHTML = `${txt}<br />${display.getDisplayText()}`;
 
-  const { canvas } = display;
-  const { ctx } = display;
+  document.getElementById('savebutton').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('researchbutton').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('upgradesbutton').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('challengesbtn').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('equipmentbtn').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('achbutton').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('statsbutton').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('optionsbutton').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('glossarybutton').style.fontSize = `${display.getFontSizeString(20)}px`;
+  document.getElementById('btnqQuitChallenges').style.fontSize = `${display.getFontSizeString(15)}px`;
+  document.getElementById('btnqQuitChallenges').style.height = `${display.getFontSizeString(30)}px`;
 
-  if (!canvas.getContext) {
+  document.getElementById('textToDisplay').style.height = `${(CANVAS_SIZE - Number(document.getElementById('btnqQuitChallenges').offsetHeight)).toString()}px`;
+  document.getElementById('textToDisplay').style.fontSize = `${display.getFontSizeString(20)}px`;
+
+  document.getElementById('resourcerow').style.fontSize = `${display.getFontSizeString(16)}px`;
+
+  document.getElementById('peopletext').innerHTML = `People: ${gameData.resources.people.amount.toString()} / ${totalHousing.toString()}`;
+  document.getElementById('workertext').innerHTML = `Available Workers: ${peopleAvailable().toString()}`;
+  document.getElementById('woodtext').innerHTML = `Wood: ${gameData.resources.wood.amount.toString()} (${netWood.multiply(1000 / gameData.world.currentTickLength).toString()})`;
+  document.getElementById('stonetext').innerHTML = `Stone: ${gameData.resources.stone.amount.toString()} (${netStone.multiply(1000 / gameData.world.currentTickLength).toString()})`;
+  document.getElementById('arrowstext').innerHTML = `Arrows: ${gameData.resources.arrow.amount.toString()} (${netArrows.multiply(1000 / gameData.world.currentTickLength).toString()})`;
+  document.getElementById('redresearchtext').innerHTML = `Red Research: ${gameData.resources.redResearch.amount.toString()} (${netRedResearch.multiply(1000 / gameData.world.currentTickLength).toString()})`;
+  document.getElementById('essencetext').innerHTML = `Essence: ${gameData.resources.essence.amount.toString()}`;
+  document.getElementById('powedertext').innerHTML = `Powder: ${gameData.resources.powder.amount.toString()}`;
+  document.getElementById('pebbletext').innerHTML = `Pebbles: ${gameData.resources.pebble.amount.toString()}`;
+  document.getElementById('rocktext').innerHTML = `Rocks: ${gameData.resources.rock.amount.toString()}`;
+  document.getElementById('shardtext').innerHTML = `Shards: ${gameData.resources.shards.amount.toString()}`;
+
+  document.getElementById('btnDisplayRange').classList.add('red');
+  document.getElementById('btnDisplayRange').classList.remove('green');
+  if (dirtyRange) {
+    document.getElementById('btnDisplayRange').classList.remove('red');
+    document.getElementById('btnDisplayRange').classList.add('green');
+  }
+  document.getElementById('btnDisplayRange').style.height = `${display.getFontSizeString(40)}px`;
+  document.getElementById('btnDisplayRange').style.width = `${display.getFontSizeString(40)}px`;
+  document.getElementById('btnDisplayRange').style.fontSize = `${display.getFontSizeString(12)}px`;
+
+  document.getElementById('btnSpeed1').classList.add('red');
+  document.getElementById('btnSpeed2').classList.add('red');
+  document.getElementById('btnSpeed5').classList.add('red');
+  document.getElementById('btnSpeed1').classList.remove('green');
+  document.getElementById('btnSpeed2').classList.remove('green');
+  document.getElementById('btnSpeed5').classList.remove('green');
+
+  if (gameSpeed === 1) {
+    document.getElementById('btnSpeed1').classList.add('green');
+    document.getElementById('btnSpeed1').classList.remove('red');
+  }
+
+  if (gameSpeed === 2) {
+    document.getElementById('btnSpeed2').classList.add('green');
+    document.getElementById('btnSpeed2').classList.remove('red');
+  }
+
+  if (gameSpeed === 5) {
+    document.getElementById('btnSpeed5').classList.add('green');
+    document.getElementById('btnSpeed5').classList.remove('red');
+  }
+
+  if (gameData.world.paused === false) {
+    document.getElementById('btnSpeed0').classList.add('green');
+    document.getElementById('btnSpeed0').classList.remove('red');
+  } else {
+    document.getElementById('btnSpeed0').classList.remove('green');
+    document.getElementById('btnSpeed0').classList.add('red');
+  }
+
+  document.getElementById('btnPrestige1').classList.add('hidden');
+  if (powderFromPrestige().greaterThanOrEqualTo(1)) {
+    document.getElementById('btnPrestige1').classList.remove('hidden');
+    document.getElementById('btnPrestige1').innerHTML = `Prestige for ${powderFromPrestige().ToString()} powder<br />Current: ${getCurrentPowderRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige1Rate.ToString()}/hr`;
+    document.getElementById('btnPrestige1').style.height = `${display.getFontSizeString(75)}px`;
+    document.getElementById('btnPrestige1').style.width = `${display.getFontSizeString(180)}px`;
+    document.getElementById('btnPrestige1').style.fontSize = `${display.getFontSizeString(12)}px`;
+  }
+
+  document.getElementById('btnPrestige2').classList.add('hidden');
+  if (powderFromPrestige().greaterThanOrEqualTo(1)) {
+    document.getElementById('btnPrestige2').classList.remove('hidden');
+    document.getElementById('btnPrestige2').innerHTML = `Ascend for ${pebbleFromPrestige().ToString()} pebbles<br />Current: ${getCurrentPebblesRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige2Rate.ToString()}/hr`;
+    document.getElementById('btnPrestige2').style.height = `${display.getFontSizeString(75)}px`;
+    document.getElementById('btnPrestige2').style.width = `${display.getFontSizeString(180)}px`;
+    document.getElementById('btnPrestige2').style.fontSize = `${display.getFontSizeString(12)}px`;
+  }
+
+  document.getElementById('btnPrestige3').classList.add('hidden');
+  if (powderFromPrestige().greaterThanOrEqualTo(1)) {
+    document.getElementById('btnPrestige3').classList.remove('hidden');
+    document.getElementById('btnPrestige3').innerHTML = `Transform for ${rockFromPrestige().ToString()} rocks<br />Current: ${getCurrentRocksRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige3Rate.ToString()}/hr`;
+    document.getElementById('btnPrestige3').style.height = `${display.getFontSizeString(75)}px`;
+    document.getElementById('btnPrestige3').style.width = `${display.getFontSizeString(180)}px`;
+    document.getElementById('btnPrestige3').style.fontSize = `${display.getFontSizeString(12)}px`;
+  }
+
+  document.getElementById('btnSaveBluePrint').classList.add('hidden');
+  document.getElementById('btnLoadBluePrint').classList.add('hidden');
+  document.getElementById('btnSwitchBluePrint').classList.add('hidden');
+  if (gameData.world.tierUnlocked > 1) {
+    document.getElementById('btnSaveBluePrint').classList.remove('hidden');
+    document.getElementById('btnLoadBluePrint').classList.remove('hidden');
+    document.getElementById('btnSwitchBluePrint').classList.remove('hidden');
+    document.getElementById('btnSwitchBluePrint').classList.remove('green');
+    document.getElementById('btnSwitchBluePrint').classList.add('red');
+    document.getElementById('btnSwitchBluePrint').innerHTML = `Turn Auto BluePrint On`;
+    document.getElementById('btnSaveBluePrint').style.height = `${display.getFontSizeString(25)}px`;
+    document.getElementById('btnSaveBluePrint').style.width = `${display.getFontSizeString(225)}px`;
+    document.getElementById('btnSaveBluePrint').style.fontSize = `${display.getFontSizeString(13)}px`;
+    document.getElementById('btnLoadBluePrint').style.height = `${display.getFontSizeString(25)}px`;
+    document.getElementById('btnLoadBluePrint').style.width = `${display.getFontSizeString(225)}px`;
+    document.getElementById('btnLoadBluePrint').style.fontSize = `${display.getFontSizeString(13)}px`;
+    document.getElementById('btnSwitchBluePrint').style.height = `${display.getFontSizeString(25)}px`;
+    document.getElementById('btnSwitchBluePrint').style.width = `${display.getFontSizeString(225)}px`;
+    document.getElementById('btnSwitchBluePrint').style.fontSize = `${display.getFontSizeString(13)}px`;
+    if (gameData.tierblueprintsauto) {
+      document.getElementById('btnSwitchBluePrint').classList.add('green');
+      document.getElementById('btnSwitchBluePrint').classList.remove('red');
+      document.getElementById('btnSwitchBluePrint').innerHTML = `Turn Auto BluePrint Off`;
+    }
+  }
+
+  document.getElementById('btnBuilding1').className = 'buildingbutton';
+  document.getElementById('btnBuilding2').className = 'buildingbutton';
+  document.getElementById('btnBuilding3').className = 'buildingbutton';
+  document.getElementById('btnBuilding4').className = 'buildingbutton';
+  document.getElementById('btnBuilding5').className = 'buildingbutton';
+  document.getElementById('btnBuilding6').className = 'buildingbutton';
+  document.getElementById('btnBuilding7').className = 'buildingbutton';
+  document.getElementById('btnBuilding1').classList.add('d-none');
+  document.getElementById('btnBuilding2').classList.add('d-none');
+  document.getElementById('btnBuilding3').classList.add('d-none');
+  document.getElementById('btnBuilding4').classList.add('d-none');
+  document.getElementById('btnBuilding5').classList.add('d-none');
+  document.getElementById('btnBuilding6').classList.add('d-none');
+  document.getElementById('btnBuilding7').classList.add('d-none');
+  if (activeBuilding !== null) {
+    document.getElementById('btnBuilding1').style.height = `${display.getFontSizeString(100)}px`;
+    document.getElementById('btnBuilding1').style.width = `${display.getFontSizeString(120)}px`;
+    document.getElementById('btnBuilding1').style.fontSize = `${display.getFontSizeString(12)}px`;
+    document.getElementById('btnBuilding2').style.height = `${display.getFontSizeString(100)}px`;
+    document.getElementById('btnBuilding2').style.width = `${display.getFontSizeString(120)}px`;
+    document.getElementById('btnBuilding2').style.fontSize = `${display.getFontSizeString(12)}px`;
+    document.getElementById('btnBuilding3').style.height = `${display.getFontSizeString(100)}px`;
+    document.getElementById('btnBuilding3').style.width = `${display.getFontSizeString(120)}px`;
+    document.getElementById('btnBuilding3').style.fontSize = `${display.getFontSizeString(12)}px`;
+    document.getElementById('btnBuilding4').style.height = `${display.getFontSizeString(100)}px`;
+    document.getElementById('btnBuilding4').style.width = `${display.getFontSizeString(120)}px`;
+    document.getElementById('btnBuilding4').style.fontSize = `${display.getFontSizeString(12)}px`;
+    document.getElementById('btnBuilding5').style.height = `${display.getFontSizeString(100)}px`;
+    document.getElementById('btnBuilding5').style.width = `${display.getFontSizeString(120)}px`;
+    document.getElementById('btnBuilding5').style.fontSize = `${display.getFontSizeString(12)}px`;
+    document.getElementById('btnBuilding6').style.height = `${display.getFontSizeString(100)}px`;
+    document.getElementById('btnBuilding6').style.width = `${display.getFontSizeString(120)}px`;
+    document.getElementById('btnBuilding6').style.fontSize = `${display.getFontSizeString(12)}px`;
+    document.getElementById('btnBuilding7').style.height = `${display.getFontSizeString(100)}px`;
+    document.getElementById('btnBuilding7').style.width = `${display.getFontSizeString(120)}px`;
+    document.getElementById('btnBuilding7').style.fontSize = `${display.getFontSizeString(12)}px`;
+
+    if (activeBuilding.type === '') {
+      if (UIElementActive === '') {
+        document.getElementById('btnBuilding1').classList.remove('d-none');
+        document.getElementById('btnBuilding2').classList.remove('d-none');
+        document.getElementById('btnBuilding3').classList.remove('d-none');
+        document.getElementById('btnBuilding1').classList.add('white');
+        document.getElementById('btnBuilding2').classList.add('burleywood');
+        document.getElementById('btnBuilding3').classList.add('red');
+        document.getElementById('btnBuilding1').innerHTML = 'Housing';
+        document.getElementById('btnBuilding2').innerHTML = 'Resource';
+        document.getElementById('btnBuilding3').innerHTML = 'Defenses';
+      }
+      if (UIElementActive === 'H') {
+        document.getElementById('btnBuilding1').classList.remove('d-none');
+        document.getElementById('btnBuilding2').classList.remove('d-none');
+        document.getElementById('btnBuilding3').classList.remove('d-none');
+        document.getElementById('btnBuilding4').classList.remove('d-none');
+
+        document.getElementById('btnBuilding1').classList.add('blue');
+        document.getElementById('btnBuilding1').innerHTML = 'Go Back';
+
+        const newShack = new Building(new Vector(0, 0), 0);
+        newShack.type = 'Shack';
+        newShack.setInfoByType();
+        if (newShack.affordBuy()) {
+          document.getElementById('btnBuilding2').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding2').classList.add('red');
+        }
+        document.getElementById('btnBuilding2').innerHTML = `Shack<br />${newShack.getResourcesNeededString()}`;
+
+        const newHouse = new Building(new Vector(0, 0), 0);
+        newHouse.type = 'House';
+        newHouse.setInfoByType();
+        if (newHouse.affordBuy()) {
+          document.getElementById('btnBuilding3').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding3').classList.add('red');
+        }
+        document.getElementById('btnBuilding3').innerHTML = `House<br />${newHouse.getResourcesNeededString()}`;
+
+        const newMansion = new Building(new Vector(0, 0), 0);
+        newMansion.type = 'Mansion';
+        newMansion.setInfoByType();
+        if (newMansion.affordBuy()) {
+          document.getElementById('btnBuilding4').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding4').classList.add('red');
+        }
+        document.getElementById('btnBuilding4').innerHTML = `Mansion<br />${newMansion.getResourcesNeededString()}`;
+      }
+      if (UIElementActive === 'R') {
+        document.getElementById('btnBuilding1').classList.remove('d-none');
+        document.getElementById('btnBuilding2').classList.remove('d-none');
+        document.getElementById('btnBuilding3').classList.remove('d-none');
+        document.getElementById('btnBuilding4').classList.remove('d-none');
+        document.getElementById('btnBuilding5').classList.remove('d-none');
+        document.getElementById('btnBuilding1').classList.add('blue');
+        document.getElementById('btnBuilding1').innerHTML = 'Go Back';
+
+        const newLumberJack = new Building(new Vector(0, 0), 0);
+        newLumberJack.type = 'LumberJack';
+        newLumberJack.setInfoByType();
+        if (newLumberJack.affordBuy()) {
+          document.getElementById('btnBuilding2').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding2').classList.add('red');
+        }
+        document.getElementById('btnBuilding2').innerHTML = `Lumber Jack<br />${newLumberJack.getResourcesNeededString()}`;
+
+        const newStonemason = new Building(new Vector(0, 0), 0);
+        newStonemason.type = 'StoneMason';
+        newStonemason.setInfoByType();
+        if (newStonemason.affordBuy()) {
+          document.getElementById('btnBuilding3').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding3').classList.add('red');
+        }
+        document.getElementById('btnBuilding3').innerHTML = `Stone Mason<br />${newStonemason.getResourcesNeededString()}`;
+
+        const newfletcher = new Building(new Vector(0, 0), 0);
+        newfletcher.type = 'Fletcher';
+        newfletcher.setInfoByType();
+        if (newfletcher.affordBuy()) {
+          document.getElementById('btnBuilding4').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding4').classList.add('red');
+        }
+        document.getElementById('btnBuilding4').innerHTML = `Fletcher<br />${newfletcher.getResourcesNeededString()}`;
+
+        const newredResearch = new Building(new Vector(0, 0), 0);
+        newredResearch.type = 'RedResearchLab';
+        newredResearch.setInfoByType();
+        if (newredResearch.affordBuy()) {
+          document.getElementById('btnBuilding5').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding5').classList.add('red');
+        }
+        document.getElementById('btnBuilding5').innerHTML = `Red Research Lab<br />${newredResearch.getResourcesNeededString()}`;
+      }
+
+      if (UIElementActive === 'D') {
+        document.getElementById('btnBuilding1').classList.remove('d-none');
+        document.getElementById('btnBuilding2').classList.remove('d-none');
+        document.getElementById('btnBuilding3').classList.remove('d-none');
+
+        document.getElementById('btnBuilding1').classList.add('blue');
+        document.getElementById('btnBuilding1').innerHTML = 'Go Back';
+
+        const newArrowTower = new Building(new Vector(0, 0), 0);
+        newArrowTower.type = 'ArrowTower';
+        newArrowTower.setInfoByType();
+        if (newArrowTower.affordBuy()) {
+          document.getElementById('btnBuilding2').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding2').classList.add('red');
+        }
+        document.getElementById('btnBuilding2').innerHTML = `Arrow Tower<br />${newArrowTower.getResourcesNeededString()}`;
+
+        const newCatapult = new Building(new Vector(0, 0), 0);
+        newCatapult.type = 'Catapult';
+        newCatapult.setInfoByType();
+        if (newCatapult.affordBuy()) {
+          document.getElementById('btnBuilding3').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding3').classList.add('red');
+        }
+        document.getElementById('btnBuilding3').innerHTML = `Catapult<br />${newCatapult.getResourcesNeededString()}`;
+
+        if (gameData.challenges[3].active || gameData.challenges[3].completed === 0) {
+          //
+        } else {
+          document.getElementById('btnBuilding4').classList.remove('d-none');
+          const newPoison = new Building(new Vector(0, 0), 0);
+          newPoison.type = 'PoisonTower';
+          newPoison.setInfoByType();
+          if (newPoison.affordBuy()) {
+            document.getElementById('btnBuilding4').classList.add('green');
+          } else {
+            document.getElementById('btnBuilding4').classList.add('red');
+          }
+          document.getElementById('btnBuilding4').innerHTML = `Poison Tower<br />${newPoison.getResourcesNeededString()}`;
+        }
+
+        if (gameData.challenges[4].active || gameData.challenges[4].completed === 0) {
+          //
+        } else {
+          document.getElementById('btnBuilding5').classList.remove('d-none');
+          const newSlow = new Building(new Vector(0, 0), 0);
+          newSlow.type = 'SlowTower';
+          newSlow.setInfoByType();
+          if (newSlow.affordBuy()) {
+            document.getElementById('btnBuilding5').classList.add('green');
+          } else {
+            document.getElementById('btnBuilding5').classList.add('red');
+          }
+          document.getElementById('btnBuilding5').innerHTML = `Slow Tower<br />${newSlow.getResourcesNeededString()}`;
+        }
+      }
+    } else {
+      document.getElementById('btnBuilding1').classList.remove('d-none');
+      if (activeBuilding.affordBuy()) {
+        document.getElementById('btnBuilding1').classList.add('green');
+      } else {
+        document.getElementById('btnBuilding1').classList.add('red');
+      }
+      document.getElementById('btnBuilding1').innerHTML = `Upgrade ${activeBuilding.type}<br />${activeBuilding.getResourcesNeededString()}`;
+
+      if (achievementbonus > 20) {
+        document.getElementById('btnBuilding2').classList.remove('d-none');
+        if (activeBuilding.autoOn) {
+          document.getElementById('btnBuilding2').classList.add('green');
+          document.getElementById('btnBuilding2').innerHTML = 'Switch Auto Buy Off';
+        } else {
+          document.getElementById('btnBuilding2').classList.add('red');
+          document.getElementById('btnBuilding2').innerHTML = 'Switch Auto Buy On';
+        }
+      }
+
+      if (activeBuilding.arrowAttackValue().greaterThan(0) || activeBuilding.catapultAttackValue().greaterThan(0)) {
+        document.getElementById('btnBuilding3').classList.remove('d-none');
+        if (activeBuilding.tactics.fastest) {
+          document.getElementById('btnBuilding3').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding3').classList.add('red');
+        }
+        document.getElementById('btnBuilding3').innerHTML = 'Target Fastest';
+
+        document.getElementById('btnBuilding4').classList.remove('d-none');
+        if (activeBuilding.tactics.highestHealth) {
+          document.getElementById('btnBuilding4').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding4').classList.add('red');
+        }
+        document.getElementById('btnBuilding4').innerHTML = 'Target Strongest';
+
+        document.getElementById('btnBuilding5').classList.remove('d-none');
+        if (activeBuilding.tactics.lowestHealth) {
+          document.getElementById('btnBuilding5').classList.add('green');
+        } else {
+          document.getElementById('btnBuilding5').classList.add('red');
+        }
+        document.getElementById('btnBuilding5').innerHTML = 'Target Weakest';
+
+        if (gameData.pebbleUpgrades[11].bought > 0) {
+          document.getElementById('btnBuilding6').classList.remove('d-none');
+          if (activeBuilding.tactics.healer) {
+            document.getElementById('btnBuilding6').classList.add('green');
+          } else {
+            document.getElementById('btnBuilding6').classList.add('red');
+          }
+          document.getElementById('btnBuilding6').innerHTML = 'Target Healers';
+        }
+      }
+
+      document.getElementById('btnBuilding7').classList.remove('d-none');
+      document.getElementById('btnBuilding7').classList.add('red');
+      document.getElementById('btnBuilding7').innerHTML = 'Destroy';
+    }
+  }
+
+  const { canvasmain } = display;
+  const { ctxmain } = display;
+  const { canvasbackground } = display;
+  const { ctxbackground } = display;
+
+  if (!canvasmain.getContext) {
     return;
   }
 
-  CANVAS_SIZE = Math.min(canvas.clientWidth, canvas.clientHeight);
-  document.getElementById('textToDisplay').style.height = `${CANVAS_SIZE.toString()}px`;
-  const originalHeight = canvas.height;
-  const originalWidth = canvas.width;
+  CANVAS_SIZE = Math.min(canvasmain.clientWidth, canvasmain.clientHeight);
+  const originalHeight = canvasmain.height;
+  const originalWidth = canvasmain.width;
 
-  const dimensions = getObjectFitSize(true, canvas.clientWidth, canvas.clientHeight, canvas.width, canvas.height);
+  const dimensions = getObjectFitSize(true, canvasmain.clientWidth, canvasmain.clientHeight, canvasmain.width, canvasmain.height);
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = dimensions.width * dpr;
-  canvas.height = dimensions.height * dpr;
+  canvasmain.width = dimensions.width * dpr;
+  canvasmain.height = dimensions.height * dpr;
+  canvasbackground.width = canvasmain.width;
+  canvasbackground.height = canvasmain.height;
 
-  const ratio = Math.min(canvas.clientWidth / originalWidth, canvas.clientHeight / originalHeight);
-  ctx.scale((ratio * dpr * canvas.width) / canvas.scrollWidth, (ratio * dpr * canvas.height) / canvas.scrollHeight); // adjust this!
+  const ratio = Math.min(canvasmain.clientWidth / originalWidth, canvasmain.clientHeight / originalHeight);
+  ctxmain.scale((ratio * dpr * canvasmain.width) / canvasmain.scrollWidth, (ratio * dpr * canvasmain.height) / canvasmain.scrollHeight); // adjust this!
+  ctxbackground.scale((ratio * dpr * canvasmain.width) / canvasmain.scrollWidth, (ratio * dpr * canvasmain.height) / canvasmain.scrollHeight); // adjust this!
 
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // dirtyRange = true;
+  ctxmain.fillStyle = 'black';
+  ctxmain.fillRect(0, 0, canvasmain.width, canvasmain.height);
 
-  // add possible build sites
+  if (dirtyRange) {
+    gameData.buildings.forEach((b) => {
+      b.drawRange(ctxmain);
+    });
+  }
 
-  gameData.buildings.forEach((t) => {
-    t.drawRange();
+  // ctxmain.drawImage(canvasbackground, 0, 0);
+
+  gameData.buildings.forEach((b) => {
+    b.draw();
   });
-  gameData.buildings.forEach((t) => {
-    t.draw();
-  });
 
-  ctx.globalAlpha = 1.0;
+  ctxmain.globalAlpha = 1.0;
 
   gameData.enemies.forEach((e) => {
     e.draw();
@@ -934,280 +1532,34 @@ function updateGUI() {
 
   display.showFloaters();
 
-  display.drawText(`Drone Health: ${display.drone.maxHitPoints().ToString()}`, new Vector(getTierSize(), 1), 'white', `${display.getFontSizeString(15)}px Arial`, 'right', 'top');
+  display.drawText(`Drone Health: ${display.drone1.maxHitPoints().ToString()}`, new Vector(getTierSize(), CANVAS_SIZE * 0.001), 'white', `${display.getFontSizeString(15)}px Arial`, 'right', 'top');
   const mulligans = maxMulligansCalc() - gameData.world.mulligansused;
   if (mulligans > 0) {
     display.drawText(`${mulligans.toString()} mulligans`, new Vector(1, 3), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
   }
 
   display.drawText(`${gameData.world.currentTickLength}ms`, new Vector(1, 2), 'white', `${display.getFontSizeString(12)}px Arial`, 'left', 'top');
-  ctx.font = '15px Arial';
-  display.drawText(`Wave: ${gameData.world.currentWave} / ${getWavesNeededForTier()}`, new Vector(getTierSize() / 2, 2), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'top');
-  display.drawText(`Unspawned: ${gameData.world.enemiesToSpawn.toString()}(${getSpecialsCount().toString()})`, new Vector(1, 1), 'white', `${display.getFontSizeString(15)}px Arial`, 'left', 'top');
-
-  // display.DrawSolidRectangle(new Vector((getTierSize() / 2) - 10, 0), new Vector((getTierSize() / 2) - 9, 3), 'red', false);
-
-  // <button class="tierbutton text-center btn-danger" type="button" id="btntierdown" onclick="changeTier('Down')">-</button>
-  // Tier: <span id="currenttier">0</span>
-  // <button class="tierbutton text-center btn-success" type="button" id="btntierup" onclick="changeTier('Up')">+</button>
+  display.drawText(`Wave: ${gameData.world.currentWave} / ${getWavesNeededForTier()}`, new Vector(getTierSize() / 2, CANVAS_SIZE * 0.003), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'top');
+  display.drawText(`Unspawned: ${gameData.world.enemiesToSpawn.toString()}(${getSpecialsCount().toString()})`, new Vector(1, CANVAS_SIZE * 0.001), 'white', `${display.getFontSizeString(15)}px Arial`, 'left', 'top');
 
   if (gameData.world.ticksToNextSpawn > 1000) {
-    ctx.fillStyle = 'red';
+    // ctx.fillStyle = 'red';
     display.drawText(`Time to next enemy: ${display.getPrettyTimeFromMilliSeconds(gameData.world.ticksToNextSpawn)}`, new Vector(1, 6), 'red', `${display.getFontSizeString(15)}px bold Arial`, 'left', 'middle');
   }
 
-  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.9, 0), new Vector(CANVAS_SIZE, CANVAS_SIZE), 'silver');
-  display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE, CANVAS_SIZE), 'silver');
-  display.DrawSolidRectangleNoScale(new Vector(0, 0), new Vector(CANVAS_SIZE, CANVAS_SIZE * 0.1), 'silver');
-  display.DrawSolidRectangleNoScale(new Vector(0, 0), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE), 'black');
-  display.DrawSolidRectangleNoScale(new Vector(0, 0), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.1), 'silver');
-  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.9, 0), new Vector(CANVAS_SIZE, CANVAS_SIZE * 0.1), 'silver');
-  display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE), 'silver');
-  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.9, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE, CANVAS_SIZE), 'silver');
-
   if (gameData.world.tierUnlocked > 1) {
-    display.drawTextNoScale(`Tier: ${gameData.world.currentTier}`, new Vector(CANVAS_SIZE / 2, CANVAS_SIZE * 0.105), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'top');
-
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, CANVAS_SIZE * 0.0), new Vector(CANVAS_SIZE * 0.9, (CANVAS_SIZE * 1) / 30), 'blue', true);
-    display.drawTextNoScale(`Save Blueprint`, new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.0166666), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, (CANVAS_SIZE * 1) / 30), new Vector(CANVAS_SIZE * 0.9, (CANVAS_SIZE * 2) / 30), 'blue', true);
-    display.drawTextNoScale(`Load Blueprint`, new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.05), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
-    if (gameData.tierblueprintsauto) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, (CANVAS_SIZE * 2) / 30), new Vector(CANVAS_SIZE * 0.9, CANVAS_SIZE * 0.1), 'green', true);
-      display.drawTextNoScale(`Turn Auto Blueprint Load Off`, new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.08333333), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.7, (CANVAS_SIZE * 2) / 30), new Vector(CANVAS_SIZE * 0.9, CANVAS_SIZE * 0.1), 'red', true);
-      display.drawTextNoScale(`Turn Auto Blueprint Load On`, new Vector(CANVAS_SIZE * 0.8, CANVAS_SIZE * 0.08333333), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
-    }
+    display.drawTextNoScale(`Tier: ${gameData.world.currentTier}`, new Vector(CANVAS_SIZE / 2, CANVAS_SIZE * 0.01), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'top');
   }
 
   if (gameData.world.tierUnlocked - gameData.world.currentTier > 0) {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.53, CANVAS_SIZE * 0.1), new Vector(CANVAS_SIZE * 0.55, CANVAS_SIZE * 0.12), 'green', true);
-    display.drawTextNoScale(`+`, new Vector(CANVAS_SIZE * 0.54, CANVAS_SIZE * 0.11), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.53, CANVAS_SIZE * 0.005), new Vector(CANVAS_SIZE * 0.55, CANVAS_SIZE * 0.025), 'green', true);
+    display.drawTextNoScale(`+`, new Vector(CANVAS_SIZE * 0.54, CANVAS_SIZE * 0.01), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'top');
   }
 
-  if (gameData.world.currentTier - gameData.world.tierUnlocked > 0) {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.1), new Vector(CANVAS_SIZE * 0.47, CANVAS_SIZE * 0.12), 'red', true);
-    display.drawTextNoScale(`-`, new Vector(CANVAS_SIZE * 0.46, CANVAS_SIZE * 0.11), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'middle');
+  if (gameData.world.currentTier > 1) {
+    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.005), new Vector(CANVAS_SIZE * 0.47, CANVAS_SIZE * 0.025), 'red', true);
+    display.drawTextNoScale(`-`, new Vector(CANVAS_SIZE * 0.46, CANVAS_SIZE * 0.01), 'white', `${display.getFontSizeString(15)}px Arial`, 'center', 'top');
   }
-
-  display.drawTextNoScale(`People:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.11), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`${gameData.resources.people.amount.toString()} / ${totalHousing.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.125), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`Available Workers:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.15), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`${peopleAvailable().toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.165), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`Wood:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.19), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`${gameData.resources.wood.amount.toString()} (${netWood.toString()})`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.205), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`Stone:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.23), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`${gameData.resources.stone.amount.toString()} (${netStone.toString()})`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.245), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`Arrows:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.27), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`${gameData.resources.arrow.amount.toString()} (${netArrows.toString()})`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.285), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`Red Research:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.31), 'white', `${display.getFontSizeString(13)}px bold Arial`, 'left', 'top');
-  display.drawTextNoScale(`${gameData.resources.redResearch.amount.toString()} (${netRedResearch.toString()})`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.325), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  if (gameData.resources.essence.amount.greaterThan(0)) {
-    display.drawTextNoScale(`Essence:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.35), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-    display.drawTextNoScale(`${gameData.resources.essence.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.365), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  }
-  if (gameData.resources.powder.amount.greaterThan(0)) {
-    display.drawTextNoScale(`Powder:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.39), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-    display.drawTextNoScale(`${gameData.resources.powder.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.405), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  }
-  if (gameData.resources.pebble.amount.greaterThan(0)) {
-    display.drawTextNoScale(`Pebble:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.43), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-    display.drawTextNoScale(`${gameData.resources.pebble.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.445), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  }
-  if (gameData.resources.rock.amount.greaterThan(0)) {
-    display.drawTextNoScale(`Rock:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.47), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-    display.drawTextNoScale(`${gameData.resources.rock.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.485), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  }
-  if (gameData.resources.shards.amount.greaterThan(0)) {
-    display.drawTextNoScale(`Shards:`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.51), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-    display.drawTextNoScale(`${gameData.resources.shards.amount.toString()}`, new Vector(CANVAS_SIZE * 0, CANVAS_SIZE * 0.525), 'white', `${display.getFontSizeString(12)}px bold Arial`, 'left', 'top');
-  }
-
-  display.drawTextNoScale(`Speed:`, new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.025), 'black', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
-
-  if (gameSpeed === 1) {
-    display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.1), 'green');
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.1), 'red');
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.1), 'red');
-  }
-
-  if (gameSpeed === 2) {
-    display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.1), 'red');
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.1), 'green');
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.1), 'red');
-  }
-
-  if (gameSpeed === 5) {
-    display.DrawSolidRectangleNoScale(new Vector(0, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.1), 'red');
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.025, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.1), 'red');
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.05, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.1), 'green');
-  }
-
-  if (gameData.world.paused) {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.1), 'green');
-  } else {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.075, CANVAS_SIZE * 0.05), new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.1), 'red');
-  }
-
-  display.drawTextNoScale(`1`, new Vector(CANVAS_SIZE * 0.0125, CANVAS_SIZE * 0.075), 'white', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
-  display.drawTextNoScale(`2`, new Vector(CANVAS_SIZE * 0.0375, CANVAS_SIZE * 0.075), 'white', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
-  display.drawTextNoScale(`5`, new Vector(CANVAS_SIZE * 0.0625, CANVAS_SIZE * 0.075), 'white', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
-  display.drawTextNoScale(`P`, new Vector(CANVAS_SIZE * 0.0875, CANVAS_SIZE * 0.075), 'white', `${display.getFontSizeString(15)}px bold Arial`, 'center', 'middle');
-
-  if (powderFromPrestige().greaterThanOrEqualTo(1)) {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.1), 'green');
-    display.displayTextArrayFromString(
-      `Prestige for ${powderFromPrestige().ToString()} powder<br />Current: ${getCurrentPowderRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige1Rate.ToString()}/hr`,
-      new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.05),
-      'white',
-      'center',
-      'middle'
-    );
-  }
-
-  if (pebbleFromPrestige().greaterThanOrEqualTo(1)) {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.1), 'green');
-    display.displayTextArrayFromString(
-      `Ascend for ${pebbleFromPrestige().ToString()} pebbles<br />Current: ${getCurrentPebblesRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige2Rate.ToString()}/hr`,
-      new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.05),
-      'white',
-      'center',
-      'middle'
-    );
-  }
-
-  if (rockFromPrestige().greaterThanOrEqualTo(1)) {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0), new Vector(CANVAS_SIZE * 0.7, CANVAS_SIZE * 0.1), 'green');
-    display.displayTextArrayFromString(
-      `Transform for ${rockFromPrestige().ToString()} rocks<br />Current: ${getCurrentRocksRate().ToString()} /hr<br />Best: ${gameData.stats.bestPrestige3Rate.ToString()}/hr`,
-      new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE * 0.05),
-      'white',
-      'center',
-      'middle'
-    );
-  }
-
-  // below we draw the right and bottom menus sections
-  if (activeBuilding == null) {
-    return;
-  }
-
-  if (activeBuilding.type !== '') {
-    activeBuilding.drawMenuButtons();
-    return;
-  }
-
-  if (UIElementActive.slice(0, 1) === 'H') {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE), 'blue');
-    display.displayTextArrayFromString(`Go Back`, new Vector(CANVAS_SIZE * 0.15, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(SHACK_COST)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(`Buy Shack<br />Wood: ${SHACK_COST}`, new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(HOUSE_WOOD_COST) && gameData.resources.stone.amount.greaterThanOrEqualTo(HOUSE_STONE_COST)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(`Buy House<br />Wood: ${HOUSE_WOOD_COST}<br />Stone: ${HOUSE_STONE_COST}`, new Vector(CANVAS_SIZE * 0.35, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(MANSION_WOOD_COST) && gameData.resources.stone.amount.greaterThanOrEqualTo(MANSION_STONE_COST)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(`Buy Mansion<br />Wood: ${MANSION_WOOD_COST}<br />Stone: ${MANSION_STONE_COST}`, new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-    return;
-  }
-
-  if (UIElementActive.slice(0, 1) === 'R') {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE), 'blue');
-    display.displayTextArrayFromString(`Go Back`, new Vector(CANVAS_SIZE * 0.15, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(LUMBERJACK_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(`Buy Lumberjack<br />People: 1<br />Wood: ${LUMBERJACK_COST}`, new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(STONEMASON_COST) && peopleAvailable().greaterThanOrEqualTo(3)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(`Buy Stone Mason<br />People: 3<br />Wood: ${STONEMASON_COST}`, new Vector(CANVAS_SIZE * 0.35, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(FLETCHER_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(`Buy Fletcher<br />People: 1<br />Wood: ${FLETCHER_COST}`, new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(RED_RESEARCH_LAB_WOOD_COST) && gameData.resources.stone.amount.greaterThanOrEqualTo(RED_RESEARCH_LAB_STONE_COST) && peopleAvailable().greaterThanOrEqualTo(10)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(
-      `Buy Red<br />Research Lab<br />People: 10<br />Wood: ${RED_RESEARCH_LAB_WOOD_COST}<br />Stone: ${RED_RESEARCH_LAB_STONE_COST}`,
-      new Vector(CANVAS_SIZE * 0.55, CANVAS_SIZE * 0.95),
-      'white',
-      'center',
-      'middle'
-    );
-    return;
-  }
-
-  if (UIElementActive.slice(0, 1) === 'D') {
-    display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE), 'blue');
-    display.displayTextArrayFromString(`Go Back`, new Vector(CANVAS_SIZE * 0.15, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(ARROW_TOWER_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(`Buy Arrow Tower<br />People: 1<br />Wood: ${ARROW_TOWER_COST}`, new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-
-    if (gameData.resources.wood.amount.greaterThanOrEqualTo(CATAPULT_WOOD_COST) && gameData.resources.stone.amount.greaterThanOrEqualTo(CATAPULT_STONE_COST) && peopleAvailable().greaterThanOrEqualTo(5)) {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'green');
-    } else {
-      display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'red');
-    }
-    display.displayTextArrayFromString(`Buy Catapult Tower<br />People: 5<br />Wood: ${CATAPULT_WOOD_COST}<br />Stone: ${CATAPULT_STONE_COST}`, new Vector(CANVAS_SIZE * 0.35, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-
-    if (!gameData.challenges[3].active && gameData.challenges[3].completed > 0) {
-      if (gameData.resources.essence.amount.greaterThanOrEqualTo(POISON_TOWER_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
-        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'green');
-      } else {
-        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE), 'red');
-      }
-      display.displayTextArrayFromString(`Buy Poison Tower<br />People: 1<br />Essence: ${POISON_TOWER_COST}`, new Vector(CANVAS_SIZE * 0.45, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-    }
-
-    if (!gameData.challenges[4].active && gameData.challenges[4].completed > 0) {
-      if (gameData.resources.essence.amount.greaterThanOrEqualTo(SLOW_TOWER_COST) && peopleAvailable().greaterThanOrEqualTo(1)) {
-        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'green');
-      } else {
-        display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.5, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.6, CANVAS_SIZE), 'red');
-      }
-      display.displayTextArrayFromString(`Buy Slow Tower<br />People: 1<br />Essence: ${SLOW_TOWER_COST}`, new Vector(CANVAS_SIZE * 0.55, CANVAS_SIZE * 0.95), 'white', 'center', 'middle');
-    }
-    return;
-  }
-
-  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.1, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE), 'blue');
-  display.drawTextNoScale('Housing', new Vector(CANVAS_SIZE * 0.15, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
-
-  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.2, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE), 'blue');
-  display.drawTextNoScale('Resources', new Vector(CANVAS_SIZE * 0.25, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
-
-  display.DrawSolidRectangleNoScale(new Vector(CANVAS_SIZE * 0.3, CANVAS_SIZE * 0.9), new Vector(CANVAS_SIZE * 0.4, CANVAS_SIZE), 'blue');
-  display.drawTextNoScale('Defenses', new Vector(CANVAS_SIZE * 0.35, CANVAS_SIZE * 0.95), 'white', `${display.getFontSizeString(12)}px Arial`, 'center', 'middle');
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1289,64 +1641,25 @@ function getCursorPosition(canvas, event) {
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  const scaledx = display.TierScalingReverse(x - CANVAS_SIZE * 0.1);
-  const scaledy = display.TierScalingReverse(y - CANVAS_SIZE * 0.1);
+  const scaledx = display.TierScalingReverse(x);
+  const scaledy = display.TierScalingReverse(y);
   // display.addToDisplay(`x: ${x} y: ${y} sx: ${scaledx} sy: ${scaledy} cw: ${canvas.clientWidth} ch: ${canvas.clientHeight}`, DisplayCategory.Tutorial);
 
   const clickVector = new Vector(scaledx, scaledy);
 
-  if (x > CANVAS_SIZE * 0.1 && x < CANVAS_SIZE * 0.3 && y > CANVAS_SIZE * 0 && y < CANVAS_SIZE * 0.1) {
-    if (powderFromPrestige().greaterThanOrEqualTo(1)) {
-      prestige1();
+  if (gameData.world.tierUnlocked > gameData.world.currentTier) {
+    if (x > CANVAS_SIZE * 0.53 && x < CANVAS_SIZE * 0.55 && y > 0 && y < CANVAS_SIZE * 0.12) {
+      changeTier('Up');
     }
-    return;
   }
 
-  if (x > CANVAS_SIZE * 0.3 && x < CANVAS_SIZE * 0.5 && y > CANVAS_SIZE * 0 && y < CANVAS_SIZE * 0.1) {
-    if (pebbleFromPrestige().greaterThanOrEqualTo(1)) {
-      prestige2();
+  if (gameData.world.currentTier > 1) {
+    if (x > CANVAS_SIZE * 0.45 && x < CANVAS_SIZE * 0.47 && y > 0 && y < CANVAS_SIZE * 0.12) {
+      changeTier('Down');
     }
-    return;
   }
 
-  if (x > CANVAS_SIZE * 0.5 && x < CANVAS_SIZE * 0.7 && y > CANVAS_SIZE * 0 && y < CANVAS_SIZE * 0.1) {
-    if (rockFromPrestige().greaterThanOrEqualTo(1)) {
-      prestige3();
-    }
-    return;
-  }
-
-  if (x > CANVAS_SIZE * 0.7 && x < CANVAS_SIZE * 0.9 && y > CANVAS_SIZE * 0 && y < (CANVAS_SIZE * 1) / 30) {
-    blueprintSave();
-    return;
-  }
-  if (x > CANVAS_SIZE * 0.5 && x < CANVAS_SIZE * 0.7 && y > (CANVAS_SIZE * 1) / 30 && y < (CANVAS_SIZE * 2) / 30) {
-    blueprintLoad();
-    return;
-  }
-  if (x > CANVAS_SIZE * 0.5 && x < CANVAS_SIZE * 0.7 && y > (CANVAS_SIZE * 2) / 30 && y < CANVAS_SIZE * 0.1) {
-    gameData.tierblueprintsauto = !gameData.tierblueprintsauto;
-    return;
-  }
-
-  if (x > 0 && x < CANVAS_SIZE * 0.025 && y > CANVAS_SIZE * 0.05 && y < CANVAS_SIZE * 0.1) {
-    changeSpeed(1);
-    return;
-  }
-  if (x > CANVAS_SIZE * 0.025 && x < CANVAS_SIZE * 0.05 && y > CANVAS_SIZE * 0.05 && y < CANVAS_SIZE * 0.1) {
-    changeSpeed(2);
-    return;
-  }
-  if (x > CANVAS_SIZE * 0.05 && x < CANVAS_SIZE * 0.075 && y > CANVAS_SIZE * 0.05 && y < CANVAS_SIZE * 0.1) {
-    changeSpeed(5);
-    return;
-  }
-  if (x > CANVAS_SIZE * 0.075 && x < CANVAS_SIZE * 0.1 && y > CANVAS_SIZE * 0.05 && y < CANVAS_SIZE * 0.1) {
-    gameData.world.paused = !gameData.world.paused;
-    return;
-  }
-
-  if (x < CANVAS_SIZE * 0.9 && x > CANVAS_SIZE * 0.1 && y < CANVAS_SIZE * 0.9 && y > CANVAS_SIZE * 0.1) {
+  if (x < CANVAS_SIZE && x > 0 && y < CANVAS_SIZE && y > 0) {
     activeBuilding = null;
     gameData.buildings.forEach((b) => {
       if (b.pos.getLengthFromAnotherVector(clickVector) < 5) {
@@ -1358,7 +1671,7 @@ function getCursorPosition(canvas, event) {
       return;
     }
     // is it delete button
-    const deleteBtnVector = new Vector(activeBuilding.pos.x, activeBuilding.pos.y + 4);
+    const deleteBtnVector = new Vector(activeBuilding.pos.x + 2.2, activeBuilding.pos.y - 3.4);
     if (clickVector.getLengthFromAnotherVector(deleteBtnVector) < 1) {
       activeBuilding.delete();
       return;
@@ -1374,7 +1687,7 @@ function getCursorPosition(canvas, event) {
       return;
     }
     // is it buy button
-    const autoBtnVector = new Vector(activeBuilding.pos.x + 4, activeBuilding.pos.y);
+    const autoBtnVector = new Vector(activeBuilding.pos.x - 2.2, activeBuilding.pos.y - 3.4);
     if (clickVector.getLengthFromAnotherVector(autoBtnVector) < 1) {
       activeBuilding.autoSwitch();
       return;
@@ -1384,7 +1697,7 @@ function getCursorPosition(canvas, event) {
   if (activeBuilding.type === '') {
     activeBuilding.bought = 0;
     if (UIElementActive === '') {
-      if (y > CANVAS_SIZE * 0.9) {
+      if (y > CANVAS_SIZE) {
         // menu
         if (x < CANVAS_SIZE * 0.2) {
           UIElementActive = 'H';
@@ -1402,7 +1715,7 @@ function getCursorPosition(canvas, event) {
       }
     }
 
-    if (y > CANVAS_SIZE * 0.9) {
+    if (y > CANVAS_SIZE) {
       if (UIElementActive.slice(0, 1) === 'H') {
         if (x < CANVAS_SIZE * 0.2) {
           UIElementActive = '';
@@ -1477,54 +1790,8 @@ function getCursorPosition(canvas, event) {
         if (x < CANVAS_SIZE * 0.6) {
           activeBuilding.buySlowTower();
           UIElementActive = '';
-          return;
         }
-        return;
       }
-    }
-  }
-
-  if (y > CANVAS_SIZE * 0.9) {
-    // menu
-    // its the building menu
-    if (x < CANVAS_SIZE * 0.2) {
-      // its the buy button
-      activeBuilding.buy();
-      return;
-    }
-    if (x < CANVAS_SIZE * 0.4) {
-      // its the auto switch button
-      if (getAchievementBonus() > 20) {
-        activeBuilding.autoSwitch();
-      }
-      return;
-    }
-    if (x < CANVAS_SIZE * 0.5) {
-      // its the fastest button
-      activeBuilding.tactics.changeTactic(0);
-      return;
-    }
-    if (x < CANVAS_SIZE * 0.6) {
-      // its the fastest button
-      activeBuilding.tactics.changeTactic(1);
-      return;
-    }
-    if (x < CANVAS_SIZE * 0.7) {
-      // its the fastest button
-      activeBuilding.tactics.changeTactic(2);
-      return;
-    }
-    if (x < CANVAS_SIZE * 0.8) {
-      // its the fastest button
-      if (gameData.pebbleUpgrades[11].bought > 0) {
-        activeBuilding.tactics.changeTactic(3);
-      }
-      return;
-    }
-    if (x < CANVAS_SIZE * 0.9) {
-      // its the delete button
-      activeBuilding.delete();
-      // return;
     }
   }
 }
@@ -1554,6 +1821,10 @@ window.setInterval(function () {
     if (ticksForCurrentTick > 50) {
       ticksForCurrentTick = 50;
     }
+
+    testtick += ticksForCurrentTick;
+    testframe += 1;
+    display.addToDisplay(`avg ticks per frame:${new JBDecimal(testtick / testframe).toString()}`, DisplayCategory.Tutorial);
 
     gameData.world.lastProcessTick = Object.assign(currentTime);
     gameData.world.currentTickLength = ticksForCurrentTick;

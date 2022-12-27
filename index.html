@@ -11,7 +11,7 @@
     <meta name="description" content="Continuous v 0.3" />
     <meta name="author" content="ausonny" />
   </head>
-  <body style="background-color: black" class="overflow-auto" onload="putEmail();">
+  <body class="body" style="background-color: black" class="overflow-auto" onload="putEmail();">
     <noscript>
       <div id="checkJavascript" style="position: absolute; height: 100%; width: 100%; font-size: 2vw; padding: 10%; color: white; background-color: black; z-index: 1000000">
         For some reason, your browser is having trouble loading this game. This game runs on javascript, and if you have an addon such as noscript, you may need to tell it to allow scripts from http://ausonny.github.io, which is where this
@@ -20,21 +20,124 @@
       </div>
     </noscript>
     <div class="container-fluid">
+      <div class="row p-0 m-0 bg-primary">
+        <table id="bottomRowTable">
+          <tr style="width: 100%">
+            <td id="savebutton" class="btn btn-success p-1 m-1" onclick="saveGameClick()" style="width: 10%">
+              Save
+            </td>
+            <td id="researchbutton" class="btn text-light p-1 m-1" style="background-color:#000000; width: 10%;" data-bs-toggle="modal" data-bs-target="#researchModal">
+              <div>Research</div>
+            </td>
+            <td id="upgradesbutton" class="btn text-light p-1 m-1" style="background-color:#181818; width: 10%;" data-bs-toggle="modal" data-bs-target="#upgradeModal">
+              <div>Upgrades</div>
+            </td>
+            <td id="challengesbtn" class="btn text-light p-1 m-1" style="background-color:#303030; width: 10%;" data-bs-toggle="modal" data-bs-target="#challengeModal">
+              <div>Challenges</div>
+            </td>
+            <td id="equipmentbtn" class="btn text-light p-1 m-1" style="background-color:#484848; width: 10%;" data-bs-toggle="modal" data-bs-target="#equipmentModal">
+              <div>Equipment</div>
+            </td>
+            <td id="achbutton" class="btn text-light p-1 m-1" style="background-color:#606060; width: 10%;"  data-bs-toggle="modal" data-bs-target="#achievementModal">
+              <div>Achievements</div>
+            </td>
+            <td id="statsbutton" class="btn text-light p-1 m-1" style="background-color:#707070; width: 10%;" data-bs-toggle="modal" data-bs-target="#statisticModal">
+              <div>Statistics</div>
+            </td>
+            <td id="optionsbutton" class="btn text-light p-1 m-1" style="background-color:#888888; width: 10%;" data-bs-toggle="modal" data-bs-target="#optionModal">
+              <div>Options</div>
+            </td>
+            <td id="glossarybutton" class="btn p-1 m-1" style="background-color:#A0A0A0;color: black; width: 10%;" data-bs-toggle="modal" data-bs-target="#glossaryModal">
+              <div>Glossary</div>
+            </td>
+          </tr>
+        </table>
+        <!-- <div class="col-12 p-0 m-0 text-light text-small text-center">
+          <button class="btn btn-sm btn-primary bottombutton" id="btntest" type="button" onclick="gameData.challenges[6].setActive()">Research</button>
+          <button class="btn btn-sm btn-primary bottombutton" id="btntest" type="button" onclick="gameData.challenges[6].setActive()">Start</button>
+          </div> -->
+      </div>
+      <div class="row p-0 m-0 bg-dark border border-light text-light text-start" id="resourcerow">
+        <div class="col-2"><span id="peopletext"></span></div>
+        <div class="col-2"><span id="workertext"></span></div>
+        <div class="col-2"><span id="woodtext"></span></div>
+        <div class="col-2"><span id="stonetext"></span></div>
+        <div class="col-2"><span id="arrowstext"></span></div>
+        <div class="col-2"><span id="redresearchtext"></span></div>
+        <div class="col-2"><span id="essencetext"></span></div>
+        <div class="col-2"><span id="powedertext"></span></div>
+        <div class="col-2"><span id="pebbletext"></span></div>
+        <div class="col-2"><span id="rocktext"></span></div>
+        <div class="col-2"><span id="shardtext"></span></div>
+      </div>
       <div class="row p-0 m-0 text-light">
-        <div class="col-9 text-center p-0 m-0">
-          <div class="row p-0 m-0 border border-dark bg-dark text-light text-center">
-            <div class="col-12 p-0 m-0 text-start">
-              <canvas id="gameBoard" class="canvas text-center border border-light p-0 m-0" height="1075px" width="1075px" style="object-fit: contain">
-                <p>You may have more fun with a more modern browser. Chrome, Firefox, or Safari for instance</p>
-              </canvas>
+        <div class="col-2 bg-dark border border-light p-0 m-0 text-center">
+          <div class="row p-0 m-0 bg-dark text-light text-center">
+            <div class="col-12 p-0 m-0 text-center">
+              Speed:
+            </div>
+          </div>
+          <div class="row p-0 m-0 bg-dark text-light text-center">
+            <div class="col-12 p-0 m-0 text-center">
+              <button class="speedbutton" type="button" id="btnSpeed1" onclick="changeSpeed(1)">1</button>
+              <button class="speedbutton" type="button" id="btnSpeed2" onclick="changeSpeed(2)">2</button>
+              <button class="speedbutton" type="button" id="btnSpeed5" onclick="changeSpeed(5)">5</button>
+              <button class="speedbutton" type="button" id="btnSpeed0" onclick="switchPause()">P</button>
             </div>
           </div>
         </div>
+        <div class="col-7 border border-light p-0 m-0 text-center">
+          <div class="row p-0 m-0 bg-dark">
+            <div class="col-12 p-0 m-0 text-start">
+              <button class="green p-0 m-0" type="button" id="btnPrestige1" onclick="prestige1()"></button><button class="green p-0 m-0" type="button" id="btnPrestige2" onclick="prestige2()"></button><button class="green p-0 m-0" type="button" id="btnPrestige3" onclick="prestige3()"></button>
+            </div>
+          </div>
+        </div>
+        <div class="col-2 border border-light p-0 m-0 text-center">
+          <div class="row p-0 m-0 bg-dark text-center">
+              <button class="blue p-0 m-0" type="button" id="btnSaveBluePrint" onclick="blueprintSave()">Save BluePrint</button>
+              <button class="blue p-0 m-0" type="button" id="btnLoadBluePrint" onclick="blueprintLoad()">Load BluePrint</button>
+              <button class="green p-0 m-0" type="button" id="btnSwitchBluePrint" onclick="blueprintAuto()"></button>
+          </div>
+        </div>
+        <div class="col-1 bg-dark border border-light p-0 m-0 text-center">
+          <div class="row p-0 m-0 bg-dark text-light text-center">
+            <div class="col-12 p-0 m-0 text-center">
+              Display:
+            </div>
+          </div>
+          <div class="row p-0 m-0 bg-dark text-light text-center">
+            <div class="col-12 p-0 m-0 text-center">
+              <button class="green" type="button" id="btnDisplayRange" onclick="dirtyRange = !dirtyRange">R</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row bg-dark p-0 m-0 text-light">
+        <div class="col-1 bg-dark border border-light text-center p-0 m-0">
+          <div class="row p-0 m-0 bg-dark text-light text-center">
+            <button class="buildingbutton" type="button" id="btnBuilding1" onclick="building1Click()"></button>
+            <button class="buildingbutton" type="button" id="btnBuilding2" onclick="building2Click()"></button>
+            <button class="buildingbutton" type="button" id="btnBuilding3" onclick="building3Click()"></button>
+            <button class="buildingbutton" type="button" id="btnBuilding4" onclick="building4Click()"></button>
+            <button class="buildingbutton" type="button" id="btnBuilding5" onclick="building5Click()"></button>
+            <button class="buildingbutton" type="button" id="btnBuilding6" onclick="building6Click()"></button>
+            <button class="buildingbutton" type="button" id="btnBuilding7" onclick="building7Click()"></button>
+            <span id="buildingtext"></span>
+          </div>
+        </div>
+        <div class="col-8 text-center p-0 m-0">
+          <div class="row p-0 m-0 border border-light bg-dark text-light text-center">
+            <canvas id="gameBoard" class="border border-light canvas text-center p-0 m-0" height="1075px" width="1075px" style="object-fit: contain">
+              <p>You may have more fun with a more modern browser. Chrome, Firefox, or Safari for instance</p>
+            </canvas>
+          </div>
+        </div>
         <div class="col-3 text-center p-0 m-0">
-          <div class="row p-0 m-0 border border-secondary text-light">
+          <div class="row border border-light p-0 m-0 text-light">
             <div class="col-12 p-0 m-0">
-              <button class="button text-center bg-primary text-light" type="button" id="btnqQuitChallenges" onclick="quitChallenges()">Quit all Challenges</button>
-              <div class="border border-light p-0 m-0 text-medium overflow-auto text-light" style="height: 400px; background-color: black;" id="textToDisplay">
+              <button class="button text-center bg-primary text-light" style="width: 90%;" type="button" id="btnqQuitChallenges" onclick="quitChallenges()">Quit all Challenges</button>
+              <div class="border border border-light p-0 m-0 text-start overflow-auto text-light" style="height: 400px; background-color: black;" id="textToDisplay">
               </div>
             </div>
           </div>
@@ -58,10 +161,10 @@
                   <button class="button upgradebutton text-center" type="button" id="btnBuyResearch2" onclick="gameData.researches[2].buy()">Upgrade</button>
                   <button class="button upgradebutton text-center" type="button" id="btnBuyResearch1" onclick="gameData.researches[1].buy()">Upgrade</button>
                   <button class="button upgradebutton text-center" type="button" id="btnBuyResearch8" onclick="gameData.researches[8].buy()">Upgrade</button>
+                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch6" onclick="gameData.researches[6].buy()">Upgrade</button>
                   <button class="button upgradebutton text-center" type="button" id="btnBuyResearch3" onclick="gameData.researches[3].buy()">Upgrade</button>
                   <button class="button upgradebutton text-center" type="button" id="btnBuyResearch4" onclick="gameData.researches[4].buy()">Upgrade</button>
                   <button class="button upgradebutton text-center" type="button" id="btnBuyResearch5" onclick="gameData.researches[5].buy()">Upgrade</button>
-                  <button class="button upgradebutton text-center" type="button" id="btnBuyResearch6" onclick="gameData.researches[6].buy()">Upgrade</button>
                   <button class="button upgradebutton text-center" type="button" id="btnBuyResearch7" onclick="gameData.researches[7].buy()">Upgrade</button>
                 </div>
               </div>
@@ -111,6 +214,10 @@
                 </div>
                 <div class="row p-0 m-0 bg-dark text-light">
                   <div class="col-md-12 text-start overflow-auto">
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade13" onclick="gameData.pebbleUpgrades[13].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade11" onclick="gameData.pebbleUpgrades[11].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade12" onclick="gameData.pebbleUpgrades[12].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade7" onclick="gameData.pebbleUpgrades[7].buy()">Upgrade</button>
                     <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade0" onclick="gameData.pebbleUpgrades[0].buy()">Upgrade</button>
                     <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade4" onclick="gameData.pebbleUpgrades[4].buy()">Upgrade</button>
                     <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade1" onclick="gameData.pebbleUpgrades[1].buy()">Upgrade</button>
@@ -121,14 +228,11 @@
                     <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade8" onclick="gameData.pebbleUpgrades[8].buy()">Upgrade</button>
                     <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade5" onclick="gameData.pebbleUpgrades[5].buy()">Upgrade</button>
                     <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade6" onclick="gameData.pebbleUpgrades[6].buy()">Upgrade</button>
-                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade7" onclick="gameData.pebbleUpgrades[7].buy()">Upgrade</button>
                     <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade9" onclick="gameData.pebbleUpgrades[9].buy()">Upgrade</button>
                     <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade10" onclick="gameData.pebbleUpgrades[10].buy()">Upgrade</button>
-                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade11" onclick="gameData.pebbleUpgrades[11].buy()">Upgrade</button>
-                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade12" onclick="gameData.pebbleUpgrades[12].buy()">Upgrade</button>
-                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade13" onclick="gameData.pebbleUpgrades[13].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyPebbleUpgrade16" onclick="gameData.pebbleUpgrades[16].buy()">Upgrade</button>
                   </div>
-                </div>  
+                </div>
               </div>
               <div id="rockupgrades">
                 <div class="row p-0 m-0">
@@ -137,6 +241,20 @@
                 <div class="row p-0 m-0 bg-dark text-light">
                   <div class="col-md-12 text-start overflow-auto">
                     <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade0" onclick="gameData.rockUpgrades[0].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade1" onclick="gameData.rockUpgrades[1].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade2" onclick="gameData.rockUpgrades[2].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade3" onclick="gameData.rockUpgrades[3].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade4" onclick="gameData.rockUpgrades[4].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade5" onclick="gameData.rockUpgrades[5].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade6" onclick="gameData.rockUpgrades[6].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade7" onclick="gameData.rockUpgrades[7].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade8" onclick="gameData.rockUpgrades[8].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade9" onclick="gameData.rockUpgrades[9].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade10" onclick="gameData.rockUpgrades[10].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade11" onclick="gameData.rockUpgrades[11].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade12" onclick="gameData.rockUpgrades[12].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade13" onclick="gameData.rockUpgrades[13].buy()">Upgrade</button>
+                    <button class="button upgradebutton" type="button" id="btnBuyRockUpgrade14" onclick="gameData.rockUpgrades[14].buy()">Upgrade</button>
                   </div>
                 </div>
               </div>
@@ -313,7 +431,6 @@
           </div>
         </div>
       </div>
-
       <div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
           <div class="modal-content">
@@ -337,8 +454,6 @@
           </div>
         </div>
       </div>
-
-
       <div class="modal fade" id="achievementModal" tabindex="-1" aria-labelledby="achievementModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
           <div class="modal-content">
@@ -369,7 +484,6 @@
           </div>
         </div>
       </div>
-
       <div class="modal fade" id="statisticModal" tabindex="-1" aria-labelledby="statisticModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
           <div class="modal-content">
@@ -392,7 +506,6 @@
           </div>
         </div>
       </div>
-
       <div class="modal fade" id="optionModal" tabindex="-1" aria-labelledby="optionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
           <div class="modal-content">
@@ -414,12 +527,10 @@
               <button class="btn btn-sm btn-primary" type="button" onclick="cheat1()">Dust Cheat</button><br />
               Email: <span class="myemail">(need JavaScript for email link)</span><br />
               latest version:<label class="myemail text-center" id="result">0.3</label>
-
             </div>
           </div>
         </div>
       </div>
-
       <div class="modal fade" id="glossaryModal" tabindex="-1" aria-labelledby="glossaryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
           <div class="modal-content">
@@ -432,69 +543,28 @@
                 <div class="col-md-12 p-1 m-1 text-light text-small text-start">
                   Inflation: <br /> Anything bought with wood ir stone is affected by inflation.  Once you have bought more than the inflation level (which usually starts at 20) then the price begins to increase at a faster rate. The inflation challenge raises the quantity at which inflation begins.<br /><br />
                   Speed:  <br />
-                    1x - Run at normal speed<br />
-                    2x - Run at double speed<br />
-                    5x - Run at 5 times speed<br />
-                    (Speed is always maxed at 50ms per game update.)<br />
-                    P  - Pause<br /><br />
-
+                  1x - Run at normal speed<br />
+                  2x - Run at double speed<br />
+                  5x - Run at 5 times speed<br />
+                  (Speed is always maxed at 50ms per game update.)<br />
+                  P  - Pause<br /><br />
                   Tactics: <br />
-                    F - Target the enemy with the least time remaining on the map<br />
-                    M - Target enemy with most health remaining<br />
-                    L - Target enemy with least health remaining<br />
-                    H - Target enemy healers first then defaults to F tactic <br /><br />
-
+                  F - Target the enemy with the least time remaining on the map<br />
+                  M - Target enemy with most health remaining<br />
+                  L - Target enemy with least health remaining<br />
+                  H - Target enemy healers first then defaults to F tactic <br /><br />
                   Critical Hits:<br />
-                    If the chance is greater than 100% then you are guranteed at least one critical multiplier.  For example if the chance is 110% and the multiplier is 5 then you are guaranteed a multiplier of 5 and have a 10% chance of a multiplier of 25.
-
+                  If the chance is greater than 100% then you are guranteed at least one critical multiplier.  For example if the chance is 110% and the multiplier is 5 then you are guaranteed a multiplier of 5 and have a 10% chance of a multiplier of 25.
                   Blueprints:
                   A blueprint of the current tower layout can be stored. You have one blueprint per tier. A level 2 tier can not be used on tier 1. If blueprints are turned on the tower types will be set automatically with zero levels bought after prestige or any map reset.
                   <!-- Button trigger modal -->
-                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="row p-0 m-0 fixedrowbottom bg-primary">
-        <table id="bottomRowTable">
-          <tr style="width: 100%">
-            <td class="btn btn-success p-1 m-1" onclick="saveGameClick()" style="width: 10%">
-              Save
-            </td>
-            <td class="btn text-light p-1 m-1" style="background-color:#000000; width: 10%;" data-bs-toggle="modal" data-bs-target="#researchModal">
-              <div>Research</div>
-            </td>
-            <td class="btn text-light p-1 m-1" style="background-color:#181818; width: 10%;" data-bs-toggle="modal" data-bs-target="#upgradeModal">
-              <div>Upgrades</div>
-            </td>
-            <td id="challengesbtn" class="btn text-light p-1 m-1" style="background-color:#303030; width: 10%;" data-bs-toggle="modal" data-bs-target="#challengeModal">
-              <div>Challenges</div>
-            </td>
-            <td id="equipmentbtn" class="btn text-light p-1 m-1" style="background-color:#484848; width: 10%;" data-bs-toggle="modal" data-bs-target="#equipmentModal">
-              <div>Equipment</div>
-            </td>
-            <td class="btn text-light p-1 m-1" style="background-color:#606060; width: 10%;"  data-bs-toggle="modal" data-bs-target="#achievementModal">
-              <div>Achievements</div>
-            </td>
-            <td class="btn text-light p-1 m-1" style="background-color:#707070; width: 10%;" data-bs-toggle="modal" data-bs-target="#statisticModal">
-              <div>Statistics</div>
-            </td>
-            <td class="btn text-light p-1 m-1" style="background-color:#888888; width: 10%;" data-bs-toggle="modal" data-bs-target="#optionModal">
-              <div>Options</div>
-            </td>
-            <td class="btn p-1 m-1" style="background-color:#A0A0A0;color: black; width: 10%;" data-bs-toggle="modal" data-bs-target="#glossaryModal">
-              <div>Glossary</div>
-            </td>
-          </tr>
-        </table>
-         <!-- <div class="col-12 p-0 m-0 text-light text-small text-center">
-          <button class="btn btn-sm btn-primary bottombutton" id="btntest" type="button" onclick="gameData.challenges[6].setActive()">Research</button>
-          <button class="btn btn-sm btn-primary bottombutton" id="btntest" type="button" onclick="gameData.challenges[6].setActive()">Start</button>
-        </div> -->
-      </div>
+    </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     <script type="text/javascript" type="module" src="built/JBDecimal.js"></script>

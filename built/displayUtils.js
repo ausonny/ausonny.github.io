@@ -42,8 +42,10 @@ class Display {
         this.texttoDisplayTutorial = [];
         this.floaters = [];
         this.displayindex = 0;
-        this.canvas = document.getElementById('gameBoard');
-        this.ctx = this.canvas.getContext('2d');
+        this.canvasmain = document.getElementById('gameBoard');
+        this.ctxmain = this.canvasmain.getContext('2d');
+        this.canvasbackground = document.createElement('canvas');
+        this.ctxbackground = this.canvasbackground.getContext('2d');
     }
     // eslint-disable-next-line class-methods-use-this
     getFontSizeString(valueAt1000) {
@@ -52,7 +54,7 @@ class Display {
     showFloaters() {
         for (let index = this.floaters.length - 1; index >= 0; index--) {
             const element = this.floaters[index];
-            element.framesleft -= 1;
+            element.framesleft -= gameData.world.currentTickLength;
             let drawBool = true;
             if (element.framesleft < 0) {
                 this.floaters.splice(index, 1);
@@ -104,7 +106,7 @@ class Display {
         else if (category === DisplayCategory.Story) {
             newItem.txt = this.addColor('yellow', `${this.getPrettyTime(new Date())}: ${newline}`);
             this.textToDisplayStory.unshift(newItem);
-            this.textToDisplayStory.splice(100);
+            this.textToDisplayStory.splice(50);
         }
         else if (category === DisplayCategory.Tutorial) {
             newItem.txt = this.addColor('pink', newline);
@@ -213,176 +215,182 @@ class Display {
     // }
     // eslint-disable-next-line no-unused-vars, class-methods-use-this
     PrettyRatePerTime(amt, ticks) {
-        // this originally changed the time duration based on time, but I found it distracting in practice so it is back to /hr only
+        // this originally changed based on time, but I found it distracting in practice so it is back to /hr only
         const base = amt.divide(ticks).multiply(1000 * 60 * 60);
         return `${base.ToString()} /hr`;
     }
     // eslint-disable-next-line class-methods-use-this
     TierScaling(value) {
         const tiersize = getTierSize();
-        return (value / tiersize) * CANVAS_SIZE * 0.8; // is canvas.width right?
+        return (value / tiersize) * CANVAS_SIZE; // is canvas.width right?
     }
     // eslint-disable-next-line class-methods-use-this
     TierScalingReverse(value) {
         const tiersize = getTierSize();
-        return (value * tiersize) / (CANVAS_SIZE * 0.8); // is canvas.width right?
+        return (value * tiersize) / CANVAS_SIZE; // is canvas.width right?
     }
     // eslint-disable-next-line class-methods-use-this
     displayTextArrayFromString(textstring, centerPos, color, align, baseline, fontSize = 12) {
         const lines = textstring.split('<br />');
-        let offset = 0.5 - lines.length / 2;
+        let offset = ((0.5 - lines.length / 2) * CANVAS_SIZE) / 1000;
         if (baseline === 'top') {
             offset = 0;
         }
         lines.forEach((element) => {
             display.drawTextNoScale(element, new Vector(centerPos.x, centerPos.y + offset / 0.065), color, `${display.getFontSizeString(fontSize)}px Arial`, align, baseline);
-            offset += 1;
+            offset += CANVAS_SIZE / 1000;
         });
     }
-    drawRectangleBorder(xPos, yPos, width, height, thickness = 1) {
-        this.ctx.fillStyle = '#000';
-        this.ctx.fillRect(xPos - thickness, yPos - thickness, width + thickness * 2, height + thickness * 2);
+    drawRectangleBorder(xPos, yPos, width, height, thickness = 1, ctx = this.ctxmain) {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(xPos - thickness, yPos - thickness, width + thickness * 2, height + thickness * 2);
     }
-    DrawSolidSmallDiamond(CurrentHitPoints, position, color) {
-        let squareSize = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
-        squareSize = this.TierScaling(squareSize);
+    DrawSolidSmallDiamond(position, color, CurrentHitPoints = this.drone10.currentHitPoints(), ctx = this.ctxmain) {
+        let squareSize = CurrentHitPoints.divide(this.drone1.maxHitPoints()).ToNumber();
+        squareSize = Math.floor(this.TierScaling(squareSize));
         if (squareSize < 4) {
             squareSize = 4;
         }
-        this.ctx.fillStyle = color;
-        const scaledx = this.TierScaling(position.x) + CANVAS_SIZE * 0.1;
-        const scaledy = this.TierScaling(position.y) + CANVAS_SIZE * 0.1;
-        const top = scaledy - squareSize / 2;
-        const bottom = scaledy + squareSize / 2;
-        const left = scaledx - squareSize / 2;
-        const right = scaledx + squareSize / 2;
-        this.ctx.beginPath();
-        this.ctx.moveTo(scaledx, top);
-        this.ctx.lineTo(right, scaledy);
-        this.ctx.lineTo(scaledx, bottom);
-        this.ctx.lineTo(left, scaledy);
-        this.ctx.fill();
+        ctx.fillStyle = color;
+        const scaledx = Math.floor(this.TierScaling(position.x));
+        const scaledy = Math.floor(this.TierScaling(position.y));
+        const top = Math.floor(scaledy - squareSize / 2);
+        const bottom = Math.floor(scaledy + squareSize / 2);
+        const left = Math.floor(scaledx - squareSize / 2);
+        const right = Math.floor(scaledx + squareSize / 2);
+        ctx.beginPath();
+        ctx.moveTo(scaledx, top);
+        ctx.lineTo(right, scaledy);
+        ctx.lineTo(scaledx, bottom);
+        ctx.lineTo(left, scaledy);
+        ctx.fill();
     }
-    DrawTwoColorDiamond(CurrentHitPoints, position, leftcolor, rightcolor) {
-        let squareSize = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
-        squareSize = this.TierScaling(squareSize);
+    DrawTwoColorDiamond(position, leftcolor, rightcolor, CurrentHitPoints = this.drone10.currentHitPoints(), ctx = this.ctxmain) {
+        let squareSize = CurrentHitPoints.divide(this.drone1.maxHitPoints()).ToNumber();
+        squareSize = Math.floor(this.TierScaling(squareSize));
         if (squareSize < 4) {
             squareSize = 4;
         }
-        this.ctx.fillStyle = leftcolor;
-        const scaledx = this.TierScaling(position.x) + CANVAS_SIZE * 0.1;
-        const scaledy = this.TierScaling(position.y) + CANVAS_SIZE * 0.1;
-        const top = scaledy - squareSize / 1.4;
-        const bottom = scaledy + squareSize / 1.4;
-        const left = scaledx - squareSize / 1.4;
-        const right = scaledx + squareSize / 1.4;
-        this.ctx.beginPath();
-        this.ctx.moveTo(scaledx, top);
-        this.ctx.lineTo(scaledx, bottom);
-        this.ctx.lineTo(left, scaledy);
-        this.ctx.fill();
-        this.ctx.fillStyle = rightcolor;
-        this.ctx.beginPath();
-        this.ctx.moveTo(scaledx, top);
-        this.ctx.lineTo(right, scaledy);
-        this.ctx.lineTo(scaledx, bottom);
-        this.ctx.fill();
+        ctx.fillStyle = leftcolor;
+        const scaledx = Math.floor(this.TierScaling(position.x));
+        const scaledy = Math.floor(this.TierScaling(position.y));
+        const top = Math.floor(scaledy - squareSize / 1.4);
+        const bottom = Math.floor(scaledy + squareSize / 1.4);
+        const left = Math.floor(scaledx - squareSize / 1.4);
+        const right = Math.floor(scaledx + squareSize / 1.4);
+        ctx.beginPath();
+        ctx.moveTo(scaledx, top);
+        ctx.lineTo(scaledx, bottom);
+        ctx.lineTo(left, scaledy);
+        ctx.fill();
+        ctx.fillStyle = rightcolor;
+        ctx.beginPath();
+        ctx.moveTo(scaledx, top);
+        ctx.lineTo(right, scaledy);
+        ctx.lineTo(scaledx, bottom);
+        ctx.fill();
     }
-    drawTextNoScale(text, position, color, font, align, baseline) {
-        const scaledx = position.x;
-        const scaledy = position.y;
-        this.ctx.font = font;
-        this.ctx.textAlign = align;
-        this.ctx.textBaseline = baseline;
-        this.ctx.fillStyle = color;
-        this.ctx.fillText(text, scaledx, scaledy);
-        this.ctx.textAlign = 'left';
-        this.ctx.textBaseline = 'middle';
+    drawTextNoScale(text, position, color, font, align, baseline, ctx = this.ctxmain) {
+        const scaledx = Math.floor(position.x);
+        const scaledy = Math.floor(position.y);
+        ctx.font = font;
+        ctx.textAlign = align;
+        ctx.textBaseline = baseline;
+        ctx.fillStyle = color;
+        ctx.fillText(text, scaledx, scaledy);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
     }
-    drawText(text, position, color, font, align, baseline) {
-        const scaledx = this.TierScaling(position.x) + CANVAS_SIZE * 0.1;
-        const scaledy = this.TierScaling(position.y) + CANVAS_SIZE * 0.1;
-        this.ctx.font = font;
-        this.ctx.textAlign = align;
-        this.ctx.textBaseline = baseline;
-        this.ctx.fillStyle = color;
-        this.ctx.fillText(text, scaledx, scaledy);
-        this.ctx.textAlign = 'left';
-        this.ctx.textBaseline = 'middle';
+    drawText(text, position, color, font, align, baseline, ctx = this.ctxmain) {
+        const scaledx = Math.floor(this.TierScaling(position.x));
+        const scaledy = Math.floor(this.TierScaling(position.y));
+        ctx.font = font;
+        ctx.textAlign = align;
+        ctx.textBaseline = baseline;
+        ctx.fillStyle = color;
+        ctx.fillText(text, scaledx, scaledy);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
     }
-    DrawCircle(pos, alpha, radius, color) {
-        this.ctx.fillStyle = color;
-        this.ctx.globalAlpha = alpha;
-        this.ctx.beginPath();
-        this.ctx.arc(this.TierScaling(pos.x) + CANVAS_SIZE * 0.1, this.TierScaling(pos.y) + CANVAS_SIZE * 0.1, this.TierScaling(radius), 0, 2 * Math.PI);
+    DrawCircle(pos, alpha, radius, color, ctx = this.ctxmain) {
+        ctx.fillStyle = color;
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(Math.floor(this.TierScaling(pos.x)), Math.floor(this.TierScaling(pos.y)), Math.floor(this.TierScaling(radius)), 0, 2 * Math.PI);
         // this.ctx.arc(100, 75, 50, 0, 2 * Math.PI);
-        this.ctx.fill();
-        this.ctx.globalAlpha = 1;
+        ctx.fill();
+        ctx.globalAlpha = 1;
     }
-    DrawEnemyCircle(CurrentHitPoints, pos, colors) {
-        let radius = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
-        radius = this.TierScaling(radius);
+    DrawEnemyCircle(pos, colors, border = false, CurrentHitPoints = this.drone10.currentHitPoints(), ctx = this.ctxmain) {
+        let radius = CurrentHitPoints.divide(this.drone1.maxHitPoints()).ToNumber();
+        radius = Math.floor(this.TierScaling(radius));
         if (radius < 2) {
             radius = 2;
         }
-        const scaledx = this.TierScaling(pos.x) + CANVAS_SIZE * 0.1;
-        const scaledy = this.TierScaling(pos.y) + CANVAS_SIZE * 0.1;
-        this.ctx.moveTo(scaledx, scaledy);
+        const scaledx = Math.floor(this.TierScaling(pos.x));
+        const scaledy = Math.floor(this.TierScaling(pos.y));
+        ctx.moveTo(scaledx, scaledy);
         for (let index = 0; index < colors.length; index++) {
             const startAngle = (index * 2 * Math.PI) / colors.length;
             const endAngle = startAngle + (2 * Math.PI) / colors.length;
-            this.ctx.beginPath();
-            this.ctx.moveTo(scaledx, scaledy);
-            this.ctx.arc(scaledx, scaledy, radius, startAngle, endAngle);
-            this.ctx.closePath();
+            ctx.beginPath();
+            ctx.moveTo(scaledx, scaledy);
+            ctx.arc(scaledx, scaledy, radius, startAngle, endAngle);
+            ctx.closePath();
             // filling the slices with the corresponding mood's color
-            this.ctx.fillStyle = colors[index];
-            this.ctx.fill();
+            ctx.fillStyle = colors[index];
+            ctx.fill();
+            if (border) {
+                ctx.beginPath();
+                ctx.arc(scaledx, scaledy, radius, 0, 2 * Math.PI);
+                ctx.strokeStyle = 'black';
+                ctx.stroke();
+            }
         }
     }
-    DrawSolidRectangleNoScale(topLeftPosition, bottomRightPosition, color, border = true) {
-        const scaledtopleftx = topLeftPosition.x;
-        const scaledtoplefty = topLeftPosition.y;
-        const scaledbottomrightx = bottomRightPosition.x;
-        const scaledbottomrighty = bottomRightPosition.y;
+    DrawSolidRectangleNoScale(topLeftPosition, bottomRightPosition, color, border = true, ctx = this.ctxmain) {
+        const scaledtopleftx = Math.floor(topLeftPosition.x);
+        const scaledtoplefty = Math.floor(topLeftPosition.y);
+        const scaledbottomrightx = Math.floor(bottomRightPosition.x);
+        const scaledbottomrighty = Math.floor(bottomRightPosition.y);
         if (border) {
             this.drawRectangleBorder(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
         }
-        this.ctx.fillStyle = color;
-        this.ctx.fillRect(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
+        ctx.fillStyle = color;
+        ctx.fillRect(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
     }
-    DrawSolidRectangle(topLeftPosition, bottomRightPosition, color, border = true) {
-        const scaledtopleftx = this.TierScaling(topLeftPosition.x) + CANVAS_SIZE * 0.1;
-        const scaledtoplefty = this.TierScaling(topLeftPosition.y) + CANVAS_SIZE * 0.1;
-        const scaledbottomrightx = this.TierScaling(bottomRightPosition.x) + CANVAS_SIZE * 0.1;
-        const scaledbottomrighty = this.TierScaling(bottomRightPosition.y) + CANVAS_SIZE * 0.1;
+    DrawSolidRectangle(topLeftPosition, bottomRightPosition, color, border = true, ctx = this.ctxmain) {
+        const scaledtopleftx = Math.floor(this.TierScaling(topLeftPosition.x));
+        const scaledtoplefty = Math.floor(this.TierScaling(topLeftPosition.y));
+        const scaledbottomrightx = Math.floor(this.TierScaling(bottomRightPosition.x));
+        const scaledbottomrighty = Math.floor(this.TierScaling(bottomRightPosition.y));
         if (border) {
             this.drawRectangleBorder(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
         }
-        this.ctx.fillStyle = color;
-        this.ctx.fillRect(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
+        ctx.fillStyle = color;
+        ctx.fillRect(scaledtopleftx, scaledtoplefty, scaledbottomrightx - scaledtopleftx, scaledbottomrighty - scaledtoplefty);
     }
-    DrawSolidSquare(CurrentHitPoints, position, color) {
-        let squareSize = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
-        squareSize = this.TierScaling(squareSize);
+    DrawSolidSquare(position, color, CurrentHitPoints = this.drone10.currentHitPoints(), ctx = this.ctxmain) {
+        let squareSize = CurrentHitPoints.divide(this.drone1.maxHitPoints()).ToNumber();
+        squareSize = Math.floor(this.TierScaling(squareSize));
         if (squareSize < 4) {
             squareSize = 4;
         }
-        this.ctx.fillStyle = color;
-        const scaledx = this.TierScaling(position.x) + CANVAS_SIZE * 0.1;
-        const scaledy = this.TierScaling(position.y) + CANVAS_SIZE * 0.1;
-        this.ctx.fillRect(scaledx - squareSize / 2, scaledy - squareSize / 2, squareSize, squareSize);
+        ctx.fillStyle = color;
+        const scaledx = Math.floor(this.TierScaling(position.x));
+        const scaledy = Math.floor(this.TierScaling(position.y));
+        ctx.fillRect(scaledx - squareSize / 2, scaledy - squareSize / 2, squareSize, squareSize);
     }
-    DrawTwoColorSquare(CurrentHitPoints, position, leftcolor, rightcolor) {
-        let squareSize = CurrentHitPoints.divide(this.drone.maxHitPoints()).ToNumber();
-        squareSize = this.TierScaling(squareSize);
+    DrawTwoColorSquare(position, leftcolor, rightcolor, CurrentHitPoints = this.drone10.currentHitPoints(), ctx = this.ctxmain) {
+        let squareSize = CurrentHitPoints.divide(this.drone1.maxHitPoints()).ToNumber();
+        squareSize = Math.floor(this.TierScaling(squareSize));
         if (squareSize < 4) {
             squareSize = 4;
         }
-        this.ctx.fillStyle = leftcolor;
-        this.ctx.fillRect(this.TierScaling(position.x) - squareSize / 2 + CANVAS_SIZE * 0.1, this.TierScaling(position.y) - squareSize / 2 + CANVAS_SIZE * 0.1, squareSize / 2, squareSize);
-        this.ctx.fillStyle = rightcolor;
-        this.ctx.fillRect(this.TierScaling(position.x) + CANVAS_SIZE * 0.1, this.TierScaling(position.y) - squareSize / 2 + CANVAS_SIZE * 0.1, squareSize / 2, squareSize);
+        ctx.fillStyle = leftcolor;
+        ctx.fillRect(Math.floor(this.TierScaling(position.x) - squareSize / 2), Math.floor(this.TierScaling(position.y) - squareSize / 2), Math.floor(squareSize / 2), squareSize);
+        ctx.fillStyle = rightcolor;
+        ctx.fillRect(Math.floor(this.TierScaling(position.x)), Math.floor(this.TierScaling(position.y) - squareSize / 2), Math.floor(squareSize / 2), squareSize);
     }
 }
 //# sourceMappingURL=displayUtils.js.map

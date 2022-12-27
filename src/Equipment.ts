@@ -118,7 +118,6 @@ class Equipment {
     const possibles = [];
     possibles.push('ArrowTower');
     possibles.push('CatapultTower');
-    possibles.push('PoisonAttack');
     possibles.push('Critical Chance');
     possibles.push('Crit Multiplier');
     possibles.push('LumberJack');

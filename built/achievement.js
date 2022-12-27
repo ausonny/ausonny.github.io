@@ -70,10 +70,13 @@ class Achievements {
         if (this.name === 'Resource') {
             for (let index = this.completed; index < this.completionValues.length; index++) {
                 const e = this.completionValues[index];
-                let total = 0;
+                let total = new JBDecimal(0);
                 gameData.buildings.forEach((b) => {
-                    if (b.type === 'LumberJack' || b.type === 'Stone') {
-                        total += b.woodProductionPerSec();
+                    if (b.type === 'LumberJack') {
+                        total = total.add(b.woodProductionPerSec());
+                    }
+                    else if (b.type === 'StoneMason') {
+                        total = total.add(b.stoneProductionPerSec());
                     }
                 });
                 this.lastCalculated = new JBDecimal(total);
@@ -107,7 +110,7 @@ class Achievements {
             for (let index = this.completed; index < this.completionValues.length; index++) {
                 const e = this.completionValues[index];
                 this.lastCalculated = new JBDecimal(gameData.world.currentWave);
-                if (this.lastCalculated.greaterThan(e)) {
+                if (this.lastCalculated.greaterThan(e) && gameData.world.currentTier === 1) {
                     this.writeToBoard();
                     this.completed += 1;
                 }
@@ -187,7 +190,7 @@ class Achievements {
                 }
             }
         }
-        if (this.name.slice(0, 12) === 'CompleteTier') {
+        if (this.name === 'CompleteTier') {
             if (this.completed < 1) {
                 if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
                     if (gameData.world.currentTier >= this.secondaryValue) {
@@ -198,7 +201,7 @@ class Achievements {
                 }
             }
         }
-        if (this.name.slice(0, 13) === 'TierChallenge') {
+        if (this.name === 'TierChallenge') {
             if (this.completed < 1) {
                 if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
                     if (gameData.world.currentTier >= this.secondaryValue) {
@@ -230,11 +233,30 @@ class Achievements {
         //   }
         // }
         const challengesCompleted = getChallengesCompleted();
-        if (this.name.slice(0, 15) === 'TierNoChallenge') {
+        if (this.name === 'TierNoChallenge') {
             if (this.completed < 1) {
                 if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
                     if (gameData.world.currentTier >= this.secondaryValue) {
                         if (challengesCompleted === 0) {
+                            this.completed = 1;
+                            this.writeToBoard(true);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        if (this.name === 'TierNoResearch') {
+            if (this.completed < 1) {
+                if (gameData.world.currentWave > 90 + gameData.world.currentTier * 10) {
+                    if (gameData.world.currentTier >= this.secondaryValue) {
+                        let good = true;
+                        gameData.researches.forEach((element) => {
+                            if (element.bought > 0) {
+                                good = false;
+                            }
+                        });
+                        if (good) {
                             this.completed = 1;
                             this.writeToBoard(true);
                             return;
@@ -269,27 +291,33 @@ class TierFeats {
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createFeatsForTier(tier) {
-    const TierRow = document.createElement('div');
-    TierRow.classList.add('row', 'p-0', 'm-0');
-    document.getElementById('TierSection').appendChild(TierRow);
+    const TierRow1 = document.createElement('div');
+    TierRow1.classList.add('row', 'p-0', 'm-0');
+    document.getElementById('TierSection').appendChild(TierRow1);
     const tierInfoCol = document.createElement('div');
-    tierInfoCol.classList.add('col-1', 'p-0', 'm-0', 'text-light', 'text-start');
+    tierInfoCol.classList.add('col-6', 'p-0', 'm-0', 'text-light', 'text-end');
     const tierInfo = document.createElement('span');
     tierInfo.id = `Tier${tier.toString()}`;
-    tierInfo.innerHTML = `Tier ${tier.toString()}`;
+    tierInfo.innerHTML = `Tier ${tier.toString()}: `;
     tierInfoCol.appendChild(tierInfo);
-    TierRow.appendChild(tierInfoCol);
+    TierRow1.appendChild(tierInfoCol);
     const tierBonusCol = document.createElement('div');
-    tierBonusCol.classList.add('col-1', 'p-0', 'm-0', 'text-light', 'text-start');
+    tierBonusCol.classList.add('col-6', 'p-0', 'm-0', 'text-light', 'text-start');
     const tierBonusInfo = document.createElement('span');
     tierBonusInfo.id = `Tier${tier.toString()}Bonus`;
     tierBonusCol.appendChild(tierBonusInfo);
-    TierRow.appendChild(tierBonusCol);
+    TierRow1.appendChild(tierBonusCol);
+    const TierRow2 = document.createElement('div');
+    TierRow2.classList.add('row', 'p-0', 'm-0');
+    document.getElementById('TierSection').appendChild(TierRow2);
+    // const tier2Col = document.createElement('div');
+    // tier2Col.classList.add('col-12', 'p-0', 'm-0', 'text-light', 'text-center');
+    // TierRow2.appendChild(tier2Col);
     const feats = new TierFeats();
-    feats.feats.push(new Feat(1, 'CompleteTier', `Complete Tier ${tier.toString()}`, tier, TierRow));
-    feats.feats.push(new Feat(2, 'TierChallenge', `Complete Tier ${+tier.toString()} with a challenge active`, tier, TierRow));
-    // feats.feats.push(new Feat(3, `TierDerivative${tier.toString()}`, `Complete Tier ${tier.toString()} with no unlocked metal producers`, tier, TierRow));
-    feats.feats.push(new Feat(3, '`TierNoChallenge', `Complete Tier ${tier.toString()} with no challenges completed`, tier, TierRow));
+    feats.feats.push(new Feat(1, 'CompleteTier', `Complete Tier ${tier.toString()}`, tier, TierRow2));
+    feats.feats.push(new Feat(2, 'TierChallenge', `Complete Tier ${+tier.toString()} with a challenge active`, tier, TierRow2));
+    feats.feats.push(new Feat(3, 'TierNoChallenge', `Complete Tier ${tier.toString()} with no challenges completed`, tier, TierRow2));
+    feats.feats.push(new Feat(4, 'TierNoResearch', `Complete Tier ${tier.toString()} with no research completed`, tier, TierRow2));
     return feats;
 }
 function createAchievementBonusArray(size, initial = false) {
@@ -314,7 +342,7 @@ function getTierBonus(tier) {
     let tiercompleted = 1; // no completions gives a multiplier of 1, 1 gives 2, 2 gives 3, etc.
     gameData.tierfeats[tier].feats.forEach((f) => {
         if (f.completed) {
-            tiercompleted += 0.1;
+            tiercompleted += 1;
         }
     });
     return tiercompleted;

@@ -59,8 +59,7 @@ class Challenge {
   updateDisplay(index: number) {
     let spanName = `challenge${index.toString()}Description`;
     document.getElementById(spanName).innerHTML = this.description;
-    spanName = `challenge${index.toString()}Bonus`;
-    document.getElementById(spanName).innerHTML = this.bonusDescription;
+    document.getElementById(`challenge${index.toString()}Bonus`).innerHTML = this.bonusDescription;
     spanName = `challenge${index.toString()}Completed`;
     document.getElementById(spanName).innerHTML = this.completed.toString();
     spanName = `challenge${index.toString()}DustNeeded`;

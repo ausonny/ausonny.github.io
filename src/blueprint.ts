@@ -1,8 +1,14 @@
 class Blueprint {
   towerType: string;
 
+  autoOn: boolean;
+
+  tactic: number;
+
   constructor() {
     this.towerType = '';
+    this.autoOn = false;
+    this.tactic = 0;
   }
 }
 

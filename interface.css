@@ -5,7 +5,7 @@ body {
 
 button {
   width: 180px;
-  margin: 1px;
+  margin: 0px;
   height: 30px;
 }
 
@@ -17,62 +17,81 @@ canvas {
 
 .challengebutton {
   width: 100px;
-  margin: 1px;
+  margin: 0px;
   height: 40px;
+}
+
+.buildingbutton {
+  width: 100px;
+  margin: 0px;
+  height: 80px;
 }
 
 .achievementbutton {
   width: 210px;
-  margin: 1px;
+  margin: 0px;
   height: 50px;
 }
 
 .autobutton {
   width: 25px;
-  margin: 1px;
+  margin: 0px;
   height: 30px;
 }
 
 .equipmentbutton {
-  width: 25px;
-  margin: 1px;
+  width: 30px;
+  margin: 0px;
+  height: 35px;
+}
+
+.speedbutton {
+  width: 30px;
+  margin: 0px;
   height: 30px;
 }
 
 .sacbutton {
   width: 180px;
-  margin: 1px;
+  margin: 0px;
   height: 30px;
 }
 
 .minebutton {
   width: 100px;
-  margin: 1px;
-  padding: 1px;
+  margin: 0px;
+  padding: 0px;
   height: 30px;
 }
 
 .autoamountbutton {
   width: 120px;
-  margin: 1px;
+  margin: 0px;
   height: 30px;
 }
 
 .upgradebutton {
-  width: 246px;
-  margin: 1px;
+  width: 200px;
+  margin: 0px;
   height: 90px;
+}
+
+.prestigebutton {
+  width: 180px;
+  margin: 0px;
+  height: 75px;
+  font-size: 75%;
 }
 
 .tierbutton {
   width: 30px;
-  margin: 1px;
+  margin: 0px;
   height: 30px;
 }
 
 .towerbutton {
   width: 150px;
-  margin: 1px;
+  margin: 0px;
   height: 60px;
   color: white;
 }
@@ -184,11 +203,6 @@ canvas {
 
 .text-xsmall {
   font-size: 75%;
-}
-
-.prestigebutton {
-  width: 220px;
-  height: 75px;
 }
 
 .bottombutton {
